@@ -192,6 +192,11 @@
   <ItemGroup>
     <ClCompile Include="game.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Glaceon\Glaceon.vcxproj">
+      <Project>{1897d69b-07b0-46bd-8a49-511b7be8d8af}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

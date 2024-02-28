@@ -93,7 +93,8 @@ endif()
 ################################################################################
 # Dependencies
 ################################################################################
-add_dependencies(${PROJECT_NAME}
+# Link with other targets.
+target_link_libraries(${PROJECT_NAME} PRIVATE
     Glaceon
 )
 
