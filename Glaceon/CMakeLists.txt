@@ -94,3 +94,11 @@ if(MSVC)
     )
 endif()
 
+
+################################################################################
+# Dependencies
+################################################################################
+
+find_package(Vulkan REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE glfw Vulkan::Vulkan)
+
