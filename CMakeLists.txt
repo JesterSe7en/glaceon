@@ -89,4 +89,5 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 ################################################################################
 add_subdirectory(Glaceon)
 add_subdirectory(SandboxApp)
+add_subdirectory(extern/glfw)
 
