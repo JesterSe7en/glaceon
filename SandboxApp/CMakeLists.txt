@@ -8,8 +8,15 @@ set(Source_Files
 )
 source_group("Source Files" FILES ${Source_Files})
 
+set(Header_Files
+    "game.h"
+)
+
+source_group("Header Files" FILES ${Header_Files})
+
 set(ALL_FILES
     ${Source_Files}
+    ${Header_Files}
 )
 
 ################################################################################
