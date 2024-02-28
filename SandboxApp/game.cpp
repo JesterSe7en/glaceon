@@ -1,6 +1,14 @@
-#include <iostream>
-#include "Glaceon.h"
+#include "game.h"
 
 int main() {
-  runGame();
+  Glaceon::runGame();
+}
+void SandBoxApplication::onStart() {
+
+}
+void SandBoxApplication::onUpdate() {
+
+}
+void SandBoxApplication::onShutdown() {
+
 }

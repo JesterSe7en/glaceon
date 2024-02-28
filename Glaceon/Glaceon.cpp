@@ -2,7 +2,12 @@
 #include "Glaceon.h"
 #include <iostream>
 
-void GLACEON_API runGame()
-{
-  std::cout << "Running game inside glaceon.dll" << std::endl;
+namespace Glaceon {
+
+void GLACEON_API runGame() {
+  std::cout << "Running game inside glaceon.lib" << std::endl;
+
+
 }
+
+} // namespace Glaceon

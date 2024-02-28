@@ -26,3 +26,5 @@ class GLACEON_API Application {
 };
 
 void GLACEON_API runGame();
+
+} // namespace Glaceon
