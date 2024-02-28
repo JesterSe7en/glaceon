@@ -19,12 +19,12 @@
 namespace Glaceon {
 
 class GLACEON_API Application {
-  Application() = default;
+ public:
   virtual void onStart() = 0;
   virtual void onUpdate() = 0;
   virtual void onShutdown() = 0;
 };
 
-void GLACEON_API runGame();
+void GLACEON_API runGame(Application *app);
 
 } // namespace Glaceon
