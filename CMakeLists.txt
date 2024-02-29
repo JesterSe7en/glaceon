@@ -1,7 +1,8 @@
-cmake_minimum_required(VERSION 3.16.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.27.8 FATAL_ERROR)
 
 set(CMAKE_SYSTEM_VERSION 10.0 CACHE STRING "" FORCE)
 
+include(ExternalProject)
 project(Glaceon CXX)
 
 ################################################################################
@@ -109,11 +110,23 @@ if(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/spdlog/CMakeLists.txt")
     message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 endif()
 
+# include(ExternalProject) is needed for this
+ExternalProject_Add(spdlog
+        PREFIX spdlog
+        SOURCE_DIR ${PROJECT_SOURCE_DIR}/extern/spdlog
+        CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
+        -DCMAKE_INSTALL_PREFIX=${STAGING_DIR}
+        -DSPDLOG_BUILD_SHARED=OFF
+)
+
+
 ################################################################################
 # Sub-projects
 ################################################################################
 add_subdirectory(Glaceon)
 add_subdirectory(SandboxApp)
 add_subdirectory(extern/glfw)
-add_subdirectory(extern/spdlog)
 
