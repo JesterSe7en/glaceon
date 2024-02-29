@@ -4,12 +4,12 @@ set(PROJECT_NAME SandboxApp)
 # Source groups
 ################################################################################
 set(Source_Files
-    "game.cpp"
+    "Game.cpp"
 )
 source_group("Source Files" FILES ${Source_Files})
 
 set(Header_Files
-    "game.h"
+    "Game.h"
 )
 
 source_group("Header Files" FILES ${Header_Files})

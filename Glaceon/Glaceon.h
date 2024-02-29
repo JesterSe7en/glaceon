@@ -1,25 +1,13 @@
-#pragma once
+#ifndef GLACEON_GLACEON_GLACEON_H_
+#define GLACEON_GLACEON_GLACEON_H_
 
-#ifdef _WIN64
-#ifdef GLACEON_EXPORTS
-#define GLACEON_API __declspec(dllexport)
-#else
-#define GLACEON_API __declspec(dllimport)
-#endif
-#elif __linux__
-#ifdef GLACEON_EXPORTS
-#define GLACEON_API __attribute__((visibility("default")))
-#else
-#define GLACEON_API
-#endif
-#else
-#error "Unsupported platform"
-#endif
+#include "Base.h"
 
 namespace Glaceon {
 
 class GLACEON_API Application {
  public:
+  Application();
   virtual void onStart() = 0;
   virtual void onUpdate() = 0;
   virtual void onShutdown() = 0;
@@ -28,3 +16,4 @@ class GLACEON_API Application {
 void GLACEON_API runGame(Application *app);
 
 } // namespace Glaceon
+#endif // GLACEON_GLACEON_GLACEON_H_

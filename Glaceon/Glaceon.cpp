@@ -1,36 +1,37 @@
 #include "Glaceon.h"
+#include "Logger.h"
 #include "pch.h"
+
 #include <vulkan/vulkan_core.h>
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
-#include <cstdio>
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
 
 namespace Glaceon {
 
 void error_callback(int error, const char *description) {
-  fprintf(stderr, "Error %d: %s\n", error, description);
+  GLACEON_LOG_ERROR("GLFW Error: %s", description);
+}
+
+Application::Application() {
+  Logger::InitLoggers();
 }
 
 void GLACEON_API runGame(Application *app) {
-  auto console = spdlog::stdout_color_mt("console");
-  spdlog::get("console")->info("SPDLOG: running game...");
   if (!app) {
-    fprintf(stdout, "Application is null\n");
+    GLACEON_LOG_TRACE("Application is null");
     return;
   }
 
   if (!glfwInit()) {
-    fprintf(stdout, "GLFW initialization failed; bailing...\n");
+    GLACEON_LOG_TRACE("GLFW initialization failed");
     return;
   }
 
   bool vulkanSupported = glfwVulkanSupported();
   if (vulkanSupported) {
-    fprintf(stdout, "Vulkan supported\n");
+    GLACEON_LOG_TRACE("Vulkan supported");
   } else {
-    fprintf(stdout, "Vulkan not supported; bailing...\n");
+    GLACEON_LOG_TRACE("Vulkan not supported");
     return;
   }
 
@@ -50,13 +51,14 @@ void GLACEON_API runGame(Application *app) {
   uint32_t property_count;
   vkEnumerateInstanceExtensionProperties(nullptr, &property_count, nullptr);
 
-  fprintf(stdout, "Extension count: %d\n", property_count);
+  // TODO: add printf support for logger
+  GLACEON_LOG_TRACE("Extension count: %d", property_count);
 
   if (!window) {
-    fprintf(stdout, "GLFW window creation failed\n");
+    GLACEON_LOG_TRACE("GLFW window creation failed");
     return;
   } else {
-    fprintf(stdout, "GLFW window created\n");
+    GLACEON_LOG_TRACE("GLFW window created successfully");
   }
 
   app->onStart();
