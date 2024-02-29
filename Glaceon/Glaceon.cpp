@@ -1,5 +1,6 @@
 #include "Glaceon.h"
 #include "pch.h"
+#include <vulkan/vulkan_core.h>
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <cstdio>
@@ -11,45 +12,79 @@ void error_callback(int error, const char *description) {
 }
 
 void GLACEON_API runGame(Application *app) {
-  if (!app) {
-    fprintf(stdout, "Application is null\n");
-    return;
+  glfwInit();
+
+  glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+  GLFWwindow* window = glfwCreateWindow(800, 600, "Vulkan window", nullptr, nullptr);
+
+  uint32_t extensionCount = 0;
+  vkEnumerateInstanceExtensionProperties(nullptr, &extensionCount, nullptr);
+
+  fprintf(stdout, "%u extensions supported\n", extensionCount);
+
+  while(!glfwWindowShouldClose(window)) {
+    glfwPollEvents();
   }
-
-  if (!glfwInit()) {
-    fprintf(stdout, "GLFW initialization failed; bailing...\n");
-    return;
-  }
-
-  bool vulkanSupported = glfwVulkanSupported();
-  if (vulkanSupported) {
-    fprintf(stdout, "Vulkan supported\n");
-  } else {
-    fprintf(stdout, "Vulkan not supported; bailing...\n");
-    return;
-  }
-
-  glfwSetErrorCallback(error_callback);
-
-  auto pfnCreateInstance = (PFN_vkCreateInstance)glfwGetInstanceProcAddress(
-      nullptr, "vkCreateInstance");
-
-  GLFWwindow *window =
-      glfwCreateWindow(800, 600, "GLFW Test Window", nullptr, nullptr);
-
-  if (!window) {
-    fprintf(stdout, "GLFW window creation failed\n");
-    return;
-  } else {
-    fprintf(stdout, "GLFW window created\n");
-  }
-
-  app->onStart();
-  app->onUpdate();
 
   glfwDestroyWindow(window);
+
   glfwTerminate();
-  app->onShutdown();
 }
+
+//void GLACEON_API runGame(Application *app) {
+//  if (!app) {
+//    fprintf(stdout, "Application is null\n");
+//    return;
+//  }
+//
+//  if (!glfwInit()) {
+//    fprintf(stdout, "GLFW initialization failed; bailing...\n");
+//    return;
+//  }
+//
+//  bool vulkanSupported = glfwVulkanSupported();
+//  if (vulkanSupported) {
+//    fprintf(stdout, "Vulkan supported\n");
+//  } else {
+//    fprintf(stdout, "Vulkan not supported; bailing...\n");
+//    return;
+//  }
+//
+//  glfwSetErrorCallback(error_callback);
+//
+//  auto pfnCreateInstance = (PFN_vkCreateInstance)glfwGetInstanceProcAddress(
+//      nullptr, "vkCreateInstance");
+//
+//  // we are using vulkan, don't load in other apis
+//  glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+//  glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
+//  GLFWwindow *window =
+//      glfwCreateWindow(800, 600, "GLFW Test Window", nullptr, nullptr);
+//
+//  glfwShowWindow(window);
+//
+//  uint32_t property_count;
+//  vkEnumerateInstanceExtensionProperties(nullptr, &property_count, nullptr);
+//
+//  fprintf(stdout, "Extension count: %d\n", property_count);
+//
+//  if (!window) {
+//    fprintf(stdout, "GLFW window creation failed\n");
+//    return;
+//  } else {
+//    fprintf(stdout, "GLFW window created\n");
+//  }
+//
+//  while (!glfwWindowShouldClose(window)) {
+//    glfwPollEvents();
+////    app->onUpdate();
+//  }
+//
+//  app->onStart();
+//
+//  glfwDestroyWindow(window);
+//  glfwTerminate();
+//  app->onShutdown();
+//}
 
 } // namespace Glaceon
