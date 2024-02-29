@@ -105,10 +105,15 @@ if(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/glfw/CMakeLists.txt")
     message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 endif()
 
+if(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/spdlog/CMakeLists.txt")
+    message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
+endif()
+
 ################################################################################
 # Sub-projects
 ################################################################################
 add_subdirectory(Glaceon)
 add_subdirectory(SandboxApp)
 add_subdirectory(extern/glfw)
+add_subdirectory(extern/spdlog)
 
