@@ -1,6 +1,6 @@
 #include "Glaceon.h"
 #include "pch.h"
-#include <vulkan/vulkan.h>
+#define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <cstdio>
 
@@ -16,10 +16,8 @@ void GLACEON_API runGame(Application *app) {
     return;
   }
 
-  fprintf(stdout, "Checking for vulkan support...\n");
-
   if (!glfwInit()) {
-    fprintf(stdout, "GLFW initialization failed\n");
+    fprintf(stdout, "GLFW initialization failed; bailing...\n");
     return;
   }
 
@@ -27,21 +25,14 @@ void GLACEON_API runGame(Application *app) {
   if (vulkanSupported) {
     fprintf(stdout, "Vulkan supported\n");
   } else {
-    fprintf(stdout, "Vulkan not supported\n");
+    fprintf(stdout, "Vulkan not supported; bailing...\n");
+    return;
   }
-
 
   glfwSetErrorCallback(error_callback);
 
   auto pfnCreateInstance = (PFN_vkCreateInstance)glfwGetInstanceProcAddress(
       nullptr, "vkCreateInstance");
-
-  if (pfnCreateInstance == nullptr) {
-    fprintf(stdout, "vkCreateInstance not found\n");
-    return;
-  } else {
-    fprintf(stdout, "vkCreateInstance found: %p\n", pfnCreateInstance);
-  }
 
   GLFWwindow *window =
       glfwCreateWindow(800, 600, "GLFW Test Window", nullptr, nullptr);
