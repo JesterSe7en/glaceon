@@ -135,6 +135,21 @@ void VulkanAPI::initVulkan(std::vector<const char *> instance_extensions) {
 
   VkPhysicalDevice gpu = GetPhysicalDevice();
   PrintPhysicalDevice(gpu);
+
+  {
+    uint32_t count;
+    uint32_t queueFamily = (uint32_t)-1;
+    vkGetPhysicalDeviceQueueFamilyProperties(gpu, &count, nullptr);
+    VkQueueFamilyProperties *queues = (VkQueueFamilyProperties *)malloc(sizeof(VkQueueFamilyProperties) * count);
+    vkGetPhysicalDeviceQueueFamilyProperties(gpu, &count, queues);
+    for (uint32_t i = 0; i < count; i++)
+      if (queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+        queueFamily = i;
+        break;
+      }
+    free(queues);
+    assert(queueFamily != (uint32_t)-1);
+  }
 }
 
 }  // namespace Glaceon
