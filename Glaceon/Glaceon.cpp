@@ -9,12 +9,10 @@
 namespace Glaceon {
 
 void error_callback(int error, const char *description) {
-  GLACEON_LOG_ERROR("GLFW Error: %s", description);
+  GLACEON_LOG_ERROR("GLFW Error: {}", description);
 }
 
-Application::Application() {
-  Logger::InitLoggers();
-}
+Application::Application() { Logger::InitLoggers(); }
 
 void GLACEON_API runGame(Application *app) {
   if (!app) {
@@ -37,7 +35,7 @@ void GLACEON_API runGame(Application *app) {
 
   glfwSetErrorCallback(error_callback);
 
-  auto pfnCreateInstance = (PFN_vkCreateInstance) glfwGetInstanceProcAddress(
+  auto pfnCreateInstance = (PFN_vkCreateInstance)glfwGetInstanceProcAddress(
       nullptr, "vkCreateInstance");
 
   // we are using vulkan, don't load in other apis
@@ -51,8 +49,7 @@ void GLACEON_API runGame(Application *app) {
   uint32_t property_count;
   vkEnumerateInstanceExtensionProperties(nullptr, &property_count, nullptr);
 
-  // TODO: add printf support for logger
-  GLACEON_LOG_TRACE("Extension count: %d", property_count);
+  GLACEON_LOG_TRACE("Extension count: {}", property_count);
 
   if (!window) {
     GLACEON_LOG_TRACE("GLFW window creation failed");
