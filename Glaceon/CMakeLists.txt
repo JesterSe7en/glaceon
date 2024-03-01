@@ -1,14 +1,19 @@
 set(PROJECT_NAME Glaceon)
 
-################################################################################
 # Source groups
-################################################################################
 set(Header_Files
         "framework.h"
         "Glaceon.h"
         "pch.h"
         Base.h
         Logger.h
+        ${CMAKE_SOURCE_DIR}/extern/imgui/imconfig.h
+        ${CMAKE_SOURCE_DIR}/extern/imgui/imgui.h
+        ${CMAKE_SOURCE_DIR}/extern/imgui/imgui_internal.h
+        ${CMAKE_SOURCE_DIR}/extern/imgui/imstb_rectpack.h
+        ${CMAKE_SOURCE_DIR}/extern/imgui/imstb_textedit.h
+        ${CMAKE_SOURCE_DIR}/extern/imgui/imstb_truetype.h
+        ${CMAKE_SOURCE_DIR}/extern/imgui/backends/imgui_impl_glfw.h
 
 )
 source_group("Header Files" FILES ${Header_Files})
@@ -18,6 +23,12 @@ set(Source_Files
         "Glaceon.cpp"
         "pch.cpp"
         Logger.cpp
+        ${CMAKE_SOURCE_DIR}/extern/imgui/imgui.cpp
+        ${CMAKE_SOURCE_DIR}/extern/imgui/imgui_demo.cpp
+        ${CMAKE_SOURCE_DIR}/extern/imgui/imgui_draw.cpp
+        ${CMAKE_SOURCE_DIR}/extern/imgui/imgui_tables.cpp
+        ${CMAKE_SOURCE_DIR}/extern/imgui/imgui_widgets.cpp
+        ${CMAKE_SOURCE_DIR}/extern/imgui/backends/imgui_impl_glfw.cpp
 )
 source_group("Source Files" FILES ${Source_Files})
 
@@ -26,9 +37,7 @@ set(ALL_FILES
         ${Source_Files}
 )
 
-################################################################################
 # Target
-################################################################################
 add_library(${PROJECT_NAME} SHARED ${ALL_FILES})
 
 target_precompile_headers(${PROJECT_NAME} PRIVATE
@@ -45,9 +54,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         INTERPROCEDURAL_OPTIMIZATION_RELEASE "TRUE"
         INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO "TRUE"
 )
-################################################################################
+
 # Compile definitions
-################################################################################
 target_compile_definitions(${PROJECT_NAME} PRIVATE
         "$<$<CONFIG:Debug>:"
         "_DEBUG"
@@ -65,11 +73,9 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
         "_UNICODE"
 )
 
-################################################################################
 # Compile and link options
-################################################################################
 if (MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE
+  target_compile_options(${PROJECT_NAME} PRIVATE
             $<$<CONFIG:Release>:
             /Oi;
             /Gy
@@ -84,7 +90,7 @@ if (MSVC)
             ${DEFAULT_CXX_DEBUG_INFORMATION_FORMAT};
             ${DEFAULT_CXX_EXCEPTION_HANDLING}
     )
-    target_link_options(${PROJECT_NAME} PRIVATE
+  target_link_options(${PROJECT_NAME} PRIVATE
             $<$<CONFIG:Release>:
             /OPT:REF;
             /OPT:ICF
@@ -99,10 +105,7 @@ if (MSVC)
 endif ()
 
 
-################################################################################
 # Dependencies
-################################################################################
-
 find_package(Vulkan REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw Vulkan::Vulkan)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/extern/spdlog/include)
