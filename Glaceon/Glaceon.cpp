@@ -1,5 +1,6 @@
 #include "Glaceon.h"
 #include "Logger.h"
+#include "VulkanAPI.h"
 #include "pch.h"
 
 #include "imgui.h"
@@ -63,7 +64,8 @@ void GLACEON_API runGame(Application *app) {
   for (uint32_t i = 0; i < glfw_extension_count; i++) {
     extensions.push_back(glfw_extensions[i]);
   }
-  //TODO: Add this into the create vkInstance struct to generate a new vkInstance. For now we will just hold on to the glfw extensions
+
+  VulkanAPI::initVulkan(extensions);
 
   //TODO: Create vkSurfaceKHR and pass to glfwCreateWindowSurface
 
