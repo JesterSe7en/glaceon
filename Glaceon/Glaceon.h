@@ -15,5 +15,5 @@ class GLACEON_API Application {
 
 void GLACEON_API runGame(Application *app);
 
-} // namespace Glaceon
-#endif // GLACEON_GLACEON_GLACEON_H_
+}  // namespace Glaceon
+#endif  // GLACEON_GLACEON_GLACEON_H_

@@ -11,4 +11,4 @@ class SandBoxApplication : public Glaceon::Application {
   void onShutdown() override;
 };
 
-#endif //GLACEON_SANDBOXAPP_GAME_H_
+#endif  // GLACEON_SANDBOXAPP_GAME_H_

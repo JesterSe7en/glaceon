@@ -14,9 +14,7 @@
 
 namespace Glaceon {
 
-void error_callback(int error, const char *description) {
-  GLACEON_LOG_ERROR("GLFW Error: {}", description);
-}
+void error_callback(int error, const char *description) { GLACEON_LOG_ERROR("GLFW Error: {}", description); }
 
 Application::Application() { Logger::InitLoggers(); }
 
@@ -41,22 +39,19 @@ void GLACEON_API runGame(Application *app) {
 
   glfwSetErrorCallback(error_callback);
 
-  auto pfnCreateInstance = (PFN_vkCreateInstance) glfwGetInstanceProcAddress(
-      nullptr, "vkCreateInstance");
+  auto pfnCreateInstance = (PFN_vkCreateInstance)glfwGetInstanceProcAddress(nullptr, "vkCreateInstance");
 
   // we are using vulkan, don't load in other apis
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
-  GLFWwindow *window =
-      glfwCreateWindow(800, 600, "GLFW Test Window", nullptr, nullptr);
+  GLFWwindow *window = glfwCreateWindow(800, 600, "GLFW Test Window", nullptr, nullptr);
 
   // For reference on integrating ImGui with GLFW and Vulkan
   // https://github.com/ocornut/imgui/blob/master/examples/example_glfw_vulkan/main.cpp
   // check required extensions for glfw
   std::vector<const char *> extensions;
   uint32_t glfw_extension_count = 0;
-  const char **glfw_extensions =
-      glfwGetRequiredInstanceExtensions(&glfw_extension_count);
+  const char **glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
   if (!glfw_extensions) {
     GLACEON_LOG_TRACE("GLFW extension check failed");
     return;
@@ -67,11 +62,11 @@ void GLACEON_API runGame(Application *app) {
 
   VulkanAPI::initVulkan(extensions);
 
-  //TODO: Create vkSurfaceKHR and pass to glfwCreateWindowSurface
+  // TODO: Create vkSurfaceKHR and pass to glfwCreateWindowSurface
 
-  //TODO: Create framebuffers with glfwGetFramebufferSize()
+  // TODO: Create framebuffers with glfwGetFramebufferSize()
 
-  //TODO: Setup Imgui context
+  // TODO: Setup Imgui context
 
   glfwShowWindow(window);
 
@@ -99,4 +94,4 @@ void GLACEON_API runGame(Application *app) {
   app->onShutdown();
 }
 
-} // namespace Glaceon
+}  // namespace Glaceon

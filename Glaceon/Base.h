@@ -17,5 +17,4 @@
 #error "Unsupported platform"
 #endif
 
-
-#endif //GLACEON_GLACEON_BASE_H_
+#endif  // GLACEON_GLACEON_BASE_H_
