@@ -5,23 +5,23 @@
 #ifndef GLACEON_GLACEON_VULKANAPI_H_
 #define GLACEON_GLACEON_VULKANAPI_H_
 
+#include <vulkan/vulkan.h>
+
 #include <memory>
 #include <vector>
-#include <vulkan/vulkan.h>
 
 namespace Glaceon {
 
 class VulkanAPI {
-
-public:
+ public:
   static void initVulkan(std::vector<const char *> instance_extensions);
   static VkInstance getVulkanInstance() { return vkInstance; }
 
-private:
+ private:
   static VkInstance vkInstance;
   //  static std::shared_ptr<VkInstance> p_vkInstance;
 };
 
-} // namespace Glaceon
+}  // namespace Glaceon
 
-#endif // GLACEON_GLACEON_VULKANAPI_H_
+#endif  // GLACEON_GLACEON_VULKANAPI_H_
