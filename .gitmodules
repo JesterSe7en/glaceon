@@ -4,9 +4,6 @@
 [submodule "extern/spdlog"]
 	path = extern/spdlog
 	url = https://github.com/gabime/spdlog
-[submodule "extern/imgui.wiki"]
-	path = extern/imgui.wiki
-	url = https://github.com/ocornut/imgui.wiki.git
 [submodule "extern/imgui"]
 	path = extern/imgui
 	url = https://github.com/ocornut/imgui.git
