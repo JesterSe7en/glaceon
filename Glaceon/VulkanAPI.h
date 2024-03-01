@@ -15,6 +15,9 @@ class VulkanAPI {
 
  private:
   static VkInstance vkInstance;
+  static VkDevice vkDevice;
+  static VkQueue vkQueue;
+  static VkDescriptorPool vkDescriptorPool;
   //  static std::shared_ptr<VkInstance> p_vkInstance;
 };
 

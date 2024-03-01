@@ -9,6 +9,9 @@
 namespace Glaceon {
 
 VkInstance VulkanAPI::vkInstance = VK_NULL_HANDLE;
+VkDevice VulkanAPI::vkDevice = VK_NULL_HANDLE;
+VkQueue VulkanAPI::vkQueue = VK_NULL_HANDLE;
+VkDescriptorPool VulkanAPI::vkDescriptorPool = VK_NULL_HANDLE;
 // std::shared_ptr<VkInstance> VulkanAPI::p_vkInstance = VK_NULL_HANDLE;
 
 // -------- Vulkan API Helper Functions --------
@@ -136,9 +139,9 @@ void VulkanAPI::initVulkan(std::vector<const char *> instance_extensions) {
   VkPhysicalDevice gpu = GetPhysicalDevice();
   PrintPhysicalDevice(gpu);
 
+  uint32_t queueFamily = (uint32_t)-1;
   {
     uint32_t count;
-    uint32_t queueFamily = (uint32_t)-1;
     vkGetPhysicalDeviceQueueFamilyProperties(gpu, &count, nullptr);
     VkQueueFamilyProperties *queues = (VkQueueFamilyProperties *)malloc(sizeof(VkQueueFamilyProperties) * count);
     vkGetPhysicalDeviceQueueFamilyProperties(gpu, &count, queues);
@@ -149,6 +152,57 @@ void VulkanAPI::initVulkan(std::vector<const char *> instance_extensions) {
       }
     free(queues);
     assert(queueFamily != (uint32_t)-1);
+  }
+
+  {
+    std::vector<const char *> device_extensions;
+    device_extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
+    uint32_t properties_count;
+    std::vector<VkExtensionProperties> properties;
+    vkEnumerateDeviceExtensionProperties(gpu, nullptr, &properties_count, nullptr);
+    properties.resize(properties_count);
+    vkEnumerateDeviceExtensionProperties(gpu, nullptr, &properties_count, properties.data());
+
+    const float queue_priority[] = {0.0f};
+    VkDeviceQueueCreateInfo queueCreateInfo[1] = {};
+    queueCreateInfo[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queueCreateInfo[0].queueFamilyIndex = queueFamily;
+    queueCreateInfo[0].queueCount = 1;
+    queueCreateInfo[0].pQueuePriorities = queue_priority;
+
+    VkDeviceCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+    createInfo.queueCreateInfoCount = sizeof(queueCreateInfo) / sizeof(queueCreateInfo[0]);
+    createInfo.pQueueCreateInfos = queueCreateInfo;
+    createInfo.enabledExtensionCount = static_cast<uint32_t>(device_extensions.size());
+    createInfo.ppEnabledExtensionNames = device_extensions.data();
+    int res = vkCreateDevice(gpu, &createInfo, nullptr, &vkDevice);
+    if (res != VK_SUCCESS) {
+      GLACEON_LOG_ERROR("Failed to create Vulkan device");
+      return;
+    } else {
+      GLACEON_LOG_INFO("Vulkan device created successfully");
+    }
+    vkGetDeviceQueue(vkDevice, queueFamily, 0, &vkQueue);
+  }
+
+  {
+    VkDescriptorPoolSize pool_sizes[] = {
+        {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1},
+    };
+    VkDescriptorPoolCreateInfo pool_info = {};
+    pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+    pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+    pool_info.maxSets = 1;
+    pool_info.poolSizeCount = 1;
+    pool_info.pPoolSizes = pool_sizes;
+    int res = vkCreateDescriptorPool(vkDevice, &pool_info, nullptr, &vkDescriptorPool);
+    if (res != VK_SUCCESS) {
+      GLACEON_LOG_ERROR("Failed to create descriptor pool");
+    } else {
+      GLACEON_LOG_INFO("Descriptor pool created successfully");
+    }
   }
 }
 

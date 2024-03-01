@@ -44,7 +44,7 @@ void GLACEON_API runGame(Application *app) {
   // we are using vulkan, don't load in other apis
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
-  GLFWwindow *window = glfwCreateWindow(800, 600, "GLFW Test Window", nullptr, nullptr);
+  GLFWwindow *glfw_window = glfwCreateWindow(800, 600, "GLFW Test Window", nullptr, nullptr);
 
   // For reference on integrating ImGui with GLFW and Vulkan
   // https://github.com/ocornut/imgui/blob/master/examples/example_glfw_vulkan/main.cpp
@@ -62,20 +62,38 @@ void GLACEON_API runGame(Application *app) {
 
   VulkanAPI::initVulkan(extensions);
 
+  VkSurfaceKHR surface;
+  VkInstance instance = VulkanAPI::getVulkanInstance();
+  if (instance == VK_NULL_HANDLE) {
+    GLACEON_LOG_ERROR("Failed to create Vulkan instance");
+    return;
+  }
+
+  VkResult res = glfwCreateWindowSurface(VulkanAPI::getVulkanInstance(), glfw_window, nullptr, &surface);
+  if (res != VK_SUCCESS) {
+    GLACEON_LOG_ERROR("Failed to create window surface");
+  }
+
+  int w, h;
+  glfwGetFramebufferSize(glfw_window, &w, &h);
+  ImGui_ImplVulkanH_Window *wd = nullptr;
+
+  // SetupVulkanWindow
+
   // TODO: Create vkSurfaceKHR and pass to glfwCreateWindowSurface
 
   // TODO: Create framebuffers with glfwGetFramebufferSize()
 
   // TODO: Setup Imgui context
 
-  glfwShowWindow(window);
+  glfwShowWindow(glfw_window);
 
   uint32_t property_count;
   vkEnumerateInstanceExtensionProperties(nullptr, &property_count, nullptr);
 
   GLACEON_LOG_TRACE("Extension count: {}", property_count);
 
-  if (!window) {
+  if (!glfw_window) {
     GLACEON_LOG_TRACE("GLFW window creation failed");
     return;
   } else {
@@ -84,12 +102,12 @@ void GLACEON_API runGame(Application *app) {
 
   app->onStart();
 
-  while (!glfwWindowShouldClose(window)) {
+  while (!glfwWindowShouldClose(glfw_window)) {
     glfwPollEvents();
     app->onUpdate();
   }
 
-  glfwDestroyWindow(window);
+  glfwDestroyWindow(glfw_window);
   glfwTerminate();
   app->onShutdown();
 }
