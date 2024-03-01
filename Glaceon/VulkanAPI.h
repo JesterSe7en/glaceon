@@ -1,7 +1,3 @@
-//
-// Created by alyxc on 3/1/2024.
-//
-
 #ifndef GLACEON_GLACEON_VULKANAPI_H_
 #define GLACEON_GLACEON_VULKANAPI_H_
 
