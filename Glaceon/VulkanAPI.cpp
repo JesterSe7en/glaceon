@@ -1,9 +1,6 @@
-//
-// Created by alyxc on 3/1/2024.
-//
-
 #include "VulkanAPI.h"
 #include "Logger.h"
+#include <cassert>
 #include <vulkan/vulkan_core.h>
 
 namespace Glaceon {
@@ -11,6 +8,7 @@ namespace Glaceon {
 VkInstance VulkanAPI::vkInstance = VK_NULL_HANDLE;
 // std::shared_ptr<VkInstance> VulkanAPI::p_vkInstance = VK_NULL_HANDLE;
 
+// -------- Vulkan API Helper Functions --------
 static bool
 IsExtensionAvailable(const std::vector<VkExtensionProperties> &extensions,
                      const char *extension) {
@@ -30,6 +28,64 @@ debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
   GLACEON_LOG_ERROR("Validation layer: {}", pCallbackData->pMessage);
 }
 
+static VkPhysicalDevice GetPhysicalDevice() {
+  if (VulkanAPI::getVulkanInstance() == VK_NULL_HANDLE) {
+    GLACEON_LOG_ERROR(
+        "Vulkan instance not initialized; cannot get physical device");
+    return VK_NULL_HANDLE;
+  }
+
+  uint32_t gpu_count = 0;
+  std::vector<VkPhysicalDevice> gpus;
+  int res = vkEnumeratePhysicalDevices(VulkanAPI::getVulkanInstance(),
+                                       &gpu_count, nullptr);
+
+  if (res != VK_SUCCESS) {
+    GLACEON_LOG_ERROR("Failed to poll number of physical devices");
+    assert(gpu_count > 0);
+    return VK_NULL_HANDLE;
+  }
+
+  gpus.resize(gpu_count);
+  res = vkEnumeratePhysicalDevices(VulkanAPI::getVulkanInstance(), &gpu_count,
+                                   gpus.data());
+  if (res != VK_SUCCESS) {
+    GLACEON_LOG_ERROR("Failed to enumerate physical devices info");
+    return VK_NULL_HANDLE;
+  }
+
+  for (VkPhysicalDevice &device : gpus) {
+    VkPhysicalDeviceProperties properties;
+    vkGetPhysicalDeviceProperties(device, &properties);
+    if (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU)
+      return device;
+  }
+
+  if (gpu_count > 0)
+    return gpus[0];
+  return VK_NULL_HANDLE;
+}
+
+static void PrintPhysicalDevice(VkPhysicalDevice gpu) {
+  if (gpu == VK_NULL_HANDLE) {
+    GLACEON_LOG_ERROR("Cannot print physical device info: invalid handle");
+    return;
+  }
+
+  VkPhysicalDeviceProperties properties;
+  vkGetPhysicalDeviceProperties(gpu, &properties);
+
+  GLACEON_LOG_INFO("Physical device name: {}", properties.deviceName);
+  GLACEON_LOG_INFO("API version: {}.{}.{}",
+                   VK_VERSION_MAJOR(properties.apiVersion),
+                   VK_VERSION_MINOR(properties.apiVersion),
+                   VK_VERSION_PATCH(properties.apiVersion));
+  GLACEON_LOG_INFO("Driver version: {}", properties.driverVersion);
+  GLACEON_LOG_INFO("Vendor ID: {}", properties.vendorID);
+  GLACEON_LOG_INFO("Device ID: {}", properties.deviceID);
+}
+
+// -------- Vulkan API Class --------
 void VulkanAPI::initVulkan(std::vector<const char *> instance_extensions) {
   {
     VkInstanceCreateInfo createInfo = {};
@@ -96,6 +152,9 @@ void VulkanAPI::initVulkan(std::vector<const char *> instance_extensions) {
       GLACEON_LOG_INFO("Vulkan instance created successfully");
     }
   }
+
+  VkPhysicalDevice gpu = GetPhysicalDevice();
+  PrintPhysicalDevice(gpu);
 }
 
 } // namespace Glaceon
