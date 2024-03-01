@@ -108,6 +108,9 @@ endif ()
 # Dependencies
 find_package(Vulkan REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE glfw Vulkan::Vulkan)
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/extern/spdlog/include)
+target_include_directories(${PROJECT_NAME} PUBLIC
+      ${CMAKE_SOURCE_DIR}/extern/spdlog/include
+      ${CMAKE_SOURCE_DIR}/extern/imgui
+      ${CMAKE_SOURCE_DIR}/extern/imgui/backends)
 add_dependencies(${PROJECT_NAME} spdlog)
 
