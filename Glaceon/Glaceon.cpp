@@ -40,7 +40,7 @@ void GLACEON_API runGame(Application *app) {
 
   glfwSetErrorCallback(error_callback);
 
-  auto pfnCreateInstance = (PFN_vkCreateInstance)glfwGetInstanceProcAddress(
+  auto pfnCreateInstance = (PFN_vkCreateInstance) glfwGetInstanceProcAddress(
       nullptr, "vkCreateInstance");
 
   // we are using vulkan, don't load in other apis
@@ -48,6 +48,28 @@ void GLACEON_API runGame(Application *app) {
   glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
   GLFWwindow *window =
       glfwCreateWindow(800, 600, "GLFW Test Window", nullptr, nullptr);
+
+  // For reference on integrating ImGui with GLFW and Vulkan
+  // https://github.com/ocornut/imgui/blob/master/examples/example_glfw_vulkan/main.cpp
+  // check required extensions for glfw
+  std::vector<const char *> extensions;
+  uint32_t glfw_extension_count = 0;
+  const char **glfw_extensions =
+      glfwGetRequiredInstanceExtensions(&glfw_extension_count);
+  if (!glfw_extensions) {
+    GLACEON_LOG_TRACE("GLFW extension check failed");
+    return;
+  }
+  for (uint32_t i = 0; i < glfw_extension_count; i++) {
+    extensions.push_back(glfw_extensions[i]);
+  }
+  //TODO: Add this into the create vkInstance struct to generate a new vkInstance. For now we will just hold on to the glfw extensions
+
+  //TODO: Create vkSurfaceKHR and pass to glfwCreateWindowSurface
+
+  //TODO: Create framebuffers with glfwGetFramebufferSize()
+
+  //TODO: Setup Imgui context
 
   glfwShowWindow(window);
 
