@@ -15,6 +15,8 @@
 
 namespace Glaceon {
 
+static bool swapChainRebuild = false;
+
 void error_callback(int error, const char *description) { GLACEON_LOG_ERROR("GLFW Error: {}", description); }
 
 Application::Application() { Logger::InitLoggers(); }
@@ -170,18 +172,17 @@ void GLACEON_API runGame(Application *app) {
     app->onUpdate();
 
     // Resize swap chain?
-    /* if (g_SwapChainRebuild) { */
-    /*   int width, height; */
-    /*   glfwGetFramebufferSize(glfw_window, &width, &height); */
-    /*   if (width > 0 && height > 0) { */
-    /*     ImGui_ImplVulkan_SetMinImageCount(2); */
-    /*     ImGui_ImplVulkanH_CreateOrResizeWindow(instance, physicalDevice, device, imgui_window, queueFamily, nullptr,
-     * w, */
-    /*                                            h, 2); */
-    /*     g_MainWindowData.FrameIndex = 0; */
-    /*     g_SwapChainRebuild = false; */
-    /*   } */
-    /* } */
+    if (swapChainRebuild) {
+      int width, height;
+      glfwGetFramebufferSize(glfw_window, &width, &height);
+      if (width > 0 && height > 0) {
+        ImGui_ImplVulkan_SetMinImageCount(2);
+        ImGui_ImplVulkanH_CreateOrResizeWindow(instance, physicalDevice, device, imgui_window, queueFamily, nullptr, w,
+                                               h, 2);
+        /* g_MainWindowData.FrameIndex = 0; */
+        swapChainRebuild = false;
+      }
+    }
 
     // Start the Dear ImGui frame
     ImGui_ImplVulkan_NewFrame();
