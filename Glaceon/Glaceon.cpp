@@ -165,7 +165,7 @@ void GLACEON_API runGame(Application *app) {
     GLACEON_LOG_TRACE("Vulkan supported");
   } else {
     GLACEON_LOG_TRACE("Vulkan not supported");
-    return;
+    exit(-1);
   }
 
   glfwSetErrorCallback(error_callback);
