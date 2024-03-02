@@ -116,6 +116,8 @@ void GLACEON_API runGame(Application *app) {
   glfwGetFramebufferSize(glfw_window, &w, &h);
   ImGui_ImplVulkanH_Window *imgui_window = nullptr;
 
+  // TODO: Maybe return something indicating success or failure
+  // init_info_renderPass = imgui_window->RenderPass; // This can be null
   SetupVulkanWindow(imgui_window, surface, w, h);
 
   // Setup Dear ImGui context
