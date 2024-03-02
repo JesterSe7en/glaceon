@@ -12,6 +12,7 @@ VkInstance VulkanAPI::vkInstance = VK_NULL_HANDLE;
 VkDevice VulkanAPI::vkDevice = VK_NULL_HANDLE;
 VkQueue VulkanAPI::vkQueue = VK_NULL_HANDLE;
 VkDescriptorPool VulkanAPI::vkDescriptorPool = VK_NULL_HANDLE;
+VkPipelineCache VulkanAPI::vkPipelineCache = VK_NULL_HANDLE;
 // std::shared_ptr<VkInstance> VulkanAPI::p_vkInstance = VK_NULL_HANDLE;
 
 // -------- Vulkan API Helper Functions --------
@@ -136,22 +137,21 @@ void VulkanAPI::initVulkan(std::vector<const char *> instance_extensions) {
     }
   }
 
-  VkPhysicalDevice gpu = GetPhysicalDevice();
-  PrintPhysicalDevice(gpu);
-
-  uint32_t queueFamily = (uint32_t)-1;
+  vkPhysicalDevice = GetPhysicalDevice();
+  PrintPhysicalDevice(vkPhysicalDevice);
+  vkGraphicsQueueFamilyIndex = (uint32_t)-1;
   {
     uint32_t count;
-    vkGetPhysicalDeviceQueueFamilyProperties(gpu, &count, nullptr);
+    vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, &count, nullptr);
     VkQueueFamilyProperties *queues = (VkQueueFamilyProperties *)malloc(sizeof(VkQueueFamilyProperties) * count);
-    vkGetPhysicalDeviceQueueFamilyProperties(gpu, &count, queues);
+    vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, &count, queues);
     for (uint32_t i = 0; i < count; i++)
       if (queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-        queueFamily = i;
+        vkGraphicsQueueFamilyIndex = i;
         break;
       }
     free(queues);
-    assert(queueFamily != (uint32_t)-1);
+    assert(vkGraphicsQueueFamilyIndex != (uint32_t)-1);
   }
 
   {
@@ -160,14 +160,14 @@ void VulkanAPI::initVulkan(std::vector<const char *> instance_extensions) {
 
     uint32_t properties_count;
     std::vector<VkExtensionProperties> properties;
-    vkEnumerateDeviceExtensionProperties(gpu, nullptr, &properties_count, nullptr);
+    vkEnumerateDeviceExtensionProperties(vkPhysicalDevice, nullptr, &properties_count, nullptr);
     properties.resize(properties_count);
-    vkEnumerateDeviceExtensionProperties(gpu, nullptr, &properties_count, properties.data());
+    vkEnumerateDeviceExtensionProperties(vkPhysicalDevice, nullptr, &properties_count, properties.data());
 
     const float queue_priority[] = {0.0f};
     VkDeviceQueueCreateInfo queueCreateInfo[1] = {};
     queueCreateInfo[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queueCreateInfo[0].queueFamilyIndex = queueFamily;
+    queueCreateInfo[0].queueFamilyIndex = vkGraphicsQueueFamilyIndex;
     queueCreateInfo[0].queueCount = 1;
     queueCreateInfo[0].pQueuePriorities = queue_priority;
 
@@ -177,14 +177,14 @@ void VulkanAPI::initVulkan(std::vector<const char *> instance_extensions) {
     createInfo.pQueueCreateInfos = queueCreateInfo;
     createInfo.enabledExtensionCount = static_cast<uint32_t>(device_extensions.size());
     createInfo.ppEnabledExtensionNames = device_extensions.data();
-    int res = vkCreateDevice(gpu, &createInfo, nullptr, &vkDevice);
+    int res = vkCreateDevice(vkPhysicalDevice, &createInfo, nullptr, &vkDevice);
     if (res != VK_SUCCESS) {
       GLACEON_LOG_ERROR("Failed to create Vulkan device");
       return;
     } else {
       GLACEON_LOG_INFO("Vulkan device created successfully");
     }
-    vkGetDeviceQueue(vkDevice, queueFamily, 0, &vkQueue);
+    vkGetDeviceQueue(vkDevice, vkGraphicsQueueFamilyIndex, 0, &vkQueue);
   }
 
   {

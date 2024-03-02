@@ -1,7 +1,3 @@
-//
-// Created by alyxc on 2/29/2024.
-//
-
 #ifndef GLACEON_GLACEON_LOGGER_H_
 #define GLACEON_GLACEON_LOGGER_H_
 
