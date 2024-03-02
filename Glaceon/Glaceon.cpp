@@ -16,6 +16,7 @@
 namespace Glaceon {
 
 static bool swapChainRebuild = false;
+static ImGui_ImplVulkanH_Window g_MainWindowData;
 
 void error_callback(int error, const char *description) { GLACEON_LOG_ERROR("GLFW Error: {}", description); }
 
@@ -249,12 +250,6 @@ void GLACEON_API runGame(Application *app) {
   init_info.CheckVkResultFn = check_vk_result;
   ImGui_ImplVulkan_Init(&init_info);
 
-  // TODO: Create vkSurfaceKHR and pass to glfwCreateWindowSurface
-
-  // TODO: Create framebuffers with glfwGetFramebufferSize()
-
-  // TODO: Setup Imgui context
-
   app->onStart();
 
   ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -271,7 +266,7 @@ void GLACEON_API runGame(Application *app) {
         ImGui_ImplVulkan_SetMinImageCount(2);
         ImGui_ImplVulkanH_CreateOrResizeWindow(instance, physicalDevice, device, imgui_window, queueFamily, nullptr, w,
                                                h, 2);
-        /* g_MainWindowData.FrameIndex = 0; */
+        g_MainWindowData.FrameIndex = 0;
         swapChainRebuild = false;
       }
     }
@@ -297,6 +292,23 @@ void GLACEON_API runGame(Application *app) {
       FramePresent(imgui_window);
     }
   }
+
+  res = vkDeviceWaitIdle(VulkanAPI::getVulkanDevice());
+
+  if (res != VK_SUCCESS) {
+    GLACEON_LOG_ERROR("Failed to wait for device");
+    exit(-1);
+  }
+
+  ImGui_ImplVulkan_Shutdown();
+  ImGui_ImplGlfw_Shutdown();
+  ImGui::DestroyContext();
+
+  ImGui_ImplVulkanH_DestroyWindow(instance, device, imgui_window, nullptr);
+  vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+
+  vkDestroyDevice(device, nullptr);
+  vkDestroyInstance(instance, nullptr);
 
   glfwDestroyWindow(glfw_window);
   glfwTerminate();
