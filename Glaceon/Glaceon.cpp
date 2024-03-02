@@ -10,6 +10,7 @@
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
+#include <vulkan/vk_enum_string_helper.h>
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
 
@@ -50,10 +51,16 @@ void SetupVulkanWindow(ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface, int w
   wd->SurfaceFormat = ImGui_ImplVulkanH_SelectSurfaceFormat(
       VulkanAPI::getVulkanPhysicalDevice(), wd->Surface, requestSurfaceImageFormat,
       (size_t)IM_ARRAYSIZE(requestSurfaceImageFormat), requestSurfaceColorSpace);
-  VkPresentModeKHR present_modes[] = {VK_PRESENT_MODE_FIFO_KHR};
+
+  // uncapped fps - if uncapped present modes are not supported, default to vsync
+  // present_modes[] is a priority list with idx 0 being the highest
+  VkPresentModeKHR present_modes[] = {VK_PRESENT_MODE_MAILBOX_KHR, VK_PRESENT_MODE_IMMEDIATE_KHR,
+                                      VK_PRESENT_MODE_FIFO_KHR};
 
   wd->PresentMode = ImGui_ImplVulkanH_SelectPresentMode(VulkanAPI::getVulkanPhysicalDevice(), wd->Surface,
                                                         &present_modes[0], IM_ARRAYSIZE(present_modes));
+
+  GLACEON_LOG_INFO("PresentMode = {}", string_VkPresentModeKHR(wd->PresentMode));
   // printf("[vulkan] Selected PresentMode = %d\n", wd->PresentMode);
 
   // Create SwapChain, RenderPass, Framebuffer, etc.
@@ -258,7 +265,7 @@ void GLACEON_API runGame(Application *app) {
 
   app->onStart();
 
-  ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+  ImVec4 clear_color = ImVec4(1.0f, 0.0f, 0.0f, 1.00f);
 
   while (!glfwWindowShouldClose(glfw_window)) {
     glfwPollEvents();
