@@ -280,8 +280,17 @@ void GLACEON_API runGame(Application *app) {
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    bool showDemo = true;
-    ImGui::ShowDemoWindow(&showDemo);
+    // bool showDemo = true;
+    // ImGui::ShowDemoWindow(&showDemo);
+
+    {
+      static float f = 0.0f;
+      static int counter = 0;
+
+      ImGui::Begin("FPS");
+      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+      ImGui::End();
+    }
 
     // Rendering
     ImGui::Render();
