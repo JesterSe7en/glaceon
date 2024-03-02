@@ -3,16 +3,19 @@
 #include <vulkan/vulkan_core.h>
 
 #include <cassert>
+#include <cstdint>
 
 #include "Logger.h"
 
 namespace Glaceon {
 
 VkInstance VulkanAPI::vkInstance = VK_NULL_HANDLE;
+VkPhysicalDevice VulkanAPI::vkPhysicalDevice = VK_NULL_HANDLE;
 VkDevice VulkanAPI::vkDevice = VK_NULL_HANDLE;
 VkQueue VulkanAPI::vkQueue = VK_NULL_HANDLE;
 VkDescriptorPool VulkanAPI::vkDescriptorPool = VK_NULL_HANDLE;
 VkPipelineCache VulkanAPI::vkPipelineCache = VK_NULL_HANDLE;
+uint32_t VulkanAPI::vkGraphicsQueueFamilyIndex = (uint32_t)-1;
 // std::shared_ptr<VkInstance> VulkanAPI::p_vkInstance = VK_NULL_HANDLE;
 
 // -------- Vulkan API Helper Functions --------

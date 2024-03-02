@@ -1,7 +1,5 @@
 #include "Glaceon.h"
 
-#include <vulkan/vulkan_core.h>
-
 #include "Logger.h"
 #include "VulkanAPI.h"
 #include "imgui.h"
@@ -13,6 +11,7 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
 namespace Glaceon {
 
@@ -169,17 +168,18 @@ void GLACEON_API runGame(Application *app) {
     app->onUpdate();
 
     // Resize swap chain?
-    if (g_SwapChainRebuild) {
-      int width, height;
-      glfwGetFramebufferSize(glfw_window, &width, &height);
-      if (width > 0 && height > 0) {
-        ImGui_ImplVulkan_SetMinImageCount(2);
-        ImGui_ImplVulkanH_CreateOrResizeWindow(instance, physicalDevice, device, imgui_window, queueFamily, nullptr, w,
-                                               h, 2);
-        g_MainWindowData.FrameIndex = 0;
-        g_SwapChainRebuild = false;
-      }
-    }
+    /* if (g_SwapChainRebuild) { */
+    /*   int width, height; */
+    /*   glfwGetFramebufferSize(glfw_window, &width, &height); */
+    /*   if (width > 0 && height > 0) { */
+    /*     ImGui_ImplVulkan_SetMinImageCount(2); */
+    /*     ImGui_ImplVulkanH_CreateOrResizeWindow(instance, physicalDevice, device, imgui_window, queueFamily, nullptr,
+     * w, */
+    /*                                            h, 2); */
+    /*     g_MainWindowData.FrameIndex = 0; */
+    /*     g_SwapChainRebuild = false; */
+    /*   } */
+    /* } */
 
     // Start the Dear ImGui frame
     ImGui_ImplVulkan_NewFrame();
