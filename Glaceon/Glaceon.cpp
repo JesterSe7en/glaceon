@@ -21,11 +21,18 @@ static ImGui_ImplVulkanH_Window g_MainWindowData;
 
 void error_callback(int error, const char *description) { GLACEON_LOG_ERROR("GLFW Error: {}", description); }
 
+void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+    GLACEON_LOG_INFO("Escape key pressed, closing window...");
+    glfwSetWindowShouldClose(window, GLFW_TRUE);
+  }
+}
+
 Application::Application() { Logger::InitLoggers(); }
 
 static void check_vk_result(VkResult err) {
   if (err == 0) return;
-  GLACEON_LOG_ERROR("[vulkan] Error: VkResult = {}", err);
+  GLACEON_LOG_ERROR("[vulkan] Error: VkResult = {}", string_VkResult(err));
   if (err < 0) abort();
 }
 
@@ -52,6 +59,8 @@ void SetupVulkanWindow(ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface, int w
       VulkanAPI::getVulkanPhysicalDevice(), wd->Surface, requestSurfaceImageFormat,
       (size_t)IM_ARRAYSIZE(requestSurfaceImageFormat), requestSurfaceColorSpace);
 
+  GLACEON_LOG_INFO("SurfaceFormat = {}", string_VkFormat(wd->SurfaceFormat.format));
+
   // uncapped fps - if uncapped present modes are not supported, default to vsync
   // present_modes[] is a priority list with idx 0 being the highest
   VkPresentModeKHR present_modes[] = {VK_PRESENT_MODE_MAILBOX_KHR, VK_PRESENT_MODE_IMMEDIATE_KHR,
@@ -61,7 +70,6 @@ void SetupVulkanWindow(ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface, int w
                                                         &present_modes[0], IM_ARRAYSIZE(present_modes));
 
   GLACEON_LOG_INFO("PresentMode = {}", string_VkPresentModeKHR(wd->PresentMode));
-  // printf("[vulkan] Selected PresentMode = %d\n", wd->PresentMode);
 
   // Create SwapChain, RenderPass, Framebuffer, etc.
   /* IM_ASSERT(g_MinImageCount >= 2); */
@@ -181,12 +189,12 @@ void GLACEON_API runGame(Application *app) {
 
   glfwSetErrorCallback(error_callback);
 
-  auto pfnCreateInstance = (PFN_vkCreateInstance)glfwGetInstanceProcAddress(nullptr, "vkCreateInstance");
-
   // we are using vulkan, don't load in other apis
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
   GLFWwindow *glfw_window = glfwCreateWindow(800, 600, "GLFW Test Window", nullptr, nullptr);
+
+  glfwSetKeyCallback(glfw_window, keyboard_callback);
 
   // For reference on integrating ImGui with GLFW and Vulkan
   // https://github.com/ocornut/imgui/blob/master/examples/example_glfw_vulkan/main.cpp
