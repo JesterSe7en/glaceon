@@ -29,6 +29,10 @@ static void check_vk_result(VkResult err) {
 }
 
 void SetupVulkanWindow(ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface, int width, int height) {
+  if (wd == nullptr) {
+    GLACEON_LOG_ERROR("Failed to create Vulkan Window");
+    exit(-1);
+  }
   wd->Surface = surface;
 
   VkBool32 res;
@@ -207,7 +211,7 @@ void GLACEON_API runGame(Application *app) {
 
   int w, h;
   glfwGetFramebufferSize(glfw_window, &w, &h);
-  ImGui_ImplVulkanH_Window *imgui_window = nullptr;
+  ImGui_ImplVulkanH_Window *imgui_window = &g_MainWindowData;
 
   // TODO: Maybe return something indicating success or failure
   // init_info_renderPass = imgui_window->RenderPass; // This can be null
