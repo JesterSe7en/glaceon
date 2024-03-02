@@ -225,6 +225,7 @@ void GLACEON_API runGame(Application *app) {
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // Enable Docking
+  io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // Enable Multi-Viewport
 
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
@@ -295,6 +296,10 @@ void GLACEON_API runGame(Application *app) {
 
     // Rendering
     ImGui::Render();
+    // for multi-port support
+    ImGui::UpdatePlatformWindows();
+    ImGui::RenderPlatformWindowsDefault();
+
     ImDrawData *draw_data = ImGui::GetDrawData();
     const bool is_minimized = (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f);
     if (!is_minimized) {
