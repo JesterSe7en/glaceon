@@ -111,9 +111,7 @@ endif()
 #)
 
 
-# # ##############################################################################
 # Sub-projects
-# # ##############################################################################
 add_subdirectory(Glaceon)
 add_subdirectory(SandboxApp)
 
@@ -126,13 +124,11 @@ add_subdirectory(extern/glfw)
 set(SPDLOG_BUILD_SHARED OFF CACHE BOOL "" FORCE)
 add_subdirectory(extern/spdlog)
 
-add_subdirectory(extern/imgui)
 
-
-## Example usage:
-##  mkdir build
-##  cd build
-##  cmake -g "Visual Studio 14 2015" ..
+# # Example usage:
+# #  mkdir build
+# #  cd build
+# #  cmake -g "Visual Studio 14 2015" ..
 #
 #cmake_minimum_required(VERSION 2.8)
 #project(imgui_example_glfw_vulkan C CXX)
@@ -145,7 +141,7 @@ add_subdirectory(extern/imgui)
 #set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DVK_PROTOTYPES")
 #set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_PROTOTYPES")
 #
-## GLFW
+# # GLFW
 #set(GLFW_DIR ../../../glfw) # Set this to point to an up-to-date GLFW repo
 #option(GLFW_BUILD_EXAMPLES "Build the GLFW example programs" OFF)
 #option(GLFW_BUILD_TESTS "Build the GLFW test programs" OFF)
@@ -155,18 +151,18 @@ add_subdirectory(extern/imgui)
 #add_subdirectory(${GLFW_DIR} binary_dir EXCLUDE_FROM_ALL)
 #include_directories(${GLFW_DIR}/include)
 #
-## Dear ImGui
+# # Dear ImGui
 #set(IMGUI_DIR ../../)
 #include_directories(${IMGUI_DIR} ${IMGUI_DIR}/backends ..)
 #
-## Libraries
+# # Libraries
 #find_package(Vulkan REQUIRED)
-##find_library(VULKAN_LIBRARY
-##NAMES vulkan vulkan-1)
-##set(LIBRARIES "glfw;${VULKAN_LIBRARY}")
+# #find_library(VULKAN_LIBRARY
+# #NAMES vulkan vulkan-1)
+# #set(LIBRARIES "glfw;${VULKAN_LIBRARY}")
 #set(LIBRARIES "glfw;Vulkan::Vulkan")
 #
-## Use vulkan headers from glfw:
+# # Use vulkan headers from glfw:
 #include_directories(${GLFW_DIR}/deps)
 #
 #file(GLOB sources *.cpp)
