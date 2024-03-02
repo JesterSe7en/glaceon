@@ -14,6 +14,7 @@ set(Header_Files
         ${CMAKE_SOURCE_DIR}/extern/imgui/imstb_textedit.h
         ${CMAKE_SOURCE_DIR}/extern/imgui/imstb_truetype.h
         ${CMAKE_SOURCE_DIR}/extern/imgui/backends/imgui_impl_glfw.h
+        ${CMAKE_SOURCE_DIR}/extern/imgui/backends/imgui_impl_vulkan.h
         VulkanAPI.h
 
 )
@@ -30,6 +31,7 @@ set(Source_Files
         ${CMAKE_SOURCE_DIR}/extern/imgui/imgui_tables.cpp
         ${CMAKE_SOURCE_DIR}/extern/imgui/imgui_widgets.cpp
         ${CMAKE_SOURCE_DIR}/extern/imgui/backends/imgui_impl_glfw.cpp
+        ${CMAKE_SOURCE_DIR}/extern/imgui/backends/imgui_impl_vulkan.cpp
         VulkanAPI.cpp
 )
 source_group("Source Files" FILES ${Source_Files})
@@ -77,7 +79,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 
 # Compile and link options
 if (MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE
+  target_compile_options(${PROJECT_NAME} PRIVATE
             $<$<CONFIG:Release>:
             /Oi;
             /Gy
@@ -92,7 +94,7 @@ if (MSVC)
             ${DEFAULT_CXX_DEBUG_INFORMATION_FORMAT};
             ${DEFAULT_CXX_EXCEPTION_HANDLING}
     )
-    target_link_options(${PROJECT_NAME} PRIVATE
+  target_link_options(${PROJECT_NAME} PRIVATE
             $<$<CONFIG:Release>:
             /OPT:REF;
             /OPT:ICF
