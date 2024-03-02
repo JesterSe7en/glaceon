@@ -30,9 +30,9 @@ void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, in
 
 Application::Application() { Logger::InitLoggers(); }
 
-static void check_vk_result(VkResult err) {
+static void CheckVkResult(VkResult err) {
   if (err == 0) return;
-  GLACEON_LOG_ERROR("[vulkan] Error: VkResult = {}", string_VkResult(err));
+  GLACEON_LOG_ERROR("[Vulkan] Error: VkResult = {}", string_VkResult(err));
   if (err < 0) abort();
 }
 
@@ -91,25 +91,25 @@ static void FrameRender(ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data) {
     swapChainRebuild = true;
     return;
   }
-  check_vk_result(err);
+  CheckVkResult(err);
 
   ImGui_ImplVulkanH_Frame *fd = &wd->Frames[wd->FrameIndex];
   {
     err = vkWaitForFences(device, 1, &fd->Fence, VK_TRUE,
                           UINT64_MAX);  // wait indefinitely instead of periodically checking
-    check_vk_result(err);
+    CheckVkResult(err);
 
     err = vkResetFences(device, 1, &fd->Fence);
-    check_vk_result(err);
+    CheckVkResult(err);
   }
   {
     err = vkResetCommandPool(device, fd->CommandPool, 0);
-    check_vk_result(err);
+    CheckVkResult(err);
     VkCommandBufferBeginInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     info.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     err = vkBeginCommandBuffer(fd->CommandBuffer, &info);
-    check_vk_result(err);
+    CheckVkResult(err);
   }
   {
     VkRenderPassBeginInfo info = {};
@@ -141,9 +141,9 @@ static void FrameRender(ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data) {
     info.pSignalSemaphores = &render_complete_semaphore;
 
     err = vkEndCommandBuffer(fd->CommandBuffer);
-    check_vk_result(err);
+    CheckVkResult(err);
     err = vkQueueSubmit(VulkanAPI::getVulkanQueue(), 1, &info, fd->Fence);
-    check_vk_result(err);
+    CheckVkResult(err);
   }
 }
 
@@ -162,7 +162,7 @@ static void FramePresent(ImGui_ImplVulkanH_Window *wd) {
     swapChainRebuild = true;
     return;
   }
-  check_vk_result(err);
+  CheckVkResult(err);
   wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->SemaphoreCount;  // Now we can use the next set of semaphores
 }
 
@@ -268,7 +268,7 @@ void GLACEON_API runGame(Application *app) {
   init_info.ImageCount = imgui_window->ImageCount;
   init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
   init_info.Allocator = nullptr;
-  init_info.CheckVkResultFn = check_vk_result;
+  init_info.CheckVkResultFn = CheckVkResult;
   ImGui_ImplVulkan_Init(&init_info);
 
   app->onStart();
