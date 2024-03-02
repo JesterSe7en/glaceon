@@ -11,6 +11,8 @@ class GLACEON_API Application {
   virtual void onStart() = 0;
   virtual void onUpdate() = 0;
   virtual void onShutdown() = 0;
+
+ private:
 };
 
 void GLACEON_API runGame(Application *app);
