@@ -115,9 +115,9 @@ void GLACEON_API runGame(Application *app) {
 
   int w, h;
   glfwGetFramebufferSize(glfw_window, &w, &h);
-  ImGui_ImplVulkanH_Window *wd = nullptr;
+  ImGui_ImplVulkanH_Window *imgui_window = nullptr;
 
-  SetupVulkanWindow(wd, surface, w, h);
+  SetupVulkanWindow(imgui_window, surface, w, h);
 
   // Setup Dear ImGui context
   IMGUI_CHECKVERSION();
@@ -129,22 +129,28 @@ void GLACEON_API runGame(Application *app) {
 
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
-  // ImGui::StyleColorsLight();
+
+  auto physicalDevice = VulkanAPI::getVulkanPhysicalDevice();
+  auto device = VulkanAPI::getVulkanDevice();
+  auto queueFamily = VulkanAPI::getVulkanGraphicsQueueFamilyIndex();
+  auto queue = VulkanAPI::getVulkanQueue();
+  auto pipelineCache = VulkanAPI::getVulkanPipelineCache();
+  auto descriptorPool = VulkanAPI::getVulkanDescriptorPool();
 
   // Setup Platform/Renderer backends
   ImGui_ImplGlfw_InitForVulkan(glfw_window, true);
   ImGui_ImplVulkan_InitInfo init_info = {};
-  init_info.Instance = VulkanAPI::getVulkanInstance();
-  init_info.PhysicalDevice = VulkanAPI::getVulkanPhysicalDevice();
-  init_info.Device = VulkanAPI::getVulkanDevice();
-  init_info.QueueFamily = VulkanAPI::getVulkanGraphicsQueueFamilyIndex();
-  init_info.Queue = VulkanAPI::getVulkanQueue();
-  init_info.PipelineCache = VulkanAPI::getVulkanPipelineCache();
-  init_info.DescriptorPool = VulkanAPI::getVulkanDescriptorPool();
-  init_info.RenderPass = wd->RenderPass;
+  init_info.Instance = instance;
+  init_info.PhysicalDevice = physicalDevice;
+  init_info.Device = device;
+  init_info.QueueFamily = queueFamily;
+  init_info.Queue = queue;
+  init_info.PipelineCache = pipelineCache;
+  init_info.DescriptorPool = descriptorPool;
+  init_info.RenderPass = imgui_window->RenderPass;
   init_info.Subpass = 0;
   init_info.MinImageCount = 2;
-  init_info.ImageCount = wd->ImageCount;
+  init_info.ImageCount = imgui_window->ImageCount;
   init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
   init_info.Allocator = nullptr;
   init_info.CheckVkResultFn = check_vk_result;
@@ -156,25 +162,32 @@ void GLACEON_API runGame(Application *app) {
 
   // TODO: Setup Imgui context
 
-  glfwShowWindow(glfw_window);
-
-  uint32_t property_count;
-  vkEnumerateInstanceExtensionProperties(nullptr, &property_count, nullptr);
-
-  GLACEON_LOG_TRACE("Extension count: {}", property_count);
-
-  if (!glfw_window) {
-    GLACEON_LOG_TRACE("GLFW window creation failed");
-    return;
-  } else {
-    GLACEON_LOG_TRACE("GLFW window created successfully");
-  }
-
   app->onStart();
 
   while (!glfwWindowShouldClose(glfw_window)) {
     glfwPollEvents();
     app->onUpdate();
+
+    // Resize swap chain?
+    if (g_SwapChainRebuild) {
+      int width, height;
+      glfwGetFramebufferSize(glfw_window, &width, &height);
+      if (width > 0 && height > 0) {
+        ImGui_ImplVulkan_SetMinImageCount(2);
+        ImGui_ImplVulkanH_CreateOrResizeWindow(instance, physicalDevice, device, imgui_window, queueFamily, nullptr, w,
+                                               h, 2);
+        g_MainWindowData.FrameIndex = 0;
+        g_SwapChainRebuild = false;
+      }
+    }
+
+    // Start the Dear ImGui frame
+    ImGui_ImplVulkan_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    bool showDemo = true;
+    ImGui::ShowDemoWindow(&showDemo);
   }
 
   glfwDestroyWindow(glfw_window);
