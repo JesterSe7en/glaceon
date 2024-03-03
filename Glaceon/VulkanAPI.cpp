@@ -28,6 +28,15 @@ static bool IsExtensionAvailable(const std::vector<VkExtensionProperties> &exten
   return false;
 }
 
+static bool IsLayerAvailable(const std::vector<VkLayerProperties> &layers, const char *layer) {
+  for (const auto &l : layers) {
+    if (strcmp(l.layerName, layer) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+
 static void debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                           VkDebugUtilsMessageTypeFlagsEXT messageType,
                           const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
@@ -89,10 +98,20 @@ void VulkanAPI::initVulkan(std::vector<const char *> instance_extensions) {
   {
     VkInstanceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-    // FIXME: Add this only for debug builds
-    //    const char *validation_layers[] = {"VK_LAYER_KHRONOS_profiles",
-    //    "VK_LAYER_KHRONOS_validation"}; createInfo.enabledLayerCount = 2;
-    //    createInfo.ppEnabledLayerNames = validation_layers;
+
+    uint32_t layerCount;
+    std::vector<VkLayerProperties> layerProperties;
+    vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+    layerProperties.resize(layerCount);
+    vkEnumerateInstanceLayerProperties(&layerCount, layerProperties.data());
+
+    if (IsLayerAvailable(layerProperties, "VK_LAYER_KHRONOS_validation")) {
+      const char *validationLayers[] = {"VK_LAYER_KHRONOS_validation"};
+      createInfo.enabledLayerCount = 1;
+      createInfo.ppEnabledLayerNames = validationLayers;
+    } else {
+      GLACEON_LOG_ERROR("VK_LAYER_KHRONOS_validation layer not available");
+    }
 
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = {};
     debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -142,11 +161,12 @@ void VulkanAPI::initVulkan(std::vector<const char *> instance_extensions) {
 
   vkPhysicalDevice = GetPhysicalDevice();
   PrintPhysicalDevice(vkPhysicalDevice);
+
   vkGraphicsQueueFamilyIndex = (uint32_t)-1;
   {
     uint32_t count;
     vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, &count, nullptr);
-    VkQueueFamilyProperties *queues = (VkQueueFamilyProperties *)malloc(sizeof(VkQueueFamilyProperties) * count);
+    auto *queues = (VkQueueFamilyProperties *)malloc(sizeof(VkQueueFamilyProperties) * count);
     vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, &count, queues);
     for (uint32_t i = 0; i < count; i++)
       if (queues[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
