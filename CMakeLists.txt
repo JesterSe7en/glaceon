@@ -123,3 +123,6 @@ add_subdirectory(extern/glfw)
 
 set(SPDLOG_BUILD_SHARED OFF CACHE BOOL "" FORCE)
 add_subdirectory(extern/spdlog)
+
+set(all_targets Glaceon SandboxApp)
+add_custom_target(All DEPENDS ${all_targets})
