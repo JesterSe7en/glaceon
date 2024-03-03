@@ -40,12 +40,12 @@ static bool IsLayerAvailable(const std::vector<VkLayerProperties> &layers, const
 static void debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                           VkDebugUtilsMessageTypeFlagsEXT messageType,
                           const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
-  GLACEON_LOG_ERROR("Validation layer: {}", pCallbackData->pMessage);
+  GERROR("Validation layer: {}", pCallbackData->pMessage);
 }
 
 static VkPhysicalDevice GetPhysicalDevice() {
   if (VulkanAPI::getVulkanInstance() == VK_NULL_HANDLE) {
-    GLACEON_LOG_ERROR("Vulkan instance not initialized; cannot get physical device");
+    GERROR("Vulkan instance not initialized; cannot get physical device");
     return VK_NULL_HANDLE;
   }
 
@@ -54,7 +54,7 @@ static VkPhysicalDevice GetPhysicalDevice() {
   int res = vkEnumeratePhysicalDevices(VulkanAPI::getVulkanInstance(), &gpu_count, nullptr);
 
   if (res != VK_SUCCESS) {
-    GLACEON_LOG_ERROR("Failed to poll number of physical devices");
+    GERROR("Failed to poll number of physical devices");
     assert(gpu_count > 0);
     return VK_NULL_HANDLE;
   }
@@ -62,7 +62,7 @@ static VkPhysicalDevice GetPhysicalDevice() {
   gpus.resize(gpu_count);
   res = vkEnumeratePhysicalDevices(VulkanAPI::getVulkanInstance(), &gpu_count, gpus.data());
   if (res != VK_SUCCESS) {
-    GLACEON_LOG_ERROR("Failed to enumerate physical devices info");
+    GERROR("Failed to enumerate physical devices info");
     return VK_NULL_HANDLE;
   }
 
@@ -78,19 +78,19 @@ static VkPhysicalDevice GetPhysicalDevice() {
 
 static void PrintPhysicalDevice(VkPhysicalDevice gpu) {
   if (gpu == VK_NULL_HANDLE) {
-    GLACEON_LOG_ERROR("Cannot print physical device info: invalid handle");
+    GERROR("Cannot print physical device info: invalid handle");
     return;
   }
 
   VkPhysicalDeviceProperties properties;
   vkGetPhysicalDeviceProperties(gpu, &properties);
 
-  GLACEON_LOG_INFO("Physical device name: {}", properties.deviceName);
-  GLACEON_LOG_INFO("API version: {}.{}.{}", VK_VERSION_MAJOR(properties.apiVersion),
-                   VK_VERSION_MINOR(properties.apiVersion), VK_VERSION_PATCH(properties.apiVersion));
-  GLACEON_LOG_INFO("Driver version: {}", properties.driverVersion);
-  GLACEON_LOG_INFO("Vendor ID: {}", properties.vendorID);
-  GLACEON_LOG_INFO("Device ID: {}", properties.deviceID);
+  GINFO("Physical device name: {}", properties.deviceName);
+  GINFO("API version: {}.{}.{}", VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion),
+        VK_VERSION_PATCH(properties.apiVersion));
+  GINFO("Driver version: {}", properties.driverVersion);
+  GINFO("Vendor ID: {}", properties.vendorID);
+  GINFO("Device ID: {}", properties.deviceID);
 }
 
 // -------- Vulkan API Class --------
@@ -110,7 +110,7 @@ void VulkanAPI::initVulkan(std::vector<const char *> instance_extensions) {
       createInfo.enabledLayerCount = 1;
       createInfo.ppEnabledLayerNames = validationLayers;
     } else {
-      GLACEON_LOG_ERROR("VK_LAYER_KHRONOS_validation layer not available");
+      GERROR("VK_LAYER_KHRONOS_validation layer not available");
     }
 
     VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = {};
@@ -131,12 +131,12 @@ void VulkanAPI::initVulkan(std::vector<const char *> instance_extensions) {
     VkResult res = vkEnumerateInstanceExtensionProperties(nullptr, &properties_count, properties.data());
 
     if (res != VK_SUCCESS) {
-      GLACEON_LOG_ERROR("Failed to enumerate instance extensions");
+      GERROR("Failed to enumerate instance extensions");
       return;
     }
 
     if (!IsExtensionAvailable(properties, VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME)) {
-      GLACEON_LOG_ERROR("Failed to find KHR_get_physical_device_properties_2 extension");
+      GERROR("Failed to find KHR_get_physical_device_properties_2 extension");
       return;
     } else {
       instance_extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
@@ -157,10 +157,10 @@ void VulkanAPI::initVulkan(std::vector<const char *> instance_extensions) {
     //    res = vkCreateInstance(&createInfo, nullptr, p_vkInstance.get());
     res = vkCreateInstance(&createInfo, nullptr, &vkInstance);
     if (res != VK_SUCCESS) {
-      GLACEON_LOG_ERROR("Failed to create Vulkan instance");
+      GERROR("Failed to create Vulkan instance");
       return;
     } else {
-      GLACEON_LOG_INFO("Vulkan instance created successfully");
+      GINFO("Vulkan instance created successfully");
     }
   }
 
@@ -207,10 +207,10 @@ void VulkanAPI::initVulkan(std::vector<const char *> instance_extensions) {
     createInfo.ppEnabledExtensionNames = device_extensions.data();
     int res = vkCreateDevice(vkPhysicalDevice, &createInfo, nullptr, &vkDevice);
     if (res != VK_SUCCESS) {
-      GLACEON_LOG_ERROR("Failed to create Vulkan device");
+      GERROR("Failed to create Vulkan device");
       return;
     } else {
-      GLACEON_LOG_INFO("Vulkan device created successfully");
+      GINFO("Vulkan device created successfully");
     }
     vkGetDeviceQueue(vkDevice, vkGraphicsQueueFamilyIndex, 0, &vkQueue);
   }
@@ -227,9 +227,9 @@ void VulkanAPI::initVulkan(std::vector<const char *> instance_extensions) {
     pool_info.pPoolSizes = pool_sizes;
     int res = vkCreateDescriptorPool(vkDevice, &pool_info, nullptr, &vkDescriptorPool);
     if (res != VK_SUCCESS) {
-      GLACEON_LOG_ERROR("Failed to create descriptor pool");
+      GERROR("Failed to create descriptor pool");
     } else {
-      GLACEON_LOG_INFO("Descriptor pool created successfully");
+      GINFO("Descriptor pool created successfully");
     }
   }
 }

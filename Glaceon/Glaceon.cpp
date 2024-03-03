@@ -19,11 +19,11 @@ namespace Glaceon {
 static bool swapChainRebuild = false;
 static ImGui_ImplVulkanH_Window g_MainWindowData;
 
-void error_callback(int error, const char *description) { GLACEON_LOG_ERROR("GLFW Error: {}", description); }
+void error_callback(int error, const char *description) { GERROR("GLFW Error: {}", description); }
 
 void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-    GLACEON_LOG_INFO("Escape key pressed, closing window...");
+    GINFO("Escape key pressed, closing window...");
     glfwSetWindowShouldClose(window, GLFW_TRUE);
   }
 }
@@ -32,13 +32,13 @@ Application::Application() { Logger::InitLoggers(); }
 
 static void CheckVkResult(VkResult err) {
   if (err == 0) return;
-  GLACEON_LOG_ERROR("[Vulkan] Error: VkResult = {}", string_VkResult(err));
+  GERROR("[Vulkan] Error: VkResult = {}", string_VkResult(err));
   if (err < 0) abort();
 }
 
 void SetupVulkanWindow(ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface, int width, int height) {
   if (wd == nullptr) {
-    GLACEON_LOG_ERROR("Failed to create Vulkan Window");
+    GERROR("Failed to create Vulkan Window");
     exit(-1);
   }
   wd->Surface = surface;
@@ -47,7 +47,7 @@ void SetupVulkanWindow(ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface, int w
   vkGetPhysicalDeviceSurfaceSupportKHR(VulkanAPI::getVulkanPhysicalDevice(),
                                        VulkanAPI::getVulkanGraphicsQueueFamilyIndex(), wd->Surface, &res);
   if (res != VK_TRUE) {
-    GLACEON_LOG_ERROR("Error no WSI support on physical device 0");
+    GERROR("Error no WSI support on physical device 0");
     exit(-1);
   }
 
@@ -59,7 +59,7 @@ void SetupVulkanWindow(ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface, int w
       VulkanAPI::getVulkanPhysicalDevice(), wd->Surface, requestSurfaceImageFormat,
       (size_t)IM_ARRAYSIZE(requestSurfaceImageFormat), requestSurfaceColorSpace);
 
-  GLACEON_LOG_INFO("SurfaceFormat = {}", string_VkFormat(wd->SurfaceFormat.format));
+  GINFO("SurfaceFormat = {}", string_VkFormat(wd->SurfaceFormat.format));
 
   // uncapped fps - if uncapped present modes are not supported, default to vsync
   // present_modes[] is a priority list with idx 0 being the highest
@@ -69,7 +69,7 @@ void SetupVulkanWindow(ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface, int w
   wd->PresentMode = ImGui_ImplVulkanH_SelectPresentMode(VulkanAPI::getVulkanPhysicalDevice(), wd->Surface,
                                                         &present_modes[0], IM_ARRAYSIZE(present_modes));
 
-  GLACEON_LOG_INFO("PresentMode = {}", string_VkPresentModeKHR(wd->PresentMode));
+  GINFO("PresentMode = {}", string_VkPresentModeKHR(wd->PresentMode));
 
   // Create SwapChain, RenderPass, Framebuffer, etc.
   /* IM_ASSERT(g_MinImageCount >= 2); */
@@ -170,20 +170,20 @@ static void FramePresent(ImGui_ImplVulkanH_Window *wd) {
 
 void GLACEON_API runGame(Application *app) {
   if (!app) {
-    GLACEON_LOG_TRACE("Application is null");
+    GTRACE("Application is null");
     return;
   }
 
   if (!glfwInit()) {
-    GLACEON_LOG_TRACE("GLFW initialization failed");
+    GTRACE("GLFW initialization failed");
     return;
   }
 
   bool vulkanSupported = glfwVulkanSupported();
   if (vulkanSupported) {
-    GLACEON_LOG_TRACE("Vulkan supported");
+    GTRACE("Vulkan supported");
   } else {
-    GLACEON_LOG_TRACE("Vulkan not supported");
+    GTRACE("Vulkan not supported");
     exit(-1);
   }
 
@@ -203,7 +203,7 @@ void GLACEON_API runGame(Application *app) {
   uint32_t glfw_extension_count = 0;
   const char **glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
   if (!glfw_extensions) {
-    GLACEON_LOG_TRACE("GLFW extension check failed");
+    GTRACE("GLFW extension check failed");
     return;
   }
   for (uint32_t i = 0; i < glfw_extension_count; i++) {
@@ -215,13 +215,13 @@ void GLACEON_API runGame(Application *app) {
   VkSurfaceKHR surface;
   VkInstance instance = VulkanAPI::getVulkanInstance();
   if (instance == VK_NULL_HANDLE) {
-    GLACEON_LOG_ERROR("Failed to create Vulkan instance");
+    GERROR("Failed to create Vulkan instance");
     return;
   }
 
   VkResult res = glfwCreateWindowSurface(VulkanAPI::getVulkanInstance(), glfw_window, nullptr, &surface);
   if (res != VK_SUCCESS) {
-    GLACEON_LOG_ERROR("Failed to create window surface");
+    GERROR("Failed to create window surface");
   }
 
   int w, h;
@@ -330,7 +330,7 @@ void GLACEON_API runGame(Application *app) {
   res = vkDeviceWaitIdle(VulkanAPI::getVulkanDevice());
 
   if (res != VK_SUCCESS) {
-    GLACEON_LOG_ERROR("Failed to wait for device");
+    GERROR("Failed to wait for device");
     exit(-1);
   }
 
