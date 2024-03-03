@@ -38,10 +38,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 # Include directories
 ################################################################################
 target_include_directories(${PROJECT_NAME} PUBLIC
-    "$<$<CONFIG:Debug>:"
-        "${CMAKE_CURRENT_SOURCE_DIR}/../Glaceon"
-    ">"
-)
+        "${CMAKE_CURRENT_SOURCE_DIR}/../Glaceon")
 
 ################################################################################
 # Compile definitions
@@ -106,15 +103,10 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 )
 
 set(ADDITIONAL_LIBRARY_DEPENDENCIES
-    "$<$<CONFIG:Debug>:"
         "Glaceon"
-    ">"
 )
 target_link_libraries(${PROJECT_NAME} PRIVATE "${ADDITIONAL_LIBRARY_DEPENDENCIES}")
 
 target_link_directories(${PROJECT_NAME} PRIVATE
-    "$<$<CONFIG:Debug>:"
-        "${CMAKE_SOURCE_DIR}//${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/"
-    ">"
-)
+        "${CMAKE_SOURCE_DIR}//${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}/")
 
