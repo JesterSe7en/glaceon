@@ -147,6 +147,11 @@ void VulkanAPI::initVulkan(std::vector<const char *> instance_extensions) {
       createInfo.flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
     }
 
+    //  due to inclusion of debug utils, we need to add it here
+    if (IsExtensionAvailable(properties, VK_EXT_DEBUG_UTILS_EXTENSION_NAME)) {
+      instance_extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    }
+
     createInfo.enabledExtensionCount = static_cast<uint32_t>(instance_extensions.size());
     createInfo.ppEnabledExtensionNames = instance_extensions.data();
     //    res = vkCreateInstance(&createInfo, nullptr, p_vkInstance.get());
