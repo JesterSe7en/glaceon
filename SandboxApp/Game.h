@@ -9,6 +9,9 @@ class SandBoxApplication : public Glaceon::Application {
   void onStart() override;
   void onUpdate() override;
   void onShutdown() override;
+
+ private:
+  Glaceon::ApplicationInfo app_info = {.name = "Sandbox"};
 };
 
 #endif  // GLACEON_SANDBOXAPP_GAME_H_

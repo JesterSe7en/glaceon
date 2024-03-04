@@ -6,6 +6,7 @@
 #include <cstdint>
 
 #include "Logger.h"
+#include "Glaceon.h"
 
 namespace Glaceon {
 
@@ -16,6 +17,7 @@ VkQueue VulkanAPI::vkQueue = VK_NULL_HANDLE;
 VkDescriptorPool VulkanAPI::vkDescriptorPool = VK_NULL_HANDLE;
 VkPipelineCache VulkanAPI::vkPipelineCache = VK_NULL_HANDLE;
 uint32_t VulkanAPI::vkGraphicsQueueFamilyIndex = (uint32_t)-1;
+VkApplicationInfo VulkanAPI::vkAppInfo = {};
 // std::shared_ptr<VkInstance> VulkanAPI::p_vkInstance = VK_NULL_HANDLE;
 
 // -------- Vulkan API Helper Functions --------
@@ -96,6 +98,15 @@ static VkPhysicalDevice GetPhysicalDevice() {
   return VK_NULL_HANDLE;
 }
 
+static void PrintApplicationInfo(VkApplicationInfo *app_info) {
+  GINFO("Application name: {}", app_info->pApplicationName);
+  GINFO("Application version: {}", app_info->applicationVersion);
+  GINFO("Engine name: {}", app_info->pEngineName);
+  GINFO("Engine version: {}", app_info->engineVersion);
+  GINFO("API version: {}.{}.{}", VK_VERSION_MAJOR(VK_API_VERSION_1_3), VK_VERSION_MINOR(VK_API_VERSION_1_3),
+        VK_VERSION_PATCH(VK_API_VERSION_1_3));
+}
+
 static void PrintPhysicalDevice(VkPhysicalDevice gpu) {
   if (gpu == VK_NULL_HANDLE) {
     GERROR("Cannot print physical device info: invalid handle");
@@ -113,11 +124,26 @@ static void PrintPhysicalDevice(VkPhysicalDevice gpu) {
   GINFO("Device ID: {}", properties.deviceID);
 }
 
+void VulkanAPI::defineVulkanApp(ApplicationInfo *app_info) {
+  vkAppInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+  vkAppInfo.pApplicationName = app_info->name.c_str();
+  vkAppInfo.applicationVersion = VK_MAKE_VERSION(0, 1, 0);
+  vkAppInfo.pEngineName = "GlaceonEngine";
+  vkAppInfo.engineVersion = VK_MAKE_VERSION(0, 1, 0);
+  vkAppInfo.apiVersion = VK_API_VERSION_1_3;
+  vkAppInfo.pNext = nullptr;
+}
+
 // -------- Vulkan API Class --------
 void VulkanAPI::initVulkan(std::vector<const char *> instance_extensions) {
   {
     VkInstanceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+    createInfo.pApplicationInfo = &vkAppInfo;
+
+    // print out appllicaiton infomation
+    // FIXME: not working, check pointers
+    // PrintApplicationInfo(&vkAppInfo);
 
 #if _DEBUG
     uint32_t layerCount;

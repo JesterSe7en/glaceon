@@ -28,7 +28,10 @@ void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, in
   }
 }
 
-Application::Application() { Logger::InitLoggers(); }
+Application::Application(ApplicationInfo *info) {
+  VulkanAPI::defineVulkanApp(info);
+  Logger::InitLoggers();
+}
 
 static void CheckVkResult(VkResult err) {
   if (err == 0) return;
@@ -279,8 +282,8 @@ void GLACEON_API runGame(Application *app) {
     glfwPollEvents();
     app->onUpdate();
 
-    // Resize swap chain?
     if (swapChainRebuild) {
+      GINFO("Rebuilding swapchain");
       int width, height;
       glfwGetFramebufferSize(glfw_window, &width, &height);
       if (width > 0 && height > 0) {

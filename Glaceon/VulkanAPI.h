@@ -7,11 +7,14 @@
 #include <memory>
 #include <vector>
 
+#include "Glaceon.h"
+
 namespace Glaceon {
 
 class VulkanAPI {
  public:
-  static void initVulkan(std::vector<const char *> instance_extensions);
+  static void defineVulkanApp(ApplicationInfo* app_info);
+  static void initVulkan(std::vector<const char*> instance_extensions);
   static VkInstance getVulkanInstance() { return vkInstance; }
   static VkPhysicalDevice getVulkanPhysicalDevice() { return vkPhysicalDevice; }
   static VkDevice getVulkanDevice() { return vkDevice; }
@@ -21,6 +24,7 @@ class VulkanAPI {
   static VkDescriptorPool getVulkanDescriptorPool() { return vkDescriptorPool; }
 
  private:
+  static VkApplicationInfo vkAppInfo;
   static VkInstance vkInstance;
   static VkPhysicalDevice vkPhysicalDevice;
   static uint32_t vkGraphicsQueueFamilyIndex;

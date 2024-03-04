@@ -4,7 +4,8 @@ int main() {
   SandBoxApplication app;
   Glaceon::runGame(&app);
 }
-SandBoxApplication::SandBoxApplication() = default;
+SandBoxApplication::SandBoxApplication() : Glaceon::Application(&app_info) {}
+
 void SandBoxApplication::onStart() {}
 void SandBoxApplication::onUpdate() {}
 void SandBoxApplication::onShutdown() {}

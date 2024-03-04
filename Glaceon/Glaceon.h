@@ -2,12 +2,17 @@
 #define GLACEON_GLACEON_GLACEON_H_
 
 #include "Base.h"
+#include <string>
 
 namespace Glaceon {
 
+struct GLACEON_API ApplicationInfo {
+  std::string name;
+};
+
 class GLACEON_API Application {
  public:
-  Application();
+  Application(ApplicationInfo *info);
   virtual void onStart() = 0;
   virtual void onUpdate() = 0;
   virtual void onShutdown() = 0;
