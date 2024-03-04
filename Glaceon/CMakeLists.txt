@@ -113,7 +113,6 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "
             -march=native
             >
             $<$<CONFIG:Debug>:
-            -Og;
             -g;
             -Wall;
             -Wextra;

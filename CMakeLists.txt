@@ -5,6 +5,10 @@ set(CMAKE_SYSTEM_VERSION 10.0 CACHE STRING "" FORCE)
 include(ExternalProject)
 project(Glaceon CXX)
 
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 # Set target arch type if empty. Visual studio solution generator provides it.
 if(NOT CMAKE_VS_PLATFORM_NAME)
   set(CMAKE_VS_PLATFORM_NAME "x64")
