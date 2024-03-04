@@ -37,10 +37,30 @@ static bool IsLayerAvailable(const std::vector<VkLayerProperties> &layers, const
   return false;
 }
 
-static void debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                          VkDebugUtilsMessageTypeFlagsEXT messageType,
-                          const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData, void *pUserData) {
-  GERROR("Validation layer: {}", pCallbackData->pMessage);
+static VkBool32 debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+                              [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT messageType,
+                              const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
+                              [[maybe_unused]] void *pUserData) {
+  switch (messageSeverity) {
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+      GTRACE("Validation layer: {}", pCallbackData->pMessage);
+      break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+      GINFO("Validation layer: {}", pCallbackData->pMessage);
+      break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+      GWARN("Validation layer: {}", pCallbackData->pMessage);
+      break;
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
+      GERROR("Validation layer: {}", pCallbackData->pMessage);
+      break;
+    default:
+      GERROR("Validation layer: {}", pCallbackData->pMessage);
+      break;
+  }
+
+  // per spec, needs to return VK_FALSE
+  return VK_FALSE;
 }
 
 static VkPhysicalDevice GetPhysicalDevice() {

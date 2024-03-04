@@ -19,7 +19,7 @@ namespace Glaceon {
 static bool swapChainRebuild = false;
 static ImGui_ImplVulkanH_Window g_MainWindowData;
 
-void error_callback(int error, const char *description) { GERROR("GLFW Error: {}", description); }
+void error_callback(int error, const char *description) { GERROR("GLFW Error: Code: {} - {}", error, description); }
 
 void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
