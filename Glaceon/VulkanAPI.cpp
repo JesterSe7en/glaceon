@@ -99,6 +99,7 @@ void VulkanAPI::initVulkan(std::vector<const char *> instance_extensions) {
     VkInstanceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
 
+#if _DEBUG
     uint32_t layerCount;
     std::vector<VkLayerProperties> layerProperties;
     vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
@@ -123,6 +124,10 @@ void VulkanAPI::initVulkan(std::vector<const char *> instance_extensions) {
     debugCreateInfo.pfnUserCallback = reinterpret_cast<PFN_vkDebugUtilsMessengerCallbackEXT>(debugCallback);
     debugCreateInfo.pUserData = nullptr;
     createInfo.pNext = &debugCreateInfo;
+#else
+    createInfo.enabledLayerCount = 0;
+    createInfo.ppEnabledLayerNames = nullptr;
+#endif
 
     uint32_t properties_count;
     std::vector<VkExtensionProperties> properties;
