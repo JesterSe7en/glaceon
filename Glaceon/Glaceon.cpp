@@ -177,9 +177,6 @@ void GLACEON_API runGame(Application *app) {
     return;
   }
 
-  //  app->GetVulkanContext().GetVulkanBackend().Initialize();
-  //  app->GetVulkanContext().GetVulkanDevice().Initialize();
-
   if (!glfwInit()) {
     GTRACE("GLFW initialization failed");
     return;
@@ -213,8 +210,11 @@ void GLACEON_API runGame(Application *app) {
     return;
   }
   for (uint32_t i = 0; i < glfw_extension_count; i++) {
-    extensions.push_back(glfw_extensions[i]);
+    app->GetVulkanContext().AddInstanceExtension(glfw_extensions[i]);
   }
+
+  /* app->GetVulkanContext().GetVulkanBackend().Initialize(); */
+  //  app->GetVulkanContext().GetVulkanDevice().Initialize();
 
   VulkanAPI::initVulkan(extensions);
 

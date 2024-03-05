@@ -1,5 +1,7 @@
 #include "VulkanBackend.h"
 
+#include <vulkan/vulkan_core.h>
+
 #include "../Logger.h"
 #include "VulkanContext.h"
 
@@ -57,6 +59,9 @@ void VulkanBackend::Initialize() {
   instanceCreateInfo.enabledLayerCount = 0;
   instanceCreateInfo.ppEnabledLayerNames = nullptr;
 #endif
+
+  context.AddInstanceExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+  context.AddInstanceExtension(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
 
   PopulateInstanceExtensions();
 
