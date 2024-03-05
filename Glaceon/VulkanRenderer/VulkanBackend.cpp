@@ -13,16 +13,6 @@ void VulkanBackend::Initialize() {
   GINFO("Initializing Vulkan backend...");
 
   VkInstanceCreateInfo instanceCreateInfo = {};
-  //  typedef struct VkInstanceCreateInfo {
-  //    VkStructureType             sType;
-  //    const void*                 pNext;
-  //    VkInstanceCreateFlags       flags;
-  //    const VkApplicationInfo*    pApplicationInfo;
-  //    uint32_t                    enabledLayerCount;
-  //    const char* const*          ppEnabledLayerNames;
-  //    uint32_t                    enabledExtensionCount;
-  //    const char* const*          ppEnabledExtensionNames;
-  //  } VkInstanceCreateInfo;
   instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
   instanceCreateInfo.pNext = nullptr;
   instanceCreateInfo.flags = 0;
