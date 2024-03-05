@@ -12,7 +12,7 @@ class VulkanContext {
  public:
   VulkanContext();
   ~VulkanContext() = default;
-  
+
   void AddInstanceExtension(const char* extension);
   void RemoveInstanceExtension(const char* extension);
 
@@ -24,7 +24,6 @@ class VulkanContext {
   std::vector<const char*> GetInstanceExtensions() const { return instanceExtensions; }
 
  private:
-  VkApplicationInfo applicationInfo;
   VkInstance instance = VK_NULL_HANDLE;
   VulkanBackend backend;
   VulkanDevice device;

@@ -34,8 +34,9 @@ void VulkanBackend::Initialize() {
   layerProperties.resize(layerCount);
   vkEnumerateInstanceLayerProperties(&layerCount, layerProperties.data());
 
+  const char *validationLayers[] = {"VK_LAYER_KHRONOS_validation"};
+
   if (IsLayerAvailable(layerProperties, "VK_LAYER_KHRONOS_validation")) {
-    const char *validationLayers[] = {"VK_LAYER_KHRONOS_validation"};
     instanceCreateInfo.enabledLayerCount = 1;
     instanceCreateInfo.ppEnabledLayerNames = validationLayers;
   } else {
@@ -65,8 +66,9 @@ void VulkanBackend::Initialize() {
 
   PopulateInstanceExtensions();
 
-  instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(context.GetInstanceExtensions().size());
-  instanceCreateInfo.ppEnabledExtensionNames = context.GetInstanceExtensions().data();
+  auto instanceExtensions = context.GetInstanceExtensions();
+  instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(instanceExtensions.size());
+  instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
   VkInstance vkInstance = VK_NULL_HANDLE;
   VkResult res = vkCreateInstance(&instanceCreateInfo, nullptr, &vkInstance);
   if (res != VK_SUCCESS) {

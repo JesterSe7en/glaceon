@@ -213,8 +213,9 @@ void GLACEON_API runGame(Application *app) {
     app->GetVulkanContext().AddInstanceExtension(glfw_extensions[i]);
   }
 
-  /* app->GetVulkanContext().GetVulkanBackend().Initialize(); */
+  app->GetVulkanContext().GetVulkanBackend().Initialize();
   //  app->GetVulkanContext().GetVulkanDevice().Initialize();
+  VkInstance in = app->GetVulkanContext().GetVulkanInstance();
 
   VulkanAPI::initVulkan(extensions);
 
