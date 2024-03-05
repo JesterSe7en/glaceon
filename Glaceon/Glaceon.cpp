@@ -28,11 +28,6 @@ void keyboard_callback(GLFWwindow *window, int key, int scancode, int action, in
   }
 }
 
-Application::Application(ApplicationInfo *info) {
-  VulkanAPI::defineVulkanApp(info);
-  Logger::InitLoggers();
-}
-
 static void CheckVkResult(VkResult err) {
   if (err == 0) return;
   GERROR("[Vulkan] Error: VkResult = {}", string_VkResult(err));
@@ -171,11 +166,19 @@ static void FramePresent(ImGui_ImplVulkanH_Window *wd) {
 
 // ----------------- Application Class Functions ----------------------
 
+Application::Application(ApplicationInfo *info) {
+  VulkanAPI::defineVulkanApp(info);
+  Logger::InitLoggers();
+}
+
 void GLACEON_API runGame(Application *app) {
   if (!app) {
     GTRACE("Application is null");
     return;
   }
+
+  //  app->GetVulkanContext().GetVulkanBackend().Initialize();
+  //  app->GetVulkanContext().GetVulkanDevice().Initialize();
 
   if (!glfwInit()) {
     GTRACE("GLFW initialization failed");

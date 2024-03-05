@@ -1,8 +1,10 @@
 #ifndef GLACEON_GLACEON_GLACEON_H_
 #define GLACEON_GLACEON_GLACEON_H_
 
-#include "Base.h"
 #include <string>
+
+#include "Base.h"
+#include "VulkanRenderer/VulkanContext.h"
 
 namespace Glaceon {
 
@@ -17,7 +19,10 @@ class GLACEON_API Application {
   virtual void onUpdate() = 0;
   virtual void onShutdown() = 0;
 
+  VulkanContext GetVulkanContext() const { return context; }
+
  private:
+  VulkanContext context;
 };
 
 void GLACEON_API runGame(Application *app);

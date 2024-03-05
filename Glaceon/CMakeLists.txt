@@ -39,6 +39,12 @@ source_group("Source Files" FILES ${Source_Files})
 set(ALL_FILES
         ${Header_Files}
         ${Source_Files}
+        VulkanRenderer/VulkanDevice.cpp
+        VulkanRenderer/VulkanDevice.h
+        VulkanRenderer/VulkanContext.cpp
+        VulkanRenderer/VulkanContext.h
+        VulkanRenderer/VulkanBackend.cpp
+        VulkanRenderer/VulkanBackend.h
 )
 
 # Target
