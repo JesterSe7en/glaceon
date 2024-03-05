@@ -210,12 +210,17 @@ void GLACEON_API runGame(Application *app) {
     return;
   }
   for (uint32_t i = 0; i < glfw_extension_count; i++) {
+    extensions.push_back(glfw_extensions[i]);
     app->GetVulkanContext().AddInstanceExtension(glfw_extensions[i]);
   }
 
   app->GetVulkanContext().GetVulkanBackend().Initialize();
-  //  app->GetVulkanContext().GetVulkanDevice().Initialize();
-  VkInstance in = app->GetVulkanContext().GetVulkanInstance();
+
+  // setup device requirements
+  // request specific queue families support
+  // request specific device extensions
+  app->GetVulkanContext().AddDeviceExtension("VK_KHR_swapchain");
+  app->GetVulkanContext().GetVulkanDevice().Initialize();
 
   VulkanAPI::initVulkan(extensions);
 
@@ -279,12 +284,10 @@ void GLACEON_API runGame(Application *app) {
   ImGui_ImplVulkan_Init(&init_info);
 
   app->onStart();
-
-  ImVec4 clear_color = ImVec4(1.0f, 0.0f, 0.0f, 1.00f);
-
   while (!glfwWindowShouldClose(glfw_window)) {
     glfwPollEvents();
     app->onUpdate();
+    ImVec4 clear_color = ImVec4(1.0f, 0.0f, 0.0f, 1.00f);
 
     if (swapChainRebuild) {
       GINFO("Rebuilding swapchain");

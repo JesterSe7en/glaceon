@@ -5,8 +5,8 @@
 #include <cassert>
 #include <cstdint>
 
-#include "Logger.h"
 #include "Glaceon.h"
+#include "Logger.h"
 
 namespace Glaceon {
 
@@ -141,7 +141,6 @@ void VulkanAPI::initVulkan(std::vector<const char *> instance_extensions) {
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     createInfo.pApplicationInfo = &vkAppInfo;
 
-    // print out appllicaiton infomation
     // FIXME: not working, check pointers
     // PrintApplicationInfo(&vkAppInfo);
 

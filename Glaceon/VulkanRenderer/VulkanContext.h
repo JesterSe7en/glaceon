@@ -16,12 +16,16 @@ class VulkanContext {
   void AddInstanceExtension(const char* extension);
   void RemoveInstanceExtension(const char* extension);
 
+  void AddDeviceExtension(const char* extension);
+  void RemoveDeviceExtension(const char* extension);
+
   VulkanBackend GetVulkanBackend() const { return backend; }
   VkInstance GetVulkanInstance() const { return instance; }
   void SetVulkanInstance(VkInstance vkInstance) { this->instance = vkInstance; }
   VulkanDevice GetVulkanDevice() const { return device; }
 
   std::vector<const char*> GetInstanceExtensions() const { return instanceExtensions; }
+  std::vector<const char*> GetDeviceExtensions() const { return deviceExtensions; }
 
  private:
   VkInstance instance = VK_NULL_HANDLE;
@@ -29,6 +33,7 @@ class VulkanContext {
   VulkanDevice device;
 
   std::vector<const char*> instanceExtensions;
+  std::vector<const char*> deviceExtensions;
 };
 
 }  // namespace Glaceon

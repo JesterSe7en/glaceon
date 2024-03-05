@@ -13,5 +13,11 @@ void VulkanContext::RemoveInstanceExtension(const char *extension) {
       std::remove(this->instanceExtensions.begin(), this->instanceExtensions.end(), extension),
       this->instanceExtensions.end());
 }
+void VulkanContext::AddDeviceExtension(const char *extension) { this->deviceExtensions.push_back(extension); }
+
+void VulkanContext::RemoveDeviceExtension(const char *extension) {
+  this->deviceExtensions.erase(std::remove(this->deviceExtensions.begin(), this->deviceExtensions.end(), extension),
+                               this->deviceExtensions.end());
+}
 
 }  // namespace Glaceon
