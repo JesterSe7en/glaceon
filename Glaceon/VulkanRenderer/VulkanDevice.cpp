@@ -1,5 +1,8 @@
 #include "VulkanDevice.h"
 
+#include <vulkan/vk_enum_string_helper.h>
+#include <vulkan/vulkan_core.h>
+
 #include "../Logger.h"
 #include "VulkanContext.h"
 
@@ -49,17 +52,13 @@ void VulkanDevice::Initialize() {
 
   // create device with graphic queue
   // find queue family with graphics support
-  uint32_t index = GetQueueFamilyIndex(VK_QUEUE_GRAPHICS_BIT);
+  int index = GetQueueFamilyIndex(VK_QUEUE_GRAPHICS_BIT);
+  if (index == -1) {
+    GERROR("Failed to find a suitable queue family for {}", string_VkQueueFlagBits(VK_QUEUE_GRAPHICS_BIT));
+    return;
+  }
 
   VkDeviceQueueCreateInfo queueCreateInfo = {};
-  //  typedef struct VkDeviceQueueCreateInfo {
-  //    VkStructureType             sType;
-  //    const void*                 pNext;
-  //    VkDeviceQueueCreateFlags    flags;
-  //    uint32_t                    queueFamilyIndex;
-  //    uint32_t                    queueCount;
-  //    const float*                pQueuePriorities;
-  //  } VkDeviceQueueCreateInfo;
   queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
   queueCreateInfo.pNext = nullptr;
   queueCreateInfo.flags = 0;
@@ -69,18 +68,6 @@ void VulkanDevice::Initialize() {
   queueCreateInfo.pQueuePriorities = &queuePriority;
 
   VkDeviceCreateInfo deviceCreateInfo = {};
-  //  typedef struct VkDeviceCreateInfo {
-  //    VkStructureType                    sType;
-  //    const void*                        pNext;
-  //    VkDeviceCreateFlags                flags;
-  //    uint32_t                           queueCreateInfoCount;
-  //    const VkDeviceQueueCreateInfo*     pQueueCreateInfos;
-  //    uint32_t                           enabledLayerCount;
-  //    const char* const*                 ppEnabledLayerNames;
-  //    uint32_t                           enabledExtensionCount;
-  //    const char* const*                 ppEnabledExtensionNames;
-  //    const VkPhysicalDeviceFeatures*    pEnabledFeatures;
-  //  } VkDeviceCreateInfo;
   deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
   deviceCreateInfo.pNext = nullptr;
   deviceCreateInfo.flags = 0;
@@ -89,29 +76,15 @@ void VulkanDevice::Initialize() {
   deviceCreateInfo.enabledExtensionCount = deviceExtensions.size();
   deviceCreateInfo.ppEnabledExtensionNames = context.GetDeviceExtensions().data();
 
-  //  res = vkCreateDevice(physicalDevice, &deviceCreateInfo, nullptr, &device);
-  //  if (res != VK_SUCCESS) {
-  //    GERROR("Failed to create Vulkan device");
-  //    return;
-  //  } else {
-  //    GINFO("Vulkan device created successfully");
-  //  }
+  VkResult success = vkCreateDevice(this->physicalDevice, &deviceCreateInfo, nullptr, &device);
+  if (success != VK_SUCCESS) {
+    GERROR("Failed to create Vulkan device");
+    return;
+  } else {
+    GINFO("Vulkan device created successfully");
+  }
 
-  //  vkGetDeviceQueue(device, index, 0, &queue);
-
-  // #if _DEBUG
-  //   for (uint32_t i = 0; i < queueFamilyCount; i++) {
-  //     GTRACE("Queue family {} properties:", i);
-  //     GTRACE("  Queue count: {}", queueFamily[i].queueCount);
-  //     GTRACE("  Supports graphics: {}", queueFamily[i].queueFlags & VK_QUEUE_GRAPHICS_BIT ? "true" : "false");
-  //     GTRACE("  Supports compute: {}", queueFamily[i].queueFlags & VK_QUEUE_COMPUTE_BIT ? "true" : "false");
-  //     GTRACE("  Supports transfer: {}", queueFamily[i].queueFlags & VK_QUEUE_TRANSFER_BIT ? "true" : "false");
-  //     GTRACE("  Supports sparse binding: {}", queueFamily[i].queueFlags & VK_QUEUE_SPARSE_BINDING_BIT ? "true" :
-  //     "false"); GTRACE("  Supports protected: {}", queueFamily[i].queueFlags & VK_QUEUE_PROTECTED_BIT ? "true" :
-  //     "false"); GTRACE("  Supports presentation: {}", queueFamily[i].queueFlags & VK_QUEUE_GRAPHICS_BIT ? "true" :
-  //     "false");
-  //   }
-  // #endif
+  vkGetDeviceQueue(device, index, 0, &queue);
 }
 
 bool VulkanDevice::CheckDeviceRequirements(VkPhysicalDevice &vkPhysicalDevice) {
@@ -123,10 +96,23 @@ bool VulkanDevice::CheckDeviceRequirements(VkPhysicalDevice &vkPhysicalDevice) {
     return false;
   }
 
-  uint32_t count;
-  vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, &count, nullptr);
-  this->queueFamily.resize(count);
-  vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, &count, queueFamily.data());
+  uint32_t queueFamilyCount;
+  vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, &queueFamilyCount, nullptr);
+  this->queueFamily.resize(queueFamilyCount);
+  vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, &queueFamilyCount, queueFamily.data());
+
+#if _DEBUG
+  for (uint32_t i = 0; i < queueFamilyCount; i++) {
+    GTRACE("Queue family {} properties:", i);
+    GTRACE("  Queue count: {}", queueFamily[i].queueCount);
+    GTRACE("  Supports graphics: {}", queueFamily[i].queueFlags & VK_QUEUE_GRAPHICS_BIT ? "true" : "false");
+    GTRACE("  Supports compute: {}", queueFamily[i].queueFlags & VK_QUEUE_COMPUTE_BIT ? "true" : "false");
+    GTRACE("  Supports transfer: {}", queueFamily[i].queueFlags & VK_QUEUE_TRANSFER_BIT ? "true" : "false");
+    GTRACE("  Supports sparse binding: {}", queueFamily[i].queueFlags & VK_QUEUE_SPARSE_BINDING_BIT ? "true" : "false");
+    GTRACE("  Supports protected: {}", queueFamily[i].queueFlags & VK_QUEUE_PROTECTED_BIT ? "true" : "false");
+    GTRACE("  Supports presentation: {}", queueFamily[i].queueFlags & VK_QUEUE_GRAPHICS_BIT ? "true" : "false");
+  }
+#endif
 
   // check if device extensions are available
   uint32_t properties_count;
@@ -161,7 +147,7 @@ bool VulkanDevice::IsExtensionAvailable(VkPhysicalDeviceProperties properties, c
   return false;
 }
 
-uint32_t VulkanDevice::GetQueueFamilyIndex(VkQueueFlagBits bits) {
+int VulkanDevice::GetQueueFamilyIndex(VkQueueFlagBits bits) {
   for (uint32_t i = 0; i < queueFamily.size(); i++) {
     if (queueFamily[i].queueFlags & bits) {
       return i;
