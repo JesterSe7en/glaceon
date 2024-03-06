@@ -3,6 +3,7 @@
 
 #include <vulkan/vulkan_core.h>
 
+#include <optional>
 #include <vector>
 
 namespace Glaceon {
@@ -28,6 +29,16 @@ class VulkanDevice {
   VulkanContext &context;
   std::vector<VkQueueFamilyProperties> queueFamily;
   std::vector<VkExtensionProperties> deviceExtensions;
+
+  typedef struct GraphicQueueIndexes {
+    std::optional<uint32_t> graphicsFamily;
+    std::optional<uint32_t> presentFamily;
+
+    [[nodiscard]] bool isComplete() const { return graphicsFamily.has_value() && presentFamily.has_value(); }
+  } GraphicQueueIndexes;
+
+  GraphicQueueIndexes graphic_queue_indexes_;
+
   bool CheckDeviceRequirements(VkPhysicalDevice &vkPhysicalDevice);
   bool IsExtensionAvailable(const char *ext);
 

@@ -129,12 +129,26 @@ bool VulkanDevice::CheckDeviceRequirements(VkPhysicalDevice &vkPhysicalDevice) {
     GTRACE("  Supports compute: {}", queueFamily[i].queueFlags & VK_QUEUE_COMPUTE_BIT ? "true" : "false");
     GTRACE("  Supports transfer: {}", queueFamily[i].queueFlags & VK_QUEUE_TRANSFER_BIT ? "true" : "false");
     GTRACE("  Supports sparse binding: {}", queueFamily[i].queueFlags & VK_QUEUE_SPARSE_BINDING_BIT ? "true" : "false");
-    GTRACE("  Supports protected: {}", queueFamily[i].queueFlags & VK_QUEUE_PROTECTED_BIT ? "true" : "false");
-    GTRACE("  Supports presentation: {}", queueFamily[i].queueFlags & VK_QUEUE_GRAPHICS_BIT ? "true" : "false");
   }
 #endif
 
-  // check if device extensions are available
+  for (uint32_t i = 0; i < queueFamilyCount; i++) {
+    // Check if the queue family supports graphics
+    if (queueFamily[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+      // assuming all graphics queue families support presentation
+      graphic_queue_indexes_.graphicsFamily = i;
+      graphic_queue_indexes_.presentFamily = i;
+      GTRACE("Graphics queue family index: {} supports graphics and present", i);
+    }
+  }
+
+  if (!graphic_queue_indexes_.isComplete()) {
+    GTRACE("Device does not support graphics queue family, skipping...");
+    return false;
+  } else {
+    GTRACE("Device supports graphics queue family");
+  }
+
   uint32_t properties_count;
   vkEnumerateDeviceExtensionProperties(vkPhysicalDevice, nullptr, &properties_count, nullptr);
   deviceExtensions.resize(properties_count);
