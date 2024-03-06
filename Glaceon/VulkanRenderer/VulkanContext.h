@@ -37,7 +37,7 @@ class VulkanContext {
   VulkanBackend backend;
   VulkanDevice device;
   VkDescriptorPool descriptorPool;
-  VkPipelineCache pipelineCache;
+  VkPipelineCache pipelineCache = VK_NULL_HANDLE;
 
   std::vector<const char *> deviceExtensions;
   std::vector<const char *> instanceExtensions;
