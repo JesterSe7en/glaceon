@@ -16,6 +16,8 @@ class VulkanDevice {
 
   std::vector<VkQueueFamilyProperties> GetQueueFamilies() { return queueFamily; }
   std::vector<VkExtensionProperties> GetDeviceExtensions() { return deviceExtensions; }
+  VkPhysicalDevice &GetPhysicalDevice() { return physicalDevice; }
+  VkDevice &GetLogicalDevice() { return device; }
   VkQueue GetQueue() { return queue; }
 
  private:

@@ -34,7 +34,8 @@ static void CheckVkResult(VkResult err) {
   if (err < 0) abort();
 }
 
-void SetupVulkanWindow(ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface, int width, int height) {
+void SetupVulkanWindow(VulkanContext &context, ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface, int width,
+                       int height) {
   if (wd == nullptr) {
     GERROR("Failed to create Vulkan Window");
     exit(-1);
@@ -42,8 +43,8 @@ void SetupVulkanWindow(ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface, int w
   wd->Surface = surface;
 
   VkBool32 res;
-  vkGetPhysicalDeviceSurfaceSupportKHR(VulkanAPI::getVulkanPhysicalDevice(),
-                                       VulkanAPI::getVulkanGraphicsQueueFamilyIndex(), wd->Surface, &res);
+  // TODO: don't hardcode the graphics queue family index
+  vkGetPhysicalDeviceSurfaceSupportKHR(context.GetVulkanDevice().GetPhysicalDevice(), 0, wd->Surface, &res);
   if (res != VK_TRUE) {
     GERROR("Error no WSI support on physical device 0");
     exit(-1);
@@ -54,7 +55,7 @@ void SetupVulkanWindow(ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface, int w
                                                 VK_FORMAT_B8G8R8_UNORM, VK_FORMAT_R8G8B8_UNORM};
   const VkColorSpaceKHR requestSurfaceColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
   wd->SurfaceFormat = ImGui_ImplVulkanH_SelectSurfaceFormat(
-      VulkanAPI::getVulkanPhysicalDevice(), wd->Surface, requestSurfaceImageFormat,
+      context.GetVulkanDevice().GetPhysicalDevice(), wd->Surface, requestSurfaceImageFormat,
       (size_t)IM_ARRAYSIZE(requestSurfaceImageFormat), requestSurfaceColorSpace);
 
   GINFO("SurfaceFormat = {}", string_VkFormat(wd->SurfaceFormat.format));
@@ -64,24 +65,24 @@ void SetupVulkanWindow(ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface, int w
   VkPresentModeKHR present_modes[] = {VK_PRESENT_MODE_MAILBOX_KHR, VK_PRESENT_MODE_IMMEDIATE_KHR,
                                       VK_PRESENT_MODE_FIFO_KHR};
 
-  wd->PresentMode = ImGui_ImplVulkanH_SelectPresentMode(VulkanAPI::getVulkanPhysicalDevice(), wd->Surface,
+  wd->PresentMode = ImGui_ImplVulkanH_SelectPresentMode(context.GetVulkanDevice().GetPhysicalDevice(), wd->Surface,
                                                         &present_modes[0], IM_ARRAYSIZE(present_modes));
 
   GINFO("PresentMode = {}", string_VkPresentModeKHR(wd->PresentMode));
 
   // Create SwapChain, RenderPass, Framebuffer, etc.
   /* IM_ASSERT(g_MinImageCount >= 2); */
-  ImGui_ImplVulkanH_CreateOrResizeWindow(VulkanAPI::getVulkanInstance(), VulkanAPI::getVulkanPhysicalDevice(),
-                                         VulkanAPI::getVulkanDevice(), wd,
-                                         VulkanAPI::getVulkanGraphicsQueueFamilyIndex(), nullptr, width, height, 2);
+  ImGui_ImplVulkanH_CreateOrResizeWindow(context.GetVulkanInstance(), context.GetVulkanDevice().GetPhysicalDevice(),
+                                         context.GetVulkanDevice().GetLogicalDevice(), wd, 0, nullptr, width, height,
+                                         2);
 }
 
-static void FrameRender(ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data) {
+static void FrameRender(VulkanContext &context, ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data) {
   VkResult err;
 
   VkSemaphore image_acquired_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].ImageAcquiredSemaphore;
   VkSemaphore render_complete_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].RenderCompleteSemaphore;
-  auto device = VulkanAPI::getVulkanDevice();
+  auto device = context.GetVulkanDevice().GetLogicalDevice();
 
   err = vkAcquireNextImageKHR(device, wd->Swapchain, UINT64_MAX, image_acquired_semaphore, VK_NULL_HANDLE,
                               &wd->FrameIndex);
@@ -145,7 +146,7 @@ static void FrameRender(ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data) {
   }
 }
 
-static void FramePresent(ImGui_ImplVulkanH_Window *wd) {
+static void FramePresent(VulkanContext &context, ImGui_ImplVulkanH_Window *wd) {
   if (swapChainRebuild) return;
   VkSemaphore render_complete_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].RenderCompleteSemaphore;
   VkPresentInfoKHR info = {};
@@ -155,7 +156,7 @@ static void FramePresent(ImGui_ImplVulkanH_Window *wd) {
   info.swapchainCount = 1;
   info.pSwapchains = &wd->Swapchain;
   info.pImageIndices = &wd->FrameIndex;
-  VkResult err = vkQueuePresentKHR(VulkanAPI::getVulkanQueue(), &info);
+  VkResult err = vkQueuePresentKHR(context.GetVulkanDevice().GetQueue(), &info);
   if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
     swapChainRebuild = true;
     return;
@@ -212,14 +213,12 @@ void GLACEON_API runGame(Application *app) {
     app->GetVulkanContext().GetInstanceExtensions().push_back(glfw_extensions[i]);
   }
 
-  auto temp = app->GetVulkanContext().GetInstanceExtensions();
-
   app->GetVulkanContext().GetVulkanBackend().Initialize();
 
   // setup device requirements
   // request specific queue families support
   // request specific device extensions
-  //  app->GetVulkanContext().AddDeviceExtension("VK_KHR_swapchain");
+  app->GetVulkanContext().AddDeviceExtension("VK_KHR_swapchain");
   app->GetVulkanContext().GetVulkanDevice().Initialize();
 
   //  VulkanAPI::initVulkan(extensions);
@@ -242,7 +241,7 @@ void GLACEON_API runGame(Application *app) {
 
   // TODO: Maybe return something indicating success or failure
   // init_info_renderPass = imgui_window->RenderPass; // This can be null
-  SetupVulkanWindow(imgui_window, surface, w, h);
+  SetupVulkanWindow(app->GetVulkanContext(), imgui_window, surface, w, h);
 
   // Setup Dear ImGui context
   IMGUI_CHECKVERSION();
@@ -257,10 +256,10 @@ void GLACEON_API runGame(Application *app) {
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
 
-  auto physicalDevice = VulkanAPI::getVulkanPhysicalDevice();
-  auto device = VulkanAPI::getVulkanDevice();
-  auto queueFamily = VulkanAPI::getVulkanGraphicsQueueFamilyIndex();
-  auto queue = VulkanAPI::getVulkanQueue();
+  auto physicalDevice = app->GetVulkanContext().GetVulkanDevice().GetPhysicalDevice();
+  auto device = app->GetVulkanContext().GetVulkanDevice().GetLogicalDevice();
+  auto queueFamily = 0;
+  auto queue = app->GetVulkanContext().GetVulkanDevice().GetQueue();
   auto pipelineCache = VulkanAPI::getVulkanPipelineCache();
   auto descriptorPool = VulkanAPI::getVulkanDescriptorPool();
 
@@ -329,8 +328,8 @@ void GLACEON_API runGame(Application *app) {
       imgui_window->ClearValue.color.float32[1] = clear_color.y * clear_color.w;
       imgui_window->ClearValue.color.float32[2] = clear_color.z * clear_color.w;
       imgui_window->ClearValue.color.float32[3] = clear_color.w;
-      FrameRender(imgui_window, draw_data);
-      FramePresent(imgui_window);
+      FrameRender(app->GetVulkanContext(), imgui_window, draw_data);
+      FramePresent(app->GetVulkanContext(), imgui_window);
     }
   }
 

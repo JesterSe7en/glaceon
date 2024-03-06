@@ -127,7 +127,7 @@ bool VulkanDevice::CheckDeviceRequirements(VkPhysicalDevice &vkPhysicalDevice) {
       context.RemoveInstanceExtension(ext);
     }
   }
-  if (extensions.empty() == 0) {
+  if (extensions.empty()) {
     GTRACE("No device extensions available, skipping...");
     return false;
   }
