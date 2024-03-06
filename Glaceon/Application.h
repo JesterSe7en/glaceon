@@ -1,7 +1,3 @@
-//
-// Created by alexc on 3/6/24.
-//
-
 #ifndef GLACEON_GLACEON_GLACEON_CPP_APPLICATION_H_
 #define GLACEON_GLACEON_GLACEON_CPP_APPLICATION_H_
 

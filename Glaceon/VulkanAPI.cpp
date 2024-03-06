@@ -58,7 +58,7 @@ static VkBool32 debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeve
       GERROR("Validation layer: {}", pCallbackData->pMessage);
       break;
     default:
-      GERROR("Validation layer: {}", pCallbackData->pMessage);
+      GTRACE("Validation layer: {}", pCallbackData->pMessage);
       break;
   }
 
