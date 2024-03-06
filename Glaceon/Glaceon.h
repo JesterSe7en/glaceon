@@ -14,18 +14,18 @@ struct GLACEON_API ApplicationInfo {
 
 class GLACEON_API Application {
  public:
-  Application(ApplicationInfo *info);
+  Application(ApplicationInfo* info);
   virtual void onStart() = 0;
   virtual void onUpdate() = 0;
   virtual void onShutdown() = 0;
 
-  VulkanContext GetVulkanContext() const { return context; }
+  VulkanContext& GetVulkanContext() { return context; }
 
  private:
   VulkanContext context;
 };
 
-void GLACEON_API runGame(Application *app);
+void GLACEON_API runGame(Application* app);
 
 }  // namespace Glaceon
 #endif  // GLACEON_GLACEON_GLACEON_H_

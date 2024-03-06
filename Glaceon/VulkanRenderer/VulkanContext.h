@@ -3,6 +3,9 @@
 
 #include <vulkan/vulkan.h>
 
+#include <utility>
+
+#include "../Logger.h"
 #include "VulkanBackend.h"
 #include "VulkanDevice.h"
 
@@ -13,27 +16,27 @@ class VulkanContext {
   VulkanContext();
   ~VulkanContext() = default;
 
-  void AddInstanceExtension(const char* extension);
-  void RemoveInstanceExtension(const char* extension);
-
-  void AddDeviceExtension(const char* extension);
-  void RemoveDeviceExtension(const char* extension);
-
-  VulkanBackend GetVulkanBackend() const { return backend; }
-  VkInstance GetVulkanInstance() const { return instance; }
+  VulkanBackend &GetVulkanBackend() { return backend; }
+  VkInstance &GetVulkanInstance() { return instance; }
   void SetVulkanInstance(VkInstance vkInstance) { this->instance = vkInstance; }
-  VulkanDevice GetVulkanDevice() const { return device; }
+  VulkanDevice &GetVulkanDevice() { return device; }
 
-  std::vector<const char*> GetInstanceExtensions() const { return instanceExtensions; }
-  std::vector<const char*> GetDeviceExtensions() const { return deviceExtensions; }
+  void AddDeviceExtension(const char *ext);
+  void RemoveDeviceExtension(const char *ext);
+  std::vector<const char *> &GetDeviceExtensions() { return deviceExtensions; }
+  void AddInstanceExtension(const char *ext);
+  void RemoveInstanceExtension(const char *ext);
+  std::vector<const char *> &GetInstanceExtensions() { return instanceExtensions; }
 
  private:
   VkInstance instance = VK_NULL_HANDLE;
   VulkanBackend backend;
   VulkanDevice device;
 
-  std::vector<const char*> instanceExtensions;
-  std::vector<const char*> deviceExtensions;
+  std::vector<const char *> deviceExtensions;
+  std::vector<const char *> instanceExtensions;
+
+  std::string testString;
 };
 
 }  // namespace Glaceon

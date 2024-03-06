@@ -166,7 +166,7 @@ static void FramePresent(ImGui_ImplVulkanH_Window *wd) {
 
 // ----------------- Application Class Functions ----------------------
 
-Application::Application(ApplicationInfo *info) {
+Application::Application(ApplicationInfo *info) : context() {
   VulkanAPI::defineVulkanApp(info);
   Logger::InitLoggers();
 }
@@ -202,7 +202,6 @@ void GLACEON_API runGame(Application *app) {
   // For reference on integrating ImGui with GLFW and Vulkan
   // https://github.com/ocornut/imgui/blob/master/examples/example_glfw_vulkan/main.cpp
   // check required extensions for glfw
-  std::vector<const char *> extensions;
   uint32_t glfw_extension_count = 0;
   const char **glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
   if (!glfw_extensions) {
@@ -210,28 +209,29 @@ void GLACEON_API runGame(Application *app) {
     return;
   }
   for (uint32_t i = 0; i < glfw_extension_count; i++) {
-    extensions.push_back(glfw_extensions[i]);
-    app->GetVulkanContext().AddInstanceExtension(glfw_extensions[i]);
+    app->GetVulkanContext().GetInstanceExtensions().push_back(glfw_extensions[i]);
   }
+
+  auto temp = app->GetVulkanContext().GetInstanceExtensions();
 
   app->GetVulkanContext().GetVulkanBackend().Initialize();
 
   // setup device requirements
   // request specific queue families support
   // request specific device extensions
-  app->GetVulkanContext().AddDeviceExtension("VK_KHR_swapchain");
+  //  app->GetVulkanContext().AddDeviceExtension("VK_KHR_swapchain");
   app->GetVulkanContext().GetVulkanDevice().Initialize();
 
-  VulkanAPI::initVulkan(extensions);
+  //  VulkanAPI::initVulkan(extensions);
 
   VkSurfaceKHR surface;
-  VkInstance instance = VulkanAPI::getVulkanInstance();
+  VkInstance instance = app->GetVulkanContext().GetVulkanInstance();
   if (instance == VK_NULL_HANDLE) {
     GERROR("Failed to create Vulkan instance");
     return;
   }
 
-  VkResult res = glfwCreateWindowSurface(VulkanAPI::getVulkanInstance(), glfw_window, nullptr, &surface);
+  VkResult res = glfwCreateWindowSurface(instance, glfw_window, nullptr, &surface);
   if (res != VK_SUCCESS) {
     GERROR("Failed to create window surface");
   }

@@ -4,20 +4,20 @@
 
 namespace Glaceon {
 
-VulkanContext::VulkanContext() : backend(*this), device(*this) {}
-
-void VulkanContext::AddInstanceExtension(const char *extension) { this->instanceExtensions.push_back(extension); }
-
-void VulkanContext::RemoveInstanceExtension(const char *extension) {
-  this->instanceExtensions.erase(
-      std::remove(this->instanceExtensions.begin(), this->instanceExtensions.end(), extension),
-      this->instanceExtensions.end());
+VulkanContext::VulkanContext() : backend(*this), device(*this), instanceExtensions(), deviceExtensions() {}
+void VulkanContext::AddDeviceExtension(const char *ext) { deviceExtensions.push_back(ext); }
+void VulkanContext::AddInstanceExtension(const char *ext) { instanceExtensions.push_back(ext); }
+void VulkanContext::RemoveDeviceExtension(const char *ext) {
+  auto it = std::find(deviceExtensions.begin(), deviceExtensions.end(), ext);
+  if (it != deviceExtensions.end()) {
+    deviceExtensions.erase(it);
+  }
 }
-void VulkanContext::AddDeviceExtension(const char *extension) { this->deviceExtensions.push_back(extension); }
-
-void VulkanContext::RemoveDeviceExtension(const char *extension) {
-  this->deviceExtensions.erase(std::remove(this->deviceExtensions.begin(), this->deviceExtensions.end(), extension),
-                               this->deviceExtensions.end());
+void VulkanContext::RemoveInstanceExtension(const char *ext) {
+  auto it = std::find(instanceExtensions.begin(), instanceExtensions.end(), ext);
+  if (it != instanceExtensions.end()) {
+    instanceExtensions.erase(it);
+  }
 }
 
 }  // namespace Glaceon

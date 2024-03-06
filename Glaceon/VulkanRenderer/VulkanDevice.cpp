@@ -8,6 +8,9 @@
 
 namespace Glaceon {
 
+VulkanDevice::VulkanDevice(VulkanContext &context)
+    : physicalDevice(VK_NULL_HANDLE), device(VK_NULL_HANDLE), context(context) {}
+
 void VulkanDevice::Initialize() {
   GINFO("Initializing Vulkan device...");
 
@@ -35,9 +38,9 @@ void VulkanDevice::Initialize() {
     return;
   }
 
-  for (VkPhysicalDevice &device : gpus) {
-    if (CheckDeviceRequirements(device)) {
-      physicalDevice = device;
+  for (VkPhysicalDevice &vkPhysicalDevice : gpus) {
+    if (CheckDeviceRequirements(vkPhysicalDevice)) {
+      physicalDevice = vkPhysicalDevice;
       break;
     };
   }
@@ -58,25 +61,21 @@ void VulkanDevice::Initialize() {
     return;
   }
 
-  VkDeviceQueueCreateInfo queueCreateInfo = {};
-  queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-  queueCreateInfo.pNext = nullptr;
-  queueCreateInfo.flags = 0;
-  queueCreateInfo.queueFamilyIndex = index;
-  queueCreateInfo.queueCount = 1;
-  float queuePriority = 1.0f;
-  queueCreateInfo.pQueuePriorities = &queuePriority;
+  const float queue_priority[] = {0.0f};
+  VkDeviceQueueCreateInfo queueCreateInfo[1] = {};
+  queueCreateInfo[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+  queueCreateInfo[0].queueFamilyIndex = index;
+  queueCreateInfo[0].queueCount = 1;
+  queueCreateInfo[0].pQueuePriorities = queue_priority;
 
-  VkDeviceCreateInfo deviceCreateInfo = {};
-  deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-  deviceCreateInfo.pNext = nullptr;
-  deviceCreateInfo.flags = 0;
-  deviceCreateInfo.queueCreateInfoCount = 1;
-  deviceCreateInfo.pQueueCreateInfos = &queueCreateInfo;
-  deviceCreateInfo.enabledExtensionCount = deviceExtensions.size();
-  deviceCreateInfo.ppEnabledExtensionNames = context.GetDeviceExtensions().data();
+  VkDeviceCreateInfo createInfo = {};
+  createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+  createInfo.queueCreateInfoCount = sizeof(queueCreateInfo) / sizeof(queueCreateInfo[0]);
+  createInfo.pQueueCreateInfos = queueCreateInfo;
+  createInfo.enabledExtensionCount = static_cast<uint32_t>(context.GetDeviceExtensions().size());
+  createInfo.ppEnabledExtensionNames = context.GetDeviceExtensions().data();
 
-  VkResult success = vkCreateDevice(this->physicalDevice, &deviceCreateInfo, nullptr, &device);
+  VkResult success = vkCreateDevice(this->physicalDevice, &createInfo, nullptr, &device);
   if (success != VK_SUCCESS) {
     GERROR("Failed to create Vulkan device");
     return;
@@ -123,7 +122,7 @@ bool VulkanDevice::CheckDeviceRequirements(VkPhysicalDevice &vkPhysicalDevice) {
   std::vector<const char *> extensions = context.GetDeviceExtensions();
 
   for (const char *ext : extensions) {
-    if (!IsExtensionAvailable(properties, ext)) {
+    if (!IsExtensionAvailable(ext)) {
       GTRACE("Device extension {} not available, skipping...", ext);
       context.RemoveInstanceExtension(ext);
     }
@@ -137,8 +136,7 @@ bool VulkanDevice::CheckDeviceRequirements(VkPhysicalDevice &vkPhysicalDevice) {
   return true;
 }
 
-VulkanDevice::VulkanDevice(VulkanContext &context) : context(context) {}
-bool VulkanDevice::IsExtensionAvailable(VkPhysicalDeviceProperties properties, const char *ext) {
+bool VulkanDevice::IsExtensionAvailable(const char *ext) {
   for (const auto &extension : deviceExtensions) {
     if (strcmp(extension.extensionName, ext) == 0) {
       return true;

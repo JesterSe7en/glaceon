@@ -15,16 +15,18 @@ class VulkanDevice {
   void Initialize();
 
   std::vector<VkQueueFamilyProperties> GetQueueFamilies() { return queueFamily; }
+  std::vector<VkExtensionProperties> GetDeviceExtensions() { return deviceExtensions; }
+  VkQueue GetQueue() { return queue; }
 
  private:
-  VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
-  VkDevice device = VK_NULL_HANDLE;
+  VkPhysicalDevice physicalDevice;
+  VkDevice device;
   VkQueue queue;
   VulkanContext &context;
   std::vector<VkQueueFamilyProperties> queueFamily;
   std::vector<VkExtensionProperties> deviceExtensions;
   bool CheckDeviceRequirements(VkPhysicalDevice &vkPhysicalDevice);
-  bool IsExtensionAvailable(VkPhysicalDeviceProperties properties, const char *ext);
+  bool IsExtensionAvailable(const char *ext);
 
   /**
    * Get the index of the queue family that supports the specified queue flags.
