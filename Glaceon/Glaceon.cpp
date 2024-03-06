@@ -339,7 +339,7 @@ void GLACEON_API runGame(Application *app) {
     }
   }
 
-  res = vkDeviceWaitIdle(VulkanAPI::getVulkanDevice());
+  res = vkDeviceWaitIdle(app->GetVulkanContext().GetVulkanDevice().GetLogicalDevice());
 
   if (res != VK_SUCCESS) {
     GERROR("Failed to wait for device");
