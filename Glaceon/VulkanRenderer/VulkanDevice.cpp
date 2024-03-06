@@ -92,6 +92,9 @@ void VulkanDevice::Initialize() {
   pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
   pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
   pool_info.maxSets = 1;
+  // We only have one pool (aka size of pool_size[])
+  // The Image_Sampler pool only allows for one allocation.
+  // The VkDescriptorPool itself will only allow for one descriptor set to be allocated aka maxSets
   pool_info.poolSizeCount = 1;
   pool_info.pPoolSizes = pool_sizes;
   res = vkCreateDescriptorPool(device, &pool_info, nullptr, &descriptorPool);
