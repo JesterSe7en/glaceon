@@ -145,7 +145,7 @@ static void FrameRender(VulkanContext &context, ImGui_ImplVulkanH_Window *wd, Im
 
     err = vkEndCommandBuffer(fd->CommandBuffer);
     CheckVkResult(err);
-    err = vkQueueSubmit(VulkanAPI::getVulkanQueue(), 1, &info, fd->Fence);
+    err = vkQueueSubmit(context.GetVulkanDevice().GetQueue(), 1, &info, fd->Fence);
     CheckVkResult(err);
   }
 }
