@@ -84,6 +84,22 @@ void VulkanDevice::Initialize() {
   }
 
   vkGetDeviceQueue(device, index, 0, &queue);
+
+  VkDescriptorPoolSize pool_sizes[] = {
+      {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1},
+  };
+  VkDescriptorPoolCreateInfo pool_info = {};
+  pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+  pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+  pool_info.maxSets = 1;
+  pool_info.poolSizeCount = 1;
+  pool_info.pPoolSizes = pool_sizes;
+  res = vkCreateDescriptorPool(device, &pool_info, nullptr, &descriptorPool);
+  if (res != VK_SUCCESS) {
+    GERROR("Failed to create descriptor pool");
+  } else {
+    GINFO("Descriptor pool created successfully");
+  }
 }
 
 bool VulkanDevice::CheckDeviceRequirements(VkPhysicalDevice &vkPhysicalDevice) {

@@ -2,10 +2,8 @@
 #define GLACEON_VULKANCONTEXT_H
 
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
 
-#include <utility>
-
-#include "../Logger.h"
 #include "VulkanBackend.h"
 #include "VulkanDevice.h"
 
@@ -28,15 +26,21 @@ class VulkanContext {
   void RemoveInstanceExtension(const char *ext);
   std::vector<const char *> &GetInstanceExtensions() { return instanceExtensions; }
 
+  VkDescriptorPool GetDescriptorPool() { return descriptorPool; }
+  void SetDescriptorPool(VkDescriptorPool vkDescriptorPool) { this->descriptorPool = vkDescriptorPool; }
+
+  VkPipelineCache GetPipelineCache() { return pipelineCache; }
+  void SetPipelineCache(VkPipelineCache vkPipelineCache) { this->pipelineCache = vkPipelineCache; }
+
  private:
   VkInstance instance = VK_NULL_HANDLE;
   VulkanBackend backend;
   VulkanDevice device;
+  VkDescriptorPool descriptorPool;
+  VkPipelineCache pipelineCache;
 
   std::vector<const char *> deviceExtensions;
   std::vector<const char *> instanceExtensions;
-
-  std::string testString;
 };
 
 }  // namespace Glaceon

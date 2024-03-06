@@ -24,6 +24,7 @@ class VulkanDevice {
   VkPhysicalDevice physicalDevice;
   VkDevice device;
   VkQueue queue;
+  VkDescriptorPool descriptorPool;
   VulkanContext &context;
   std::vector<VkQueueFamilyProperties> queueFamily;
   std::vector<VkExtensionProperties> deviceExtensions;

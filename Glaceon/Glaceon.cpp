@@ -72,9 +72,12 @@ void SetupVulkanWindow(VulkanContext &context, ImGui_ImplVulkanH_Window *wd, VkS
 
   // Create SwapChain, RenderPass, Framebuffer, etc.
   /* IM_ASSERT(g_MinImageCount >= 2); */
-  ImGui_ImplVulkanH_CreateOrResizeWindow(context.GetVulkanInstance(), context.GetVulkanDevice().GetPhysicalDevice(),
-                                         context.GetVulkanDevice().GetLogicalDevice(), wd, 0, nullptr, width, height,
-                                         2);
+
+  VkInstance instance = context.GetVulkanInstance();
+  VkPhysicalDevice physicalDevice = context.GetVulkanDevice().GetPhysicalDevice();
+  VkDevice device = context.GetVulkanDevice().GetLogicalDevice();
+
+  ImGui_ImplVulkanH_CreateOrResizeWindow(instance, physicalDevice, device, wd, 0, nullptr, width, height, 2);
 }
 
 static void FrameRender(VulkanContext &context, ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data) {
@@ -260,8 +263,10 @@ void GLACEON_API runGame(Application *app) {
   auto device = app->GetVulkanContext().GetVulkanDevice().GetLogicalDevice();
   auto queueFamily = 0;
   auto queue = app->GetVulkanContext().GetVulkanDevice().GetQueue();
-  auto pipelineCache = VulkanAPI::getVulkanPipelineCache();
-  auto descriptorPool = VulkanAPI::getVulkanDescriptorPool();
+
+  // FIXME: pipeline cache and descriptor pool are invalid when this is called
+  auto pipelineCache = app->GetVulkanContext().GetPipelineCache();
+  auto descriptorPool = app->GetVulkanContext().GetDescriptorPool();
 
   // Setup Platform/Renderer backends
   ImGui_ImplGlfw_InitForVulkan(glfw_window, true);
