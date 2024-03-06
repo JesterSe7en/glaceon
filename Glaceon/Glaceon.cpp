@@ -77,6 +77,7 @@ void SetupVulkanWindow(VulkanContext &context, ImGui_ImplVulkanH_Window *wd, VkS
   VkPhysicalDevice physicalDevice = context.GetVulkanDevice().GetPhysicalDevice();
   VkDevice device = context.GetVulkanDevice().GetLogicalDevice();
 
+  // creates vk command pool for ImGui ussage
   ImGui_ImplVulkanH_CreateOrResizeWindow(instance, physicalDevice, device, wd, 0, nullptr, width, height, 2);
 }
 
