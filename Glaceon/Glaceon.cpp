@@ -1,5 +1,6 @@
 #include "Glaceon.h"
 
+#include "Application.h"
 #include "Logger.h"
 #include "VulkanAPI.h"
 #include "imgui.h"
@@ -170,11 +171,6 @@ static void FramePresent(VulkanContext &context, ImGui_ImplVulkanH_Window *wd) {
 }
 
 // ----------------- Application Class Functions ----------------------
-
-Application::Application(ApplicationInfo *info) : context() {
-  VulkanAPI::defineVulkanApp(info);
-  Logger::InitLoggers();
-}
 
 void GLACEON_API runGame(Application *app) {
   if (!app) {

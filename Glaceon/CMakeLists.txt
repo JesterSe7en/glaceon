@@ -43,7 +43,8 @@ source_group("Source Files" FILES ${Source_Files})
 
 set(ALL_FILES
         ${Header_Files}
-        ${Source_Files})
+        ${Source_Files}
+        Application.cpp)
 
 # Target
 add_library(${PROJECT_NAME} SHARED ${ALL_FILES})
@@ -83,7 +84,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 
 # Compile and link options
 if (MSVC)
-  target_compile_options(${PROJECT_NAME} PRIVATE
+    target_compile_options(${PROJECT_NAME} PRIVATE
             $<$<CONFIG:Release>:
             /Oi;
             /Gy
@@ -98,7 +99,7 @@ if (MSVC)
             ${DEFAULT_CXX_DEBUG_INFORMATION_FORMAT};
             ${DEFAULT_CXX_EXCEPTION_HANDLING}
     )
-  target_link_options(${PROJECT_NAME} PRIVATE
+    target_link_options(${PROJECT_NAME} PRIVATE
             $<$<CONFIG:Release>:
             /OPT:REF;
             /OPT:ICF
@@ -111,7 +112,7 @@ if (MSVC)
             /SUBSYSTEM:WINDOWS
     )
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-  target_compile_options(${PROJECT_NAME} PRIVATE
+    target_compile_options(${PROJECT_NAME} PRIVATE
             $<$<CONFIG:Release>:
             -O3;
             -march=native
@@ -128,7 +129,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "
             -march=native
             >
     )
-  target_link_options(${PROJECT_NAME} PRIVATE
+    target_link_options(${PROJECT_NAME} PRIVATE
             $<$<CONFIG:Release>:
             -Wl,--strip-all
             >

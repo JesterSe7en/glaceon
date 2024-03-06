@@ -1,6 +1,7 @@
 #ifndef GLACEON_SANDBOXAPP_GAME_H_
 #define GLACEON_SANDBOXAPP_GAME_H_
 
+#include "Application.h"
 #include "Glaceon.h"
 
 class SandBoxApplication : public Glaceon::Application {

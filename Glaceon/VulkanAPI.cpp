@@ -5,6 +5,7 @@
 #include <cassert>
 #include <cstdint>
 
+#include "Application.h"
 #include "Glaceon.h"
 #include "Logger.h"
 

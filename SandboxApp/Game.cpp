@@ -1,5 +1,7 @@
 #include "Game.h"
 
+#include "Application.h"
+
 int main() {
   SandBoxApplication app;
   Glaceon::runGame(&app);

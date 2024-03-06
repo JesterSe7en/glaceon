@@ -7,6 +7,7 @@
 #include <memory>
 #include <vector>
 
+#include "Application.h"
 #include "Glaceon.h"
 
 namespace Glaceon {
