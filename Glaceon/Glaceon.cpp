@@ -2,11 +2,9 @@
 
 #include "Application.h"
 #include "Logger.h"
-#include "VulkanAPI.h"
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_vulkan.h"
-#include "pch.h"
 
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
@@ -214,15 +212,6 @@ void GLACEON_API runGame(Application *app) {
   }
 
   app->GetVulkanContext().GetVulkanBackend().Initialize();
-
-  // setup device requirements
-  // request specific queue families support
-  // request specific device extensions
-  app->GetVulkanContext().AddDeviceExtension("VK_KHR_swapchain");
-  app->GetVulkanContext().GetVulkanDevice().Initialize();
-
-  //  VulkanAPI::initVulkan(extensions);
-
   VkSurfaceKHR surface;
   VkInstance instance = app->GetVulkanContext().GetVulkanInstance();
   if (instance == VK_NULL_HANDLE) {
@@ -234,6 +223,14 @@ void GLACEON_API runGame(Application *app) {
   if (res != VK_SUCCESS) {
     GERROR("Failed to create window surface");
   }
+
+  app->GetVulkanContext().SetSurface(surface);
+
+  // setup device requirements
+  // request specific queue families support
+  // request specific device extensions
+  app->GetVulkanContext().AddDeviceExtension("VK_KHR_swapchain");
+  app->GetVulkanContext().GetVulkanDevice().Initialize();
 
   int w, h;
   glfwGetFramebufferSize(glfw_window, &w, &h);

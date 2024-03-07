@@ -32,11 +32,15 @@ class VulkanContext {
   VkPipelineCache GetPipelineCache() { return pipelineCache; }
   void SetPipelineCache(VkPipelineCache vkPipelineCache) { this->pipelineCache = vkPipelineCache; }
 
+  VkSurfaceKHR GetSurface() { return surface; }
+  void SetSurface(VkSurfaceKHR vkSurface) { this->surface = vkSurface; }
+
  private:
   VkInstance instance = VK_NULL_HANDLE;
   VulkanBackend backend;
   VulkanDevice device;
   VkDescriptorPool descriptorPool;
+  VkSurfaceKHR surface = VK_NULL_HANDLE;
   VkPipelineCache pipelineCache = VK_NULL_HANDLE;
 
   std::vector<const char *> deviceExtensions;

@@ -132,6 +132,9 @@ bool VulkanDevice::CheckDeviceRequirements(VkPhysicalDevice &vkPhysicalDevice) {
   }
 #endif
 
+  auto surface = context.GetSurface();
+  assert(surface != VK_NULL_HANDLE);
+
   for (uint32_t i = 0; i < queueFamilyCount; i++) {
     // Check if the queue family supports graphics
     if (queueFamily[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
