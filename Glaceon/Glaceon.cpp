@@ -33,7 +33,7 @@ static void CheckVkResult(VkResult err) {
   if (err < 0) abort();
 }
 
-void SetupVulkanWindow(VulkanContext &context, ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface, int width,
+void SetupVulkanWindowForImGui(VulkanContext &context, ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface, int width,
                        int height) {
   if (wd == nullptr) {
     GERROR("Failed to create Vulkan Window");
@@ -80,7 +80,7 @@ void SetupVulkanWindow(VulkanContext &context, ImGui_ImplVulkanH_Window *wd, VkS
   ImGui_ImplVulkanH_CreateOrResizeWindow(instance, physicalDevice, device, wd, 0, nullptr, width, height, 2);
 }
 
-static void FrameRender(VulkanContext &context, ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data) {
+static void ImGuiFrameRender(VulkanContext &context, ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data) {
   VkResult err;
 
   VkSemaphore image_acquired_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].ImageAcquiredSemaphore;
@@ -149,7 +149,7 @@ static void FrameRender(VulkanContext &context, ImGui_ImplVulkanH_Window *wd, Im
   }
 }
 
-static void FramePresent(VulkanContext &context, ImGui_ImplVulkanH_Window *wd) {
+static void ImGuiFramePresent(VulkanContext &context, ImGui_ImplVulkanH_Window *wd) {
   if (swapChainRebuild) return;
   VkSemaphore render_complete_semaphore = wd->FrameSemaphores[wd->SemaphoreIndex].RenderCompleteSemaphore;
   VkPresentInfoKHR info = {};
@@ -189,6 +189,7 @@ void GLACEON_API runGame(Application *app) {
     exit(-1);
   }
 
+  VulkanContext &context = app->GetVulkanContext();
   glfwSetErrorCallback(error_callback);
 
   // we are using vulkan, don't load in other apis
@@ -208,37 +209,30 @@ void GLACEON_API runGame(Application *app) {
     return;
   }
   for (uint32_t i = 0; i < glfw_extension_count; i++) {
-    app->GetVulkanContext().GetInstanceExtensions().push_back(glfw_extensions[i]);
+    context.GetInstanceExtensions().push_back(glfw_extensions[i]);
   }
 
-  app->GetVulkanContext().GetVulkanBackend().Initialize();
-  VkSurfaceKHR surface;
-  VkInstance instance = app->GetVulkanContext().GetVulkanInstance();
+  context.GetVulkanBackend().Initialize();
+  VkInstance instance = context.GetVulkanInstance();
   if (instance == VK_NULL_HANDLE) {
     GERROR("Failed to create Vulkan instance");
     return;
   }
-
+  VkSurfaceKHR surface;
   VkResult res = glfwCreateWindowSurface(instance, glfw_window, nullptr, &surface);
   if (res != VK_SUCCESS) {
     GERROR("Failed to create window surface");
   }
-
-  app->GetVulkanContext().SetSurface(surface);
-
-  // setup device requirements
-  // request specific queue families support
-  // request specific device extensions
-  app->GetVulkanContext().AddDeviceExtension("VK_KHR_swapchain");
-  app->GetVulkanContext().GetVulkanDevice().Initialize();
+  context.SetSurface(surface);
+  context.AddDeviceExtension("VK_KHR_swapchain");
+  context.GetVulkanDevice().Initialize();
 
   int w, h;
   glfwGetFramebufferSize(glfw_window, &w, &h);
   ImGui_ImplVulkanH_Window *imgui_window = &g_MainWindowData;
 
   // TODO: Maybe return something indicating success or failure
-  // init_info_renderPass = imgui_window->RenderPass; // This can be null
-  SetupVulkanWindow(app->GetVulkanContext(), imgui_window, surface, w, h);
+  SetupVulkanWindowForImGui(context, imgui_window, surface, w, h);
 
   // Setup Dear ImGui context
   IMGUI_CHECKVERSION();
@@ -253,14 +247,14 @@ void GLACEON_API runGame(Application *app) {
   // Setup Dear ImGui style
   ImGui::StyleColorsDark();
 
-  auto physicalDevice = app->GetVulkanContext().GetVulkanDevice().GetPhysicalDevice();
-  auto device = app->GetVulkanContext().GetVulkanDevice().GetLogicalDevice();
+  auto physicalDevice = context.GetVulkanDevice().GetPhysicalDevice();
+  auto device = context.GetVulkanDevice().GetLogicalDevice();
   auto queueFamily = 0;
-  auto queue = app->GetVulkanContext().GetVulkanDevice().GetPresentQueue();
+  auto queue = context.GetVulkanDevice().GetPresentQueue();
 
   // FIXME: pipeline cache and descriptor pool are invalid when this is called
-  auto pipelineCache = app->GetVulkanContext().GetPipelineCache();
-  auto descriptorPool = app->GetVulkanContext().GetDescriptorPool();
+  auto pipelineCache = context.GetPipelineCache();
+  auto descriptorPool = context.GetDescriptorPool();
 
   // Setup Platform/Renderer backends
   ImGui_ImplGlfw_InitForVulkan(glfw_window, true);
@@ -327,12 +321,12 @@ void GLACEON_API runGame(Application *app) {
       imgui_window->ClearValue.color.float32[1] = clear_color.y * clear_color.w;
       imgui_window->ClearValue.color.float32[2] = clear_color.z * clear_color.w;
       imgui_window->ClearValue.color.float32[3] = clear_color.w;
-      FrameRender(app->GetVulkanContext(), imgui_window, draw_data);
-      FramePresent(app->GetVulkanContext(), imgui_window);
+      ImGuiFrameRender(context, imgui_window, draw_data);
+      ImGuiFramePresent(context, imgui_window);
     }
   }
 
-  res = vkDeviceWaitIdle(app->GetVulkanContext().GetVulkanDevice().GetLogicalDevice());
+  res = vkDeviceWaitIdle(context.GetVulkanDevice().GetLogicalDevice());
 
   if (res != VK_SUCCESS) {
     GERROR("Failed to wait for device");
