@@ -6,6 +6,7 @@
 
 #include "VulkanBackend.h"
 #include "VulkanDevice.h"
+#include "VulkanSwapChain.h"
 
 namespace Glaceon {
 
@@ -15,9 +16,14 @@ class VulkanContext {
   ~VulkanContext() = default;
 
   VulkanBackend &GetVulkanBackend() { return backend; }
+
   VkInstance &GetVulkanInstance() { return instance; }
   void SetVulkanInstance(VkInstance vkInstance) { this->instance = vkInstance; }
+
   VulkanDevice &GetVulkanDevice() { return device; }
+  VkPhysicalDevice GetVulkanPhysicalDevice() { return device.GetPhysicalDevice(); }
+  VkDevice GetVulkanLogicalDevice() { return device.GetLogicalDevice(); }
+  QueueIndexes &GetQueueIndexes() { return device.GetQueueIndexes(); }
 
   void AddDeviceExtension(const char *ext);
   void RemoveDeviceExtension(const char *ext);
@@ -35,10 +41,13 @@ class VulkanContext {
   VkSurfaceKHR GetSurface() { return surface; }
   void SetSurface(VkSurfaceKHR vkSurface) { this->surface = vkSurface; }
 
+  VulkanSwapChain &GetVulkanSwapChain() { return swapChain; }
+
  private:
   VkInstance instance = VK_NULL_HANDLE;
   VulkanBackend backend;
   VulkanDevice device;
+  VulkanSwapChain swapChain;
   VkDescriptorPool descriptorPool;
   VkSurfaceKHR surface = VK_NULL_HANDLE;
   VkPipelineCache pipelineCache = VK_NULL_HANDLE;

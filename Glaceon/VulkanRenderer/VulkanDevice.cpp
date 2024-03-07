@@ -11,7 +11,10 @@
 namespace Glaceon {
 
 VulkanDevice::VulkanDevice(VulkanContext &context)
-    : physicalDevice(VK_NULL_HANDLE), device(VK_NULL_HANDLE), context(context) {}
+    : physicalDevice(VK_NULL_HANDLE), device(VK_NULL_HANDLE), context(context) {
+  queue_indexes_.graphicsFamily = std::nullopt;
+  queue_indexes_.presentFamily = std::nullopt;
+}
 
 void VulkanDevice::Initialize() {
   GINFO("Initializing Vulkan device...");
@@ -58,8 +61,8 @@ void VulkanDevice::Initialize() {
   const float queue_priority[] = {1.0f};
 
   std::set<uint32_t> unique_indicies;
-  unique_indicies.insert(graphic_queue_indexes_.graphicsFamily.value());
-  unique_indicies.insert(graphic_queue_indexes_.presentFamily.value());
+  unique_indicies.insert(queue_indexes_.graphicsFamily.value());
+  unique_indicies.insert(queue_indexes_.presentFamily.value());
 
   std::vector<VkDeviceQueueCreateInfo> queueCreateInfo;
   for (size_t i = 0; i < unique_indicies.size(); i++) {
@@ -86,8 +89,8 @@ void VulkanDevice::Initialize() {
     GINFO("Vulkan device created successfully");
   }
 
-  vkGetDeviceQueue(device, graphic_queue_indexes_.graphicsFamily.value(), 0, &graphicsQueue);
-  vkGetDeviceQueue(device, graphic_queue_indexes_.presentFamily.value(), 0, &presentQueue);
+  vkGetDeviceQueue(device, queue_indexes_.graphicsFamily.value(), 0, &graphicsQueue);
+  vkGetDeviceQueue(device, queue_indexes_.presentFamily.value(), 0, &presentQueue);
 
   VkDescriptorPoolSize pool_sizes[] = {
       {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1},
@@ -144,19 +147,19 @@ bool VulkanDevice::CheckDeviceRequirements(VkPhysicalDevice &vkPhysicalDevice) {
     VkBool32 presentSupport = false;
     vkGetPhysicalDeviceSurfaceSupportKHR(vkPhysicalDevice, i, surface, &presentSupport);
     if (presentSupport) {
-      graphic_queue_indexes_.presentFamily = i;
+      queue_indexes_.presentFamily = i;
       break;
     }
   }
   // first queue family that supports graphics
   for (uint32_t i = 0; i < queueFamilyCount; i++) {
     if (queueFamily[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-      graphic_queue_indexes_.graphicsFamily = i;
+      queue_indexes_.graphicsFamily = i;
       break;
     }
   }
 
-  if (!graphic_queue_indexes_.isComplete()) {
+  if (!queue_indexes_.isComplete()) {
     GTRACE("Device does not support graphics queue family, skipping...");
     return false;
   } else {

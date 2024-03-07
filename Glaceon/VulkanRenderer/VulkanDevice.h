@@ -10,17 +10,24 @@ namespace Glaceon {
 
 class VulkanContext;
 
+struct QueueIndexes {
+  std::optional<uint32_t> graphicsFamily = std::nullopt;
+  std::optional<uint32_t> presentFamily = std::nullopt;
+
+  [[nodiscard]] bool isComplete() const { return graphicsFamily.has_value() && presentFamily.has_value(); }
+};
+
 class VulkanDevice {
  public:
   VulkanDevice(VulkanContext &context);
   void Initialize();
 
-  std::vector<VkQueueFamilyProperties> GetQueueFamilies() { return queueFamily; }
-  std::vector<VkExtensionProperties> GetDeviceExtensions() { return deviceExtensions; }
   VkPhysicalDevice &GetPhysicalDevice() { return physicalDevice; }
   VkDevice &GetLogicalDevice() { return device; }
   VkQueue GetPresentQueue() { return presentQueue; }
   VkQueue GetGraphicsQueue() { return graphicsQueue; }
+
+  QueueIndexes &GetQueueIndexes() { return queue_indexes_; }
 
  private:
   VkPhysicalDevice physicalDevice;
@@ -32,14 +39,7 @@ class VulkanDevice {
   std::vector<VkQueueFamilyProperties> queueFamily;
   std::vector<VkExtensionProperties> deviceExtensions;
 
-  typedef struct GraphicQueueIndexes {
-    std::optional<uint32_t> graphicsFamily = std::nullopt;
-    std::optional<uint32_t> presentFamily = std::nullopt;
-
-    [[nodiscard]] bool isComplete() const { return graphicsFamily.has_value() && presentFamily.has_value(); }
-  } GraphicQueueIndexes;
-
-  GraphicQueueIndexes graphic_queue_indexes_;
+  QueueIndexes queue_indexes_;
 
   bool CheckDeviceRequirements(VkPhysicalDevice &vkPhysicalDevice);
   bool IsExtensionAvailable(const char *ext);

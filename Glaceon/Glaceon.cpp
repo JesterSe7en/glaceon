@@ -34,7 +34,7 @@ static void CheckVkResult(VkResult err) {
 }
 
 void SetupVulkanWindowForImGui(VulkanContext &context, ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface, int width,
-                       int height) {
+                               int height) {
   if (wd == nullptr) {
     GERROR("Failed to create Vulkan Window");
     exit(-1);
@@ -226,6 +226,7 @@ void GLACEON_API runGame(Application *app) {
   context.SetSurface(surface);
   context.AddDeviceExtension("VK_KHR_swapchain");
   context.GetVulkanDevice().Initialize();
+  context.GetVulkanSwapChain().Initialize();
 
   int w, h;
   glfwGetFramebufferSize(glfw_window, &w, &h);

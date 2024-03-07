@@ -7,6 +7,7 @@ set(Header_Files
         "pch.h"
         Base.h
         Logger.h
+        Application.h
         ${CMAKE_SOURCE_DIR}/extern/imgui/imconfig.h
         ${CMAKE_SOURCE_DIR}/extern/imgui/imgui.h
         ${CMAKE_SOURCE_DIR}/extern/imgui/imgui_internal.h
@@ -18,6 +19,7 @@ set(Header_Files
         VulkanRenderer/VulkanDevice.h
         VulkanRenderer/VulkanContext.h
         VulkanRenderer/VulkanBackend.h
+        VulkanRenderer/VulkanSwapChain.h
 )
 source_group("Header Files" FILES ${Header_Files})
 
@@ -26,6 +28,7 @@ set(Source_Files
         "Glaceon.cpp"
         "pch.cpp"
         Logger.cpp
+        Application.cpp
         ${CMAKE_SOURCE_DIR}/extern/imgui/imgui.cpp
         ${CMAKE_SOURCE_DIR}/extern/imgui/imgui_demo.cpp
         ${CMAKE_SOURCE_DIR}/extern/imgui/imgui_draw.cpp
@@ -36,13 +39,13 @@ set(Source_Files
         VulkanRenderer/VulkanBackend.cpp
         VulkanRenderer/VulkanContext.cpp
         VulkanRenderer/VulkanDevice.cpp
+        VulkanRenderer/VulkanSwapChain.cpp
 )
 source_group("Source Files" FILES ${Source_Files})
 
 set(ALL_FILES
         ${Header_Files}
-        ${Source_Files}
-        Application.cpp)
+        ${Source_Files})
 
 # Target
 add_library(${PROJECT_NAME} SHARED ${ALL_FILES})
