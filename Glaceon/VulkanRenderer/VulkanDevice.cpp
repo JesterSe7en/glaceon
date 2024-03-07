@@ -61,18 +61,20 @@ void VulkanDevice::Initialize() {
   unique_indicies.insert(graphic_queue_indexes_.graphicsFamily.value());
   unique_indicies.insert(graphic_queue_indexes_.presentFamily.value());
 
-  VkDeviceQueueCreateInfo queueCreateInfo[unique_indicies.size()] = {};
+  std::vector<VkDeviceQueueCreateInfo> queueCreateInfo;
   for (size_t i = 0; i < unique_indicies.size(); i++) {
-    queueCreateInfo[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-    queueCreateInfo[i].queueFamilyIndex = static_cast<uint32_t>(i);
-    queueCreateInfo[i].queueCount = 1;
-    queueCreateInfo[i].pQueuePriorities = queue_priority;
+    VkDeviceQueueCreateInfo queueInfo = {};
+    queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queueInfo.queueFamilyIndex = static_cast<uint32_t>(i);
+    queueInfo.queueCount = 1;
+    queueInfo.pQueuePriorities = queue_priority;
+    queueCreateInfo.emplace_back(queueInfo);
   }
 
   VkDeviceCreateInfo createInfo = {};
   createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-  createInfo.queueCreateInfoCount = sizeof(queueCreateInfo) / sizeof(queueCreateInfo[0]);
-  createInfo.pQueueCreateInfos = queueCreateInfo;
+  createInfo.queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfo.size());
+  createInfo.pQueueCreateInfos = queueCreateInfo.data();
   createInfo.enabledExtensionCount = static_cast<uint32_t>(context.GetDeviceExtensions().size());
   createInfo.ppEnabledExtensionNames = context.GetDeviceExtensions().data();
 
