@@ -19,20 +19,22 @@ class VulkanDevice {
   std::vector<VkExtensionProperties> GetDeviceExtensions() { return deviceExtensions; }
   VkPhysicalDevice &GetPhysicalDevice() { return physicalDevice; }
   VkDevice &GetLogicalDevice() { return device; }
-  VkQueue GetQueue() { return queue; }
+  VkQueue GetPresentQueue() { return presentQueue; }
+  VkQueue GetGraphicsQueue() { return graphicsQueue; }
 
  private:
   VkPhysicalDevice physicalDevice;
   VkDevice device;
-  VkQueue queue;
+  VkQueue presentQueue;
+  VkQueue graphicsQueue;
   VkDescriptorPool descriptorPool;
   VulkanContext &context;
   std::vector<VkQueueFamilyProperties> queueFamily;
   std::vector<VkExtensionProperties> deviceExtensions;
 
   typedef struct GraphicQueueIndexes {
-    std::optional<uint32_t> graphicsFamily;
-    std::optional<uint32_t> presentFamily;
+    std::optional<uint32_t> graphicsFamily = std::nullopt;
+    std::optional<uint32_t> presentFamily = std::nullopt;
 
     [[nodiscard]] bool isComplete() const { return graphicsFamily.has_value() && presentFamily.has_value(); }
   } GraphicQueueIndexes;

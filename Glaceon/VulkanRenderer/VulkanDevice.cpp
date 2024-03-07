@@ -3,6 +3,8 @@
 #include <vulkan/vk_enum_string_helper.h>
 #include <vulkan/vulkan_core.h>
 
+#include <set>
+
 #include "../Logger.h"
 #include "VulkanContext.h"
 
@@ -53,20 +55,19 @@ void VulkanDevice::Initialize() {
     PrintPhysicalDevice(physicalDevice);
   }
 
-  // create device with graphic queue
-  // find queue family with graphics support
-  int index = GetQueueFamilyIndex(VK_QUEUE_GRAPHICS_BIT);
-  if (index == -1) {
-    GERROR("Failed to find a suitable queue family for {}", string_VkQueueFlagBits(VK_QUEUE_GRAPHICS_BIT));
-    return;
-  }
+  const float queue_priority[] = {1.0f};
 
-  const float queue_priority[] = {0.0f};
-  VkDeviceQueueCreateInfo queueCreateInfo[1] = {};
-  queueCreateInfo[0].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-  queueCreateInfo[0].queueFamilyIndex = index;
-  queueCreateInfo[0].queueCount = 1;
-  queueCreateInfo[0].pQueuePriorities = queue_priority;
+  std::set<uint32_t> unique_indicies;
+  unique_indicies.insert(graphic_queue_indexes_.graphicsFamily.value());
+  unique_indicies.insert(graphic_queue_indexes_.presentFamily.value());
+
+  VkDeviceQueueCreateInfo queueCreateInfo[unique_indicies.size()] = {};
+  for (size_t i = 0; i < unique_indicies.size(); i++) {
+    queueCreateInfo[i].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+    queueCreateInfo[i].queueFamilyIndex = static_cast<uint32_t>(i);
+    queueCreateInfo[i].queueCount = 1;
+    queueCreateInfo[i].pQueuePriorities = queue_priority;
+  }
 
   VkDeviceCreateInfo createInfo = {};
   createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
@@ -83,7 +84,8 @@ void VulkanDevice::Initialize() {
     GINFO("Vulkan device created successfully");
   }
 
-  vkGetDeviceQueue(device, index, 0, &queue);
+  vkGetDeviceQueue(device, graphic_queue_indexes_.graphicsFamily.value(), 0, &graphicsQueue);
+  vkGetDeviceQueue(device, graphic_queue_indexes_.presentFamily.value(), 0, &presentQueue);
 
   VkDescriptorPoolSize pool_sizes[] = {
       {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1},
@@ -135,13 +137,20 @@ bool VulkanDevice::CheckDeviceRequirements(VkPhysicalDevice &vkPhysicalDevice) {
   auto surface = context.GetSurface();
   assert(surface != VK_NULL_HANDLE);
 
+  // first queue family that supports presentation
   for (uint32_t i = 0; i < queueFamilyCount; i++) {
-    // Check if the queue family supports graphics
-    if (queueFamily[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-      // assuming all graphics queue families support presentation
-      graphic_queue_indexes_.graphicsFamily = i;
+    VkBool32 presentSupport = false;
+    vkGetPhysicalDeviceSurfaceSupportKHR(vkPhysicalDevice, i, surface, &presentSupport);
+    if (presentSupport) {
       graphic_queue_indexes_.presentFamily = i;
-      GTRACE("Graphics queue family index: {} supports graphics and present", i);
+      break;
+    }
+  }
+  // first queue family that supports graphics
+  for (uint32_t i = 0; i < queueFamilyCount; i++) {
+    if (queueFamily[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+      graphic_queue_indexes_.graphicsFamily = i;
+      break;
     }
   }
 
@@ -149,7 +158,7 @@ bool VulkanDevice::CheckDeviceRequirements(VkPhysicalDevice &vkPhysicalDevice) {
     GTRACE("Device does not support graphics queue family, skipping...");
     return false;
   } else {
-    GTRACE("Device supports graphics queue family");
+    GTRACE("Device supports graphics and presentation queue families");
   }
 
   uint32_t properties_count;
@@ -181,15 +190,6 @@ bool VulkanDevice::IsExtensionAvailable(const char *ext) {
     }
   }
   return false;
-}
-
-int VulkanDevice::GetQueueFamilyIndex(VkQueueFlagBits bits) {
-  for (uint32_t i = 0; i < queueFamily.size(); i++) {
-    if (queueFamily[i].queueFlags & bits) {
-      return i;
-    }
-  }
-  return -1;
 }
 
 void VulkanDevice::PrintPhysicalDevice(VkPhysicalDevice gpu) {

@@ -144,7 +144,7 @@ static void FrameRender(VulkanContext &context, ImGui_ImplVulkanH_Window *wd, Im
 
     err = vkEndCommandBuffer(fd->CommandBuffer);
     CheckVkResult(err);
-    err = vkQueueSubmit(context.GetVulkanDevice().GetQueue(), 1, &info, fd->Fence);
+    err = vkQueueSubmit(context.GetVulkanDevice().GetPresentQueue(), 1, &info, fd->Fence);
     CheckVkResult(err);
   }
 }
@@ -159,7 +159,7 @@ static void FramePresent(VulkanContext &context, ImGui_ImplVulkanH_Window *wd) {
   info.swapchainCount = 1;
   info.pSwapchains = &wd->Swapchain;
   info.pImageIndices = &wd->FrameIndex;
-  VkResult err = vkQueuePresentKHR(context.GetVulkanDevice().GetQueue(), &info);
+  VkResult err = vkQueuePresentKHR(context.GetVulkanDevice().GetPresentQueue(), &info);
   if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
     swapChainRebuild = true;
     return;
@@ -256,7 +256,7 @@ void GLACEON_API runGame(Application *app) {
   auto physicalDevice = app->GetVulkanContext().GetVulkanDevice().GetPhysicalDevice();
   auto device = app->GetVulkanContext().GetVulkanDevice().GetLogicalDevice();
   auto queueFamily = 0;
-  auto queue = app->GetVulkanContext().GetVulkanDevice().GetQueue();
+  auto queue = app->GetVulkanContext().GetVulkanDevice().GetPresentQueue();
 
   // FIXME: pipeline cache and descriptor pool are invalid when this is called
   auto pipelineCache = app->GetVulkanContext().GetPipelineCache();
