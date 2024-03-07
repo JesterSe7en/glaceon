@@ -1,5 +1,5 @@
 #include "Application.h"
 
 namespace Glaceon {
-Application::Application(ApplicationInfo* info) : context() { Glaceon::Logger::InitLoggers(); }
+Application::Application(ApplicationInfo* info) { Glaceon::Logger::InitLoggers(); }
 }  // namespace Glaceon

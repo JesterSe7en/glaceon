@@ -12,6 +12,7 @@ namespace Glaceon {
 struct GLACEON_API ApplicationInfo {
   std::string name;
 };
+
 class GLACEON_API Application {
  public:
   Application(ApplicationInfo* info);
@@ -19,10 +20,10 @@ class GLACEON_API Application {
   virtual void onUpdate() = 0;
   virtual void onShutdown() = 0;
 
-  Glaceon::VulkanContext& GetVulkanContext() { return context; }
+  VulkanContext& GetVulkanContext() { return context; }
 
  private:
-  Glaceon::VulkanContext context;
+  VulkanContext context;
 };
 }  // namespace Glaceon
 
