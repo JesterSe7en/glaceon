@@ -1,7 +1,3 @@
-//
-// Created by alyxc on 3/7/2024.
-//
-
 #include "VulkanSwapChain.h"
 
 #include <vulkan/vk_enum_string_helper.h>
