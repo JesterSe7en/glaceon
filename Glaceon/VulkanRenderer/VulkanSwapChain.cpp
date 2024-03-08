@@ -1,9 +1,5 @@
 #include "VulkanSwapChain.h"
 
-#include <vulkan/vk_enum_string_helper.h>
-
-#include <vulkan/vulkan.hpp>
-
 #include "../Logger.h"
 #include "VulkanContext.h"
 
@@ -200,7 +196,50 @@ void VulkanSwapChain::CreateSwapChain() {
   }
 
   // get the images from the swap chain, they are created during initialization aka vkCreateSwapchainKHR
-  swapChainImages.resize(imageCount);
-  vkGetSwapchainImagesKHR(context.GetVulkanLogicalDevice(), swapChain, &imageCount, swapChainImages.data());
+
+  std::vector<VkImage> images;
+  images.resize(imageCount);
+  vkGetSwapchainImagesKHR(context.GetVulkanLogicalDevice(), swapChain, &imageCount, images.data());
+  std::vector<VkImageView> imageViews;
+  // For each swapChaimImage, we need to construct an image view
+  // create a std::vector that matches up with the number of images in the swapChainImages
+  for (uint32_t i = 0; i < imageCount; i++) {
+    //    typedef struct VkImageViewCreateInfo {
+    //      VkStructureType            sType;
+    //      const void*                pNext;
+    //      VkImageViewCreateFlags     flags;
+    //      VkImage                    image;
+    //      VkImageViewType            viewType;
+    //      VkFormat                   format;
+    //      VkComponentMapping         components;
+    //      VkImageSubresourceRange    subresourceRange;
+    //    } VkImageViewCreateInfo;
+    VkImageViewCreateInfo create_info = {};
+    create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    create_info.image = images[i];
+    create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    create_info.format = surfaceFormat;
+    create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+    create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+    create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+    create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+    create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    create_info.subresourceRange.baseMipLevel = 0;
+    create_info.subresourceRange.levelCount = 1;
+    create_info.subresourceRange.baseArrayLayer = 0;
+    create_info.subresourceRange.layerCount = 1;
+    VkResult result = vkCreateImageView(context.GetVulkanLogicalDevice(), &create_info, nullptr, &imageViews[i]);
+    if (result != VK_SUCCESS) {
+      GERROR("Failed to create image view");
+    }
+  }
+
+  swapChainFrames.resize(imageCount);
+  for (uint32_t i = 0; i < imageCount; i++) {
+    swapChainFrames[i].image = images[i];
+    swapChainFrames[i].imageView = imageViews[i];
+  }
+
+  GTRACE("Swap chain created successfully");
 }
 }  // namespace Glaceon

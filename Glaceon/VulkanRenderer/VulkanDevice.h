@@ -1,10 +1,7 @@
 #ifndef GLACEON_VULKANDEVICE_H
 #define GLACEON_VULKANDEVICE_H
 
-#include <vulkan/vulkan_core.h>
-
-#include <optional>
-#include <vector>
+#include "../pch.h"
 
 namespace Glaceon {
 

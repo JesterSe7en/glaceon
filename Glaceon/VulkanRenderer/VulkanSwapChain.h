@@ -1,9 +1,7 @@
 #ifndef GLACEON_VULKANSWAPCHAIN_H_
 #define GLACEON_VULKANSWAPCHAIN_H_
 
-#include <vulkan/vulkan.h>
-
-#include <vector>
+#include "../pch.h"
 
 namespace Glaceon {
 
@@ -13,6 +11,11 @@ struct SwapChainSupportDetails {
   VkSurfaceCapabilitiesKHR capabilities;
   std::vector<VkSurfaceFormatKHR> formats;
   std::vector<VkPresentModeKHR> presentModes;
+};
+
+struct SwapChainFrame {
+  VkImage image;
+  VkImageView imageView;
 };
 
 class VulkanSwapChain {
@@ -27,7 +30,7 @@ class VulkanSwapChain {
 
   // relevant to swap chain
   VkSwapchainKHR swapChain;
-  std::vector<VkImage> swapChainImages;
+  std::vector<SwapChainFrame> swapChainFrames;
   VkFormat swapChainImageFormat;
   VkExtent2D swapChainExtent;
 

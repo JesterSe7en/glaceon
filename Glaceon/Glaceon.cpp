@@ -2,16 +2,6 @@
 
 #include "Application.h"
 #include "Logger.h"
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_vulkan.h"
-
-#define GLFW_INCLUDE_NONE
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
-#include <vulkan/vk_enum_string_helper.h>
-#include <vulkan/vulkan.h>
-#include <vulkan/vulkan_core.h>
 
 namespace Glaceon {
 
@@ -226,7 +216,7 @@ void GLACEON_API runGame(Application *app) {
   context.SetSurface(surface);
   context.AddDeviceExtension("VK_KHR_swapchain");
   context.GetVulkanDevice().Initialize();
-  context.GetVulkanSwapChain().Initialize();
+//  context.GetVulkanSwapChain().Initialize();
 
   int w, h;
   glfwGetFramebufferSize(glfw_window, &w, &h);

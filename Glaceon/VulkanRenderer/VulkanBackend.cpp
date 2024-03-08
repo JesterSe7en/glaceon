@@ -1,7 +1,5 @@
 #include "VulkanBackend.h"
 
-#include <vulkan/vulkan_core.h>
-
 #include "../Logger.h"
 #include "VulkanContext.h"
 

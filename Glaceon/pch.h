@@ -8,6 +8,28 @@
 #define PCH_H
 
 // add headers that you want to pre-compile here
+#define IMGUI_DEFINE_MATH_OPERATORS
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_vulkan.h"
+
+#include <vector>
+#include <string>
+#include <optional>
+#include <algorithm>
+#include <set>
+
 #include "framework.h"
+#include <spdlog/fmt/fmt.h>
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+
+#include <vulkan/vulkan.h>
+#include <vulkan/vulkan_core.h>
+#include <vulkan/vk_enum_string_helper.h>
+
+#define GLFW_INCLUDE_NONE
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
 
 #endif //PCH_H

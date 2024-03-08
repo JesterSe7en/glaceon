@@ -1,11 +1,10 @@
 #ifndef GLACEON_GLACEON_GLACEON_H_
 #define GLACEON_GLACEON_GLACEON_H_
 
-#include <string>
+#include "pch.h"
 
 #include "Application.h"
 #include "Base.h"
-#include "VulkanRenderer/VulkanContext.h"
 
 namespace Glaceon {
 

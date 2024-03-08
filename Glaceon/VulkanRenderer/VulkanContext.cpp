@@ -1,7 +1,5 @@
 #include "VulkanContext.h"
 
-#include <algorithm>
-
 namespace Glaceon {
 
 VulkanContext::VulkanContext()

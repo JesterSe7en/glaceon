@@ -1,7 +1,7 @@
 #ifndef GLACEON_GLACEON_GLACEON_CPP_APPLICATION_H_
 #define GLACEON_GLACEON_GLACEON_CPP_APPLICATION_H_
 
-#include <string>
+#include "pch.h"
 
 #include "Base.h"
 #include "Logger.h"

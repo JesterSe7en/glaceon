@@ -1,10 +1,5 @@
 #include "Logger.h"
 
-#include <spdlog/sinks/stdout_color_sinks.h>
-
-// TODO: Take a look at this, might be helpful
-#include <vulkan/vk_enum_string_helper.h>
-
 namespace Glaceon {
 
 std::shared_ptr<spdlog::logger> Logger::p_console_logger;
