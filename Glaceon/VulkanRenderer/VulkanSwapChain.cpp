@@ -202,5 +202,9 @@ void VulkanSwapChain::CreateSwapChain() {
   } else {
     GTRACE("Successfully created swap chain");
   }
+
+  // get the images from the swap chain, they are created during initialization aka vkCreateSwapchainKHR
+  swapChainImages.resize(imageCount);
+  vkGetSwapchainImagesKHR(context.GetVulkanLogicalDevice(), swapChain, &imageCount, swapChainImages.data());
 }
 }  // namespace Glaceon
