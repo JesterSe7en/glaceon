@@ -8,7 +8,7 @@ project(Glaceon CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+#set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 
 # Set target arch type if empty. Visual studio solution generator provides it.
