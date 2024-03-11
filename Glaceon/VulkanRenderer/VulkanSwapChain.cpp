@@ -127,7 +127,9 @@ void VulkanSwapChain::PopulateSwapChainSupport() {
   }
 }
 void VulkanSwapChain::CreateSwapChain() {
-  auto surface = context.GetSurface();
+  VkSurfaceKHR surface = context.GetSurface();
+  VkDevice device = context.GetVulkanLogicalDevice();
+  assert(surface != VK_NULL_HANDLE && device != VK_NULL_HANDLE);
 
   uint32_t imageCount =
       std::min(swapChainSupport.capabilities.maxImageCount, swapChainSupport.capabilities.minImageCount + 1);
@@ -187,7 +189,7 @@ void VulkanSwapChain::CreateSwapChain() {
   createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
   createInfo.oldSwapchain = nullptr;  // used during re-initialization from old to speed up creation
 
-  VkResult res = vkCreateSwapchainKHR(context.GetVulkanLogicalDevice(), &createInfo, nullptr, &swapChain);
+  VkResult res = vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain);
 
   if (res != VK_SUCCESS) {
     GERROR("Failed to create swap chain");
@@ -199,7 +201,7 @@ void VulkanSwapChain::CreateSwapChain() {
 
   std::vector<VkImage> images;
   images.resize(imageCount);
-  vkGetSwapchainImagesKHR(context.GetVulkanLogicalDevice(), swapChain, &imageCount, images.data());
+  vkGetSwapchainImagesKHR(device, swapChain, &imageCount, images.data());
   std::vector<VkImageView> imageViews;
   // For each swapChaimImage, we need to construct an image view
   // create a std::vector that matches up with the number of images in the swapChainImages
@@ -228,7 +230,7 @@ void VulkanSwapChain::CreateSwapChain() {
     create_info.subresourceRange.levelCount = 1;
     create_info.subresourceRange.baseArrayLayer = 0;
     create_info.subresourceRange.layerCount = 1;
-    VkResult result = vkCreateImageView(context.GetVulkanLogicalDevice(), &create_info, nullptr, &imageViews[i]);
+    VkResult result = vkCreateImageView(device, &create_info, nullptr, &imageViews[i]);
     if (result != VK_SUCCESS) {
       GERROR("Failed to create image view");
     }

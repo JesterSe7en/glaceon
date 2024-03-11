@@ -13,6 +13,8 @@ class VulkanRenderPass {
   void Initialize();
   void Destroy();
 
+  const VkRenderPass& GetVkRenderPass() const;
+
  private:
   VulkanContext& context;
   VkRenderPass renderPass;

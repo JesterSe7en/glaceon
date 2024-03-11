@@ -46,6 +46,8 @@ class VulkanContext {
 
   VulkanPipeline &GetVulkanPipeline() { return pipeline; }
 
+  VulkanRenderPass &GetVulkanRenderPass() { return renderPass; }
+
  private:
   VulkanBackend backend;
   VulkanDevice device;

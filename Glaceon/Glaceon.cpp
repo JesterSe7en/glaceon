@@ -216,13 +216,10 @@ void GLACEON_API runGame(Application *app) {
   context.SetSurface(surface);
   context.AddDeviceExtension("VK_KHR_swapchain");
   context.GetVulkanDevice().Initialize();
-//  context.GetVulkanSwapChain().Initialize();
+  context.GetVulkanSwapChain().Initialize();
 
   GraphicsPipelineConfig config = {
       .vertexShaderFile = "../../shaders/vert.spv",
-//      .vertexShaderFile = "C:/Users/alyxc/Workspace/glaceon-vs/shaders/vert.spv",
-//      .filename = "../shaders/vert.spv",  // TODO: make this relative - not working for now
-//      .fragmentShaderFile = "C:/Users/alyxc/Workspace/glaceon-vs/shaders/frag.spv",
       .fragmentShaderFile = "../../shaders/frag.spv",
   };
   context.GetVulkanPipeline().Initialize(config);

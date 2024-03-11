@@ -99,6 +99,7 @@ void VulkanDevice::Initialize() {
     GINFO("Graphics command pool created successfully");
   }
 
+
   VkDescriptorPoolSize pool_sizes[] = {
       {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1},
   };

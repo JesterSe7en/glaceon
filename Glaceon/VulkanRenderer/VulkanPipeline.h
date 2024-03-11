@@ -27,10 +27,8 @@ class VulkanPipeline {
 
   VkPipelineLayout pipelineLayout;
   VkPipeline pipeline;
-  VkRenderPass renderPass;
 
   void CreatePipelineLayout();
-  void CreateRenderPass();
 };
 
 }  // namespace Glaceon
