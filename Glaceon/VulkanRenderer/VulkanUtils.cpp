@@ -1,8 +1,6 @@
-//
-// Created by alyxc on 3/10/2024.
-//
-
 #include "VulkanUtils.h"
+
+#include "../Logger.h"
 
 namespace Glaceon {
 std::vector<char> VulkanUtils::ReadFile(const std::string& filename) {
@@ -12,7 +10,7 @@ std::vector<char> VulkanUtils::ReadFile(const std::string& filename) {
     throw std::runtime_error("Failed to open file: " + filename);
   }
 
-  size_t fileSize = (size_t) file.tellg();
+  size_t fileSize = (size_t)file.tellg();
   std::vector<char> buffer(fileSize);
 
   file.seekg(0);
@@ -30,7 +28,8 @@ VkShaderModule VulkanUtils::CreateShaderModule(VkDevice const& device, const std
 
   VkShaderModule shaderModule;
   if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-    throw std::runtime_error("Failed to create shader module.");
+    GERROR("Failed to create shader module");
+    return nullptr;
   }
   return shaderModule;
 }
