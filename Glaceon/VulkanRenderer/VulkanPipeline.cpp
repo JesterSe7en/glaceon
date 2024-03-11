@@ -202,7 +202,9 @@ void VulkanPipeline::CreateRenderPass() {
   // render pass Attachments are used to store the results of rendering operations, such as color, depth, or stencil
   // values. Each subpass in a render pass can read or write to the attachment
   VkAttachmentDescription colorAttachment = {};
-  colorAttachment.format = context.GetVulkanSwapChain().GetSwapChainImageFormat();
+  colorAttachment.format = VK_FORMAT_B8G8R8A8_UNORM;
+  // TODO: Uncomment this out once we have a swap chain
+//  colorAttachment.format = context.GetVulkanSwapChain().GetSwapChainImageFormat();
   colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
   colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
   colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
