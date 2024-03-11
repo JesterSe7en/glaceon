@@ -11,7 +11,6 @@ namespace Glaceon {
 VulkanPipeline::VulkanPipeline(VulkanContext& context) : context(context) {}
 
 void VulkanPipeline::Initialize(GraphicsPipelineConfig pipelineConfig) {
-
   VkDevice device = context.GetVulkanLogicalDevice();
   assert(device != nullptr);
 
@@ -20,7 +19,7 @@ void VulkanPipeline::Initialize(GraphicsPipelineConfig pipelineConfig) {
   pipelineInfo.pNext = nullptr;
   pipelineInfo.flags = 0;
 
-  std::vector<VkPipelineShaderStageCreateInfo >
+  std::vector<VkPipelineShaderStageCreateInfo>
       shaderStages;  // these store the configurations for vertex input, fragment, etc.
 
   // Vertex Input
@@ -132,7 +131,8 @@ void VulkanPipeline::Initialize(GraphicsPipelineConfig pipelineConfig) {
   // Color Blend - alpha transparency, etc.
   // This is doing no blending
   VkPipelineColorBlendAttachmentState colorBlendingAttachment = {};
-  colorBlendingAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+  colorBlendingAttachment.colorWriteMask =
+      VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
   colorBlendingAttachment.blendEnable = VK_FALSE;
   VkPipelineColorBlendStateCreateInfo colorBlending = {};
   colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -154,7 +154,7 @@ void VulkanPipeline::Initialize(GraphicsPipelineConfig pipelineConfig) {
   pipelineInfo.renderPass = renderPass;
 
   // Extra stuff
-  pipelineInfo.basePipelineHandle = VK_NULL_HANDLE; // Optional - to base pipeline on
+  pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;  // Optional - to base pipeline on
 
   // Create pipeline - for now just one pipeline
   if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS) {
@@ -198,9 +198,9 @@ void VulkanPipeline::CreatePipelineLayout() {
 void VulkanPipeline::CreateRenderPass() {
   // TODO: Probably use the VulkanRenderPass class instead, right now it does not accept any config
 
-  // An attachment is essentially an image or a memory buffer that serves as a rendering target or source within a render pass
-  // Attachments are used to store the results of rendering operations, such as color, depth, or stencil values.
-  // Each subpass in a render pass can read or write to the attachment
+  // An attachment is essentially an image or a memory buffer that serves as a rendering target or source within a
+  // render pass Attachments are used to store the results of rendering operations, such as color, depth, or stencil
+  // values. Each subpass in a render pass can read or write to the attachment
   VkAttachmentDescription colorAttachment = {};
   colorAttachment.format = context.GetVulkanSwapChain().GetSwapChainImageFormat();
   colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
