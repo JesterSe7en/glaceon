@@ -87,6 +87,18 @@ void VulkanDevice::Initialize() {
   vkGetDeviceQueue(device, queue_indexes_.graphicsFamily.value(), 0, &graphicsQueue);
   vkGetDeviceQueue(device, queue_indexes_.presentFamily.value(), 0, &presentQueue);
 
+  // create command pool for graphics queue - command pool only needs VkDevice to create it
+  VkCommandPoolCreateInfo poolInfo = {};
+  poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+  poolInfo.queueFamilyIndex = queue_indexes_.graphicsFamily.value();
+  poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+  res = vkCreateCommandPool(device, &poolInfo, nullptr, &commandPool);
+  if (res != VK_SUCCESS) {
+    GERROR("Failed to create graphics command pool");
+  } else {
+    GINFO("Graphics command pool created successfully");
+  }
+
   VkDescriptorPoolSize pool_sizes[] = {
       {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1},
   };

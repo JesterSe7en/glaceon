@@ -227,6 +227,9 @@ void GLACEON_API runGame(Application *app) {
   };
   context.GetVulkanPipeline().Initialize(config);
 
+  // create frame buffers for each of the swap chain images.
+
+
   // Setup Dear ImGui
   int w, h;
   glfwGetFramebufferSize(glfw_window, &w, &h);

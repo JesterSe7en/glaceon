@@ -23,6 +23,7 @@ class VulkanDevice {
   VkDevice &GetLogicalDevice() { return device; }
   VkQueue GetPresentQueue() { return presentQueue; }
   VkQueue GetGraphicsQueue() { return graphicsQueue; }
+  VkCommandPool GetCommandPool() { return commandPool;}
 
   QueueIndexes &GetQueueIndexes() { return queue_indexes_; }
 
@@ -31,6 +32,7 @@ class VulkanDevice {
   VkDevice device;
   VkQueue presentQueue;
   VkQueue graphicsQueue;
+  VkCommandPool commandPool;
   VkDescriptorPool descriptorPool;
   VulkanContext &context;
   std::vector<VkQueueFamilyProperties> queueFamily;
