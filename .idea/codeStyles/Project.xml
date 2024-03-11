@@ -63,6 +63,9 @@
         <pair source="c++m" header="" fileNamingConvention="NONE" />
       </extensions>
     </files>
+    <codeStyleSettings language="Glsl">
+      <option name="SPACE_BEFORE_COLON" value="false" />
+    </codeStyleSettings>
     <codeStyleSettings language="ObjectiveC">
       <option name="KEEP_BLANK_LINES_IN_DECLARATIONS" value="1" />
       <option name="KEEP_BLANK_LINES_IN_CODE" value="1" />

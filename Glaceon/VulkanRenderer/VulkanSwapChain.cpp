@@ -242,4 +242,53 @@ void VulkanSwapChain::CreateSwapChain() {
 
   GTRACE("Swap chain created successfully");
 }
+
+void VulkanSwapChain::RebuildSwapChain(int width, int height) {
+  auto surface = context.GetSurface();
+
+  uint32_t imageCount =
+      std::min(swapChainSupport.capabilities.maxImageCount, swapChainSupport.capabilities.minImageCount + 1);
+  std::vector<VkImageView> imageViews;
+
+  VkSwapchainCreateInfoKHR createInfo = {};
+  createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+  createInfo.surface = surface;
+  createInfo.minImageCount = imageCount;
+  createInfo.imageFormat = surfaceFormat;
+  createInfo.imageColorSpace = colorSpace;
+  createInfo.imageExtent.width = width;
+  createInfo.imageExtent.height = height;
+  createInfo.imageArrayLayers = 1;
+  createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+  assert(context.GetQueueIndexes().graphicsFamily.has_value() && context.GetQueueIndexes().presentFamily.has_value());
+
+  QueueIndexes indexes = context.GetQueueIndexes();
+  uint32_t queueFamilyIndices[] = {indexes.graphicsFamily.value(), indexes.presentFamily.value()};
+  // since there is a possibility that the graphics queue and the present queue are not the same index,
+  // there will be two separate queue families acting on the swap chain.  We need to let the swap chain
+  // know which queues will be used.
+  // If they ARE THE SAME index, we can set imageSharingMode to VK_SHARING_MODE_EXCLUSIVE
+  if (queueFamilyIndices[0] != queueFamilyIndices[1]) {
+    createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
+    createInfo.queueFamilyIndexCount = 2;
+    createInfo.pQueueFamilyIndices = queueFamilyIndices;
+  } else {
+    createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    createInfo.queueFamilyIndexCount = 0;
+    createInfo.pQueueFamilyIndices = nullptr;
+  }
+
+  createInfo.preTransform = swapChainSupport.capabilities.currentTransform;
+  createInfo.presentMode = presentMode;
+  createInfo.clipped = VK_TRUE;  // if a window is rendered above the rendering window, it will be clipped
+  createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+  // used during re-initialization from old to speed up creation
+  createInfo.oldSwapchain = swapChain == VK_NULL_HANDLE ? VK_NULL_HANDLE : swapChain;
+
+  VkResult result = vkCreateImageView(context.GetVulkanLogicalDevice(), &createInfo, nullptr, &imageViews[i]);
+  if (result != VK_SUCCESS) {
+    GERROR("Failed to create image view");
+  }
+}
 }  // namespace Glaceon

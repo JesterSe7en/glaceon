@@ -216,12 +216,17 @@ void GLACEON_API runGame(Application *app) {
   context.SetSurface(surface);
   context.AddDeviceExtension("VK_KHR_swapchain");
   context.GetVulkanDevice().Initialize();
-//  context.GetVulkanSwapChain().Initialize();
+  context.GetVulkanSwapChain().Initialize();
 
+  GraphicsPipelineConfig config = {};
+  context.GetVulkanPipeline().Initialize(config);
+
+  // Setup Dear ImGui
   int w, h;
   glfwGetFramebufferSize(glfw_window, &w, &h);
   ImGui_ImplVulkanH_Window *imgui_window = &g_MainWindowData;
 
+  // this creates the swapchain, render pass, and framebuffers
   // TODO: Maybe return something indicating success or failure
   SetupVulkanWindowForImGui(context, imgui_window, surface, w, h);
 
@@ -277,7 +282,9 @@ void GLACEON_API runGame(Application *app) {
       int width, height;
       glfwGetFramebufferSize(glfw_window, &width, &height);
       if (width > 0 && height > 0) {
-        ImGui_ImplVulkan_SetMinImageCount(2);
+        context.GetVulkanSwapChain().RebuildSwapChain(width, height);
+        // regenerate the swapchain, framebuffers, and render pass
+//        ImGui_ImplVulkan_SetMinImageCount(2);
         ImGui_ImplVulkanH_CreateOrResizeWindow(instance, physicalDevice, device, imgui_window, queueFamily, nullptr, w,
                                                h, 2);
         g_MainWindowData.FrameIndex = 0;
@@ -286,7 +293,7 @@ void GLACEON_API runGame(Application *app) {
     }
 
     // Start the Dear ImGui frame
-    ImGui_ImplVulkan_NewFrame();
+//    ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 

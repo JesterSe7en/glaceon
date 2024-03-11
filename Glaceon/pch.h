@@ -18,6 +18,7 @@
 #include <optional>
 #include <algorithm>
 #include <set>
+#include <fstream>
 
 #include "framework.h"
 #include <spdlog/fmt/fmt.h>

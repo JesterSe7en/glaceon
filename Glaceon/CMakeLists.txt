@@ -45,7 +45,13 @@ source_group("Source Files" FILES ${Source_Files})
 
 set(ALL_FILES
         ${Header_Files}
-        ${Source_Files})
+        ${Source_Files}
+        VulkanRenderer/VulkanRenderPass.cpp
+        VulkanRenderer/VulkanRenderPass.h
+        VulkanRenderer/VulkanUtils.cpp
+        VulkanRenderer/VulkanUtils.h
+        VulkanRenderer/VulkanPipeline.cpp
+        VulkanRenderer/VulkanPipeline.h)
 
 # Target
 add_library(${PROJECT_NAME} SHARED ${ALL_FILES})

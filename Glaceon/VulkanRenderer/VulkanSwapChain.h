@@ -22,8 +22,14 @@ class VulkanSwapChain {
  public:
   VulkanSwapChain(VulkanContext& context);
   void Initialize();
-  // TODO: Add a function to recreate the swap chain using old swap chain
   void Destroy();
+
+  VkSwapchainKHR GetSwapChain() { return swapChain; }
+  std::vector<SwapChainFrame> &GetSwapChainFrames() { return swapChainFrames; }
+  VkFormat GetSwapChainImageFormat() { return swapChainImageFormat; }
+  VkExtent2D GetSwapChainExtent() { return swapChainExtent; }
+
+  void RebuildSwapChain(int width, int height);
 
  private:
   VulkanContext& context;
