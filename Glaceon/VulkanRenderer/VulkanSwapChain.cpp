@@ -286,9 +286,9 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
   // used during re-initialization from old to speed up creation
   createInfo.oldSwapchain = swapChain == VK_NULL_HANDLE ? VK_NULL_HANDLE : swapChain;
 
-  VkResult result = vkCreateImageView(context.GetVulkanLogicalDevice(), &createInfo, nullptr, &imageViews[i]);
+  VkResult result = vkCreateSwapchainKHR(context.GetVulkanLogicalDevice(), &createInfo, nullptr, &swapChain);
   if (result != VK_SUCCESS) {
-    GERROR("Failed to create image view");
+    GERROR("Failed to create swap chain");
   }
 }
 }  // namespace Glaceon
