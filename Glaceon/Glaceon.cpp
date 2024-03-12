@@ -216,6 +216,7 @@ void GLACEON_API runGame(Application *app) {
   context.SetSurface(surface);
   context.AddDeviceExtension("VK_KHR_swapchain");
   context.GetVulkanDevice().Initialize();
+  context.GetVulkanRenderPass().Initialize();
   context.GetVulkanSwapChain().Initialize();
 
   GraphicsPipelineConfig config = {
