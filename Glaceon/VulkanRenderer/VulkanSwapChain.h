@@ -28,9 +28,10 @@ class VulkanSwapChain {
   void Destroy();
 
   VkSwapchainKHR GetSwapChain() { return swapChain; }
-  std::vector<SwapChainFrame> &GetSwapChainFrames() { return swapChainFrames; }
+  std::vector<SwapChainFrame>& GetSwapChainFrames() { return swapChainFrames; }
   VkFormat GetSwapChainImageFormat() { return swapChainImageFormat; }
   VkExtent2D GetSwapChainExtent() { return swapChainExtent; }
+  const std::vector<VkFramebuffer>& GetSwapChainFrameBuffers() const { return swapChainFrameBuffers; }
 
   void RebuildSwapChain(int width, int height);
 
@@ -40,6 +41,9 @@ class VulkanSwapChain {
   // relevant to swap chain
   VkSwapchainKHR swapChain;
   std::vector<SwapChainFrame> swapChainFrames;
+  std::vector<VkFramebuffer> swapChainFrameBuffers;
+
+ private:
   VkFormat swapChainImageFormat;
   VkExtent2D swapChainExtent;
 
@@ -50,6 +54,8 @@ class VulkanSwapChain {
 
   void PopulateSwapChainSupport();
   void CreateSwapChain();
+  void CreateImageViews();
+  void CreateFrameBuffers();
 };
 
 }  // namespace Glaceon

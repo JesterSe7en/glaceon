@@ -6,6 +6,7 @@
 namespace Glaceon {
 VulkanSwapChain::VulkanSwapChain(VulkanContext& context) : context(context) {}
 
+// create swap chain, get images, create image views, then create the frame buffers
 void VulkanSwapChain::Initialize() {
   // probably want to request from user a specific format, color space, and present mode
   // then use that to create the swap chain
@@ -16,8 +17,9 @@ void VulkanSwapChain::Initialize() {
   presentMode = VkPresentModeKHR::VK_PRESENT_MODE_MAILBOX_KHR;
 
   PopulateSwapChainSupport();
-
   CreateSwapChain();
+  CreateImageViews();
+  CreateFrameBuffers();
 }
 
 void VulkanSwapChain::PopulateSwapChainSupport() {
@@ -196,8 +198,18 @@ void VulkanSwapChain::CreateSwapChain() {
   } else {
     GTRACE("Successfully created swap chain");
   }
+}
 
-  // get the images from the swap chain, they are created during initialization aka vkCreateSwapchainKHR
+void VulkanSwapChain::CreateImageViews() {
+  // get the images from the swap chain, they are created
+  // during initialization aka vkCreateSwapchainKHR
+
+  VkDevice device = context.GetVulkanLogicalDevice();
+  assert(device != VK_NULL_HANDLE);
+
+  uint32_t imageCount = 0;
+  // get the number of images in the swap chain
+  vkGetSwapchainImagesKHR(device, swapChain, &imageCount, nullptr);
 
   std::vector<VkImage> images;
   images.resize(imageCount);
@@ -220,7 +232,6 @@ void VulkanSwapChain::CreateSwapChain() {
     create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     create_info.image = images[i];
     create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    create_info.format = surfaceFormat;
     create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
     create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
     create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -233,6 +244,8 @@ void VulkanSwapChain::CreateSwapChain() {
     VkResult result = vkCreateImageView(device, &create_info, nullptr, &imageViews[i]);
     if (result != VK_SUCCESS) {
       GERROR("Failed to create image view");
+    } else {
+      GTRACE("Successfully created image views");
     }
   }
 
@@ -241,8 +254,6 @@ void VulkanSwapChain::CreateSwapChain() {
     swapChainFrames[i].image = images[i];
     swapChainFrames[i].imageView = imageViews[i];
   }
-
-  GTRACE("Swap chain created successfully");
 }
 
 void VulkanSwapChain::RebuildSwapChain(int width, int height) {
@@ -292,5 +303,24 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
   if (result != VK_SUCCESS) {
     GERROR("Failed to create swap chain");
   }
+}
+void VulkanSwapChain::CreateFrameBuffers() {
+  swapChainFrameBuffers.resize(swapChainFrames.size());
+  for (size_t i = 0; i < swapChainFrames.size(); i++) {
+    VkImageView attachments[] = {swapChainFrames[i].imageView};
+    VkFramebufferCreateInfo createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+    createInfo.renderPass = context.GetVulkanRenderPass().GetVkRenderPass();
+    createInfo.attachmentCount = 1;
+    createInfo.pAttachments = attachments;
+    createInfo.width = swapChainSupport.capabilities.currentExtent.width;
+    createInfo.height = swapChainSupport.capabilities.currentExtent.height;
+    createInfo.layers = 1;
+    if (vkCreateFramebuffer(context.GetVulkanLogicalDevice(), &createInfo, nullptr, &swapChainFrameBuffers[i]) !=
+        VK_SUCCESS) {
+      GERROR("Failed to create frame buffers");
+    }
+  }
+  GTRACE("Successfully created frame buffers");
 }
 }  // namespace Glaceon
