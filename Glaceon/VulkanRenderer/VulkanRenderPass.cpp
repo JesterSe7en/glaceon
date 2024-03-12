@@ -1,7 +1,3 @@
-//
-// Created by alyxc on 3/10/2024.
-//
-
 #include "VulkanRenderPass.h"
 
 #include "VulkanContext.h"

@@ -215,6 +215,7 @@ void VulkanSwapChain::CreateImageViews() {
   images.resize(imageCount);
   vkGetSwapchainImagesKHR(device, swapChain, &imageCount, images.data());
   std::vector<VkImageView> imageViews;
+  imageViews.resize(imageCount);
   // For each swapChaimImage, we need to construct an image view
   // create a std::vector that matches up with the number of images in the swapChainImages
   for (uint32_t i = 0; i < imageCount; i++) {
@@ -230,6 +231,7 @@ void VulkanSwapChain::CreateImageViews() {
     //    } VkImageViewCreateInfo;
     VkImageViewCreateInfo create_info = {};
     create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    create_info.format = surfaceFormat;
     create_info.image = images[i];
     create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
     create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
@@ -244,10 +246,9 @@ void VulkanSwapChain::CreateImageViews() {
     VkResult result = vkCreateImageView(device, &create_info, nullptr, &imageViews[i]);
     if (result != VK_SUCCESS) {
       GERROR("Failed to create image view");
-    } else {
-      GTRACE("Successfully created image views");
     }
   }
+  GTRACE("Successfully created image views - Count: {}", imageCount);
 
   swapChainFrames.resize(imageCount);
   for (uint32_t i = 0; i < imageCount; i++) {
@@ -321,6 +322,6 @@ void VulkanSwapChain::CreateFrameBuffers() {
       GERROR("Failed to create frame buffers");
     }
   }
-  GTRACE("Successfully created frame buffers");
+  GTRACE("Successfully created frame buffers - Count: {}", swapChainFrameBuffers.size());
 }
 }  // namespace Glaceon
