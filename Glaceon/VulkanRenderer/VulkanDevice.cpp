@@ -49,7 +49,7 @@ void VulkanDevice::Initialize() {
     GERROR("Failed to find a suitable GPU");
     return;
   } else {
-    GINFO("Found discrete GPU");
+    GINFO("Successfully found discrete GPU");
     PrintPhysicalDevice(physicalDevice);
   }
 
@@ -81,7 +81,7 @@ void VulkanDevice::Initialize() {
     GERROR("Failed to create Vulkan device");
     return;
   } else {
-    GINFO("Vulkan device created successfully");
+    GINFO("Successfully created vulkan device");
   }
 
   vkGetDeviceQueue(device, queue_indexes_.graphicsFamily.value(), 0, &graphicsQueue);
@@ -96,9 +96,8 @@ void VulkanDevice::Initialize() {
   if (res != VK_SUCCESS) {
     GERROR("Failed to create graphics command pool");
   } else {
-    GINFO("Graphics command pool created successfully");
+    GINFO("Successfully created graphics command pool");
   }
-
 
   VkDescriptorPoolSize pool_sizes[] = {
       {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1},
@@ -116,7 +115,7 @@ void VulkanDevice::Initialize() {
   if (res != VK_SUCCESS) {
     GERROR("Failed to create descriptor pool");
   } else {
-    GINFO("Descriptor pool created successfully");
+    GINFO("Successfully created descriptor pool");
   }
 
   context.SetDescriptorPool(descriptorPool);

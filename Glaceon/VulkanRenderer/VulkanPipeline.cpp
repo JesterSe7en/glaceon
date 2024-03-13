@@ -36,7 +36,7 @@ void VulkanPipeline::Initialize(GraphicsPipelineConfig pipelineConfig) {
   // Input Assembly - What sort of shapes are we creating?
   VkPipelineInputAssemblyStateCreateInfo inputAssemblyInfo = {};
   inputAssemblyInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-  inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST_WITH_ADJACENCY;
+  inputAssemblyInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
   pipelineInfo.pInputAssemblyState = &inputAssemblyInfo;
 
   // Vertex Shader
@@ -50,7 +50,7 @@ void VulkanPipeline::Initialize(GraphicsPipelineConfig pipelineConfig) {
     GERROR("Failed to create vertex shader module");
     return;
   } else {
-    GTRACE("Created vertex shader module");
+    GINFO("Successfully created vertex shader module");
   }
 
   VkPipelineShaderStageCreateInfo vertexShaderStage = {};
@@ -107,7 +107,7 @@ void VulkanPipeline::Initialize(GraphicsPipelineConfig pipelineConfig) {
     GERROR("Failed to create fragment shader module");
     return;
   } else {
-    GTRACE("Created fragment shader module");
+    GINFO("Successfully created fragment shader module");
   }
 
   VkPipelineShaderStageCreateInfo fragmentShaderStage = {};
@@ -162,7 +162,7 @@ void VulkanPipeline::Initialize(GraphicsPipelineConfig pipelineConfig) {
     GERROR("Failed to create graphics pipeline");
     pipeline = nullptr;
   } else {
-    GTRACE("Created graphics pipeline");
+    GINFO("Successfully created graphics pipeline");
   }
 
   // Clean up shader modules
@@ -177,7 +177,6 @@ void VulkanPipeline::Initialize(GraphicsPipelineConfig pipelineConfig) {
 
 // This is so we can push constants and descriptor sets aka. Uniforms
 void VulkanPipeline::CreatePipelineLayout() {
-  GTRACE("Creating pipeline layout...");
   VkDevice device = context.GetVulkanLogicalDevice();
   assert(device != nullptr);
 
@@ -192,7 +191,7 @@ void VulkanPipeline::CreatePipelineLayout() {
     GERROR("Failed to create pipeline layout");
     pipelineLayout = nullptr;
   } else {
-    GTRACE("Created pipeline layout");
+    GINFO("Successfully created pipeline layout");
   }
 }
 

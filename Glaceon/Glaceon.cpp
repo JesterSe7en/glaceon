@@ -77,15 +77,15 @@ static void ImGuiFrameRender(VulkanContext &context, ImGui_ImplVulkanH_Window *w
   VkSemaphore render_complete_semaphore = context.GetVulkanSync().GetRenderFinishedSemaphore();
   VkDevice device = context.GetVulkanDevice().GetLogicalDevice();
   assert(device != VK_NULL_HANDLE);
-  VkSwapchainKHR swapChain = context.GetVulkanSwapChain().GetSwapChain();
+  VkSwapchainKHR swapChain = context.GetVulkanSwapChain().GetVkSwapChain();
   assert(swapChain != VK_NULL_HANDLE);
   std::vector<SwapChainFrame> swapChainFrames = context.GetVulkanSwapChain().GetSwapChainFrames();
   VkFence fence = context.GetVulkanSync().GetInFlightFence();
   VkCommandPool commandPool = context.GetVulkanCommandPool().GetVkCommandPool();
   VkCommandBuffer commandBuffer = *(context.GetVulkanCommandPool().GetMainCommandBuffer());
 
-  err = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, image_available_semaphore, VK_NULL_HANDLE,
-                              &wd->FrameIndex);
+  err =
+      vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, image_available_semaphore, VK_NULL_HANDLE, &wd->FrameIndex);
   if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
     swapChainRebuild = true;
     return;
@@ -115,8 +115,7 @@ static void ImGuiFrameRender(VulkanContext &context, ImGui_ImplVulkanH_Window *w
     info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     info.renderPass = context.GetVulkanRenderPass().GetVkRenderPass();
     info.framebuffer = context.GetVulkanSwapChain().GetSwapChainFrameBuffers()[wd->FrameIndex];
-    info.renderArea.extent.width = wd->Width;
-    info.renderArea.extent.height = wd->Height;
+    info.renderArea.extent = context.GetVulkanSwapChain().GetSwapChainExtent();
     info.clearValueCount = 1;
     info.pClearValues = &wd->ClearValue;
     vkCmdBeginRenderPass(commandBuffer, &info, VK_SUBPASS_CONTENTS_INLINE);
@@ -149,12 +148,14 @@ static void ImGuiFrameRender(VulkanContext &context, ImGui_ImplVulkanH_Window *w
 static void ImGuiFramePresent(VulkanContext &context, ImGui_ImplVulkanH_Window *wd) {
   if (swapChainRebuild) return;
   VkSemaphore render_complete_semaphore = context.GetVulkanSync().GetRenderFinishedSemaphore();
+  std::vector<VkSwapchainKHR> swapChains;
+  swapChains.push_back(context.GetVulkanSwapChain().GetVkSwapChain());
   VkPresentInfoKHR info = {};
   info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
   info.waitSemaphoreCount = 1;
   info.pWaitSemaphores = &render_complete_semaphore;
   info.swapchainCount = 1;
-  info.pSwapchains = &wd->Swapchain;
+  info.pSwapchains = swapChains.data();
   info.pImageIndices = &wd->FrameIndex;
   VkResult err = vkQueuePresentKHR(context.GetVulkanDevice().GetPresentQueue(), &info);
   if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
@@ -162,7 +163,8 @@ static void ImGuiFramePresent(VulkanContext &context, ImGui_ImplVulkanH_Window *
     return;
   }
   CheckVkResult(err);
-  wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->SemaphoreCount;  // Now we can use the next set of semaphores
+  /* wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->SemaphoreCount;  // Now we can use the next set of semaphores
+   */
 }
 
 // ----------------- Application Class Functions ----------------------
@@ -258,35 +260,6 @@ void GLACEON_API runGame(Application *app) {
 
   // Setup Platform/Renderer backends
   ImGui_ImplVulkan_InitInfo init_info = {};
-//  struct ImGui_ImplVulkan_InitInfo
-//  {
-//    VkInstance                      Instance;
-//    VkPhysicalDevice                PhysicalDevice;
-//    VkDevice                        Device;
-//    uint32_t                        QueueFamily;
-//    VkQueue                         Queue;
-//    VkDescriptorPool                DescriptorPool;               // See requirements in note above
-//    VkRenderPass                    RenderPass;                   // Ignored if using dynamic rendering
-//    uint32_t                        MinImageCount;                // >= 2
-//    uint32_t                        ImageCount;                   // >= MinImageCount
-//    VkSampleCountFlagBits           MSAASamples;                  // 0 defaults to VK_SAMPLE_COUNT_1_BIT
-//
-//    // (Optional)
-//    VkPipelineCache                 PipelineCache;
-//    uint32_t                        Subpass;
-//
-//    // (Optional) Dynamic Rendering
-//    // Need to explicitly enable VK_KHR_dynamic_rendering extension to use this, even for Vulkan 1.3.
-//    bool                            UseDynamicRendering;
-//#ifdef IMGUI_IMPL_VULKAN_HAS_DYNAMIC_RENDERING
-//    VkPipelineRenderingCreateInfoKHR PipelineRenderingCreateInfo;
-//#endif
-//
-//    // (Optional) Allocation, Debugging
-//    const VkAllocationCallbacks*    Allocator;
-//    void                            (*CheckVkResultFn)(VkResult err);
-//    VkDeviceSize                    MinAllocationSize;      // Minimum allocation size. Set to 1024*1024 to satisfy zealous best practices validation layer and waste a little memory.
-//  };
   init_info.Instance = context.GetVulkanInstance();
   init_info.PhysicalDevice = context.GetVulkanPhysicalDevice();
   init_info.Device = context.GetVulkanLogicalDevice();
@@ -318,30 +291,24 @@ void GLACEON_API runGame(Application *app) {
     ImVec4 clear_color = ImVec4(1.0f, 0.0f, 0.0f, 1.00f);
 
     if (swapChainRebuild) {
-      GINFO("Rebuilding swapchain");
+      GINFO("Rebuilding swapchain...");
       int width, height;
       glfwGetFramebufferSize(glfw_window, &width, &height);
       if (width > 0 && height > 0) {
         context.GetVulkanSwapChain().RebuildSwapChain(width, height);
-        // regenerate the swapchain, framebuffers, and render pass
-        //        ImGui_ImplVulkan_SetMinImageCount(2);
-        //        ImGui_ImplVulkanH_CreateOrResizeWindow(instance, physicalDevice, device, imgui_window, queueFamily,
-        //        nullptr, w,
-        //                                               h, 2);
-        g_MainWindowData.FrameIndex = 0;
+//        g_MainWindowData.FrameIndex = 0;
         swapChainRebuild = false;
       }
     }
 
     // Start the Dear ImGui frame
-    //    ImGui_ImplVulkan_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    // bool showDemo = true;
-    // ImGui::ShowDemoWindow(&showDemo);
-
     {
+      // bool showDemo = true;
+      // ImGui::ShowDemoWindow(&showDemo);
+
       ImGui::Begin("FPS");
       ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
       ImGui::End();

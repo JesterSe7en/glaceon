@@ -14,7 +14,7 @@ void VulkanSwapChain::Initialize() {
   // FIFO present mode is guaranteed to be supported
   surfaceFormat = VkFormat::VK_FORMAT_B8G8R8A8_UNORM;
   colorSpace = VkColorSpaceKHR::VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-  presentMode = VkPresentModeKHR::VK_PRESENT_MODE_MAILBOX_KHR;
+  presentMode = VkPresentModeKHR::VK_PRESENT_MODE_IMMEDIATE_KHR;
 
   PopulateSwapChainSupport();
   CreateSwapChain();
@@ -117,8 +117,7 @@ void VulkanSwapChain::PopulateSwapChainSupport() {
   for (auto& mode : swapChainSupport.presentModes) {
     if (mode == presentMode) {
       found = true;
-      GTRACE("Device supports targeted present mode");
-      GTRACE("Target Present mode: {}", string_VkPresentModeKHR(presentMode));
+      GINFO("Successfully set present mode to {}", string_VkPresentModeKHR(presentMode));
       break;
     }
   }
@@ -193,10 +192,12 @@ void VulkanSwapChain::CreateSwapChain() {
 
   VkResult res = vkCreateSwapchainKHR(device, &createInfo, nullptr, &swapChain);
 
+  swapChainExtent = swapChainSupport.capabilities.currentExtent;
+
   if (res != VK_SUCCESS) {
     GERROR("Failed to create swap chain");
   } else {
-    GTRACE("Successfully created swap chain");
+    GINFO("Successfully created swap chain");
   }
 }
 
@@ -248,7 +249,7 @@ void VulkanSwapChain::CreateImageViews() {
       GERROR("Failed to create image view");
     }
   }
-  GTRACE("Successfully created image views - Count: {}", imageCount);
+  GINFO("Successfully created image views - Count: {}", imageCount);
 
   swapChainFrames.resize(imageCount);
   for (uint32_t i = 0; i < imageCount; i++) {
@@ -304,6 +305,7 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
   if (result != VK_SUCCESS) {
     GERROR("Failed to create swap chain");
   }
+  GINFO("Successfully regenerated swap chain");
 }
 void VulkanSwapChain::CreateFrameBuffers() {
   swapChainFrameBuffers.resize(swapChainFrames.size());
@@ -322,6 +324,6 @@ void VulkanSwapChain::CreateFrameBuffers() {
       GERROR("Failed to create frame buffers");
     }
   }
-  GTRACE("Successfully created frame buffers - Count: {}", swapChainFrameBuffers.size());
+  GINFO("Successfully created frame buffers - Count: {}", swapChainFrameBuffers.size());
 }
 }  // namespace Glaceon

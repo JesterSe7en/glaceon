@@ -47,7 +47,7 @@ void VulkanRenderPass::Initialize() {
     GERROR("Failed to create render pass");
     renderPass = nullptr;
   } else {
-    GTRACE("Created render pass");
+    GINFO("Successfully created render pass");
   }
 }
 const VkRenderPass& VulkanRenderPass::GetVkRenderPass() const { return renderPass; }

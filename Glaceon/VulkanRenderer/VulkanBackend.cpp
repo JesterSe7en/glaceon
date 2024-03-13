@@ -8,8 +8,6 @@ namespace Glaceon {
 VulkanBackend::VulkanBackend(VulkanContext &context) : context(context) {}
 
 void VulkanBackend::Initialize() {
-  GINFO("Initializing Vulkan backend...");
-
   VkInstanceCreateInfo instanceCreateInfo = {};
   instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
   instanceCreateInfo.pNext = nullptr;
@@ -63,7 +61,7 @@ void VulkanBackend::Initialize() {
     GERROR("Failed to create Vulkan instance");
     return;
   } else {
-    GINFO("Vulkan instance created successfully");
+    GINFO("Successfully created vulkan instance");
   }
 
   context.SetVulkanInstance(vkInstance);
