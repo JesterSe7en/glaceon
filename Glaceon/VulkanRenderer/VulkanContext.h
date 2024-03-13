@@ -54,6 +54,9 @@ class VulkanContext {
 
   VulkanSync &GetVulkanSync() { return sync; }
 
+  uint32_t GetCurrentFrameIndex() { return CurrentFrameIndex; }
+  void ResetCurrentFrameIndex() { CurrentFrameIndex = 0; }
+
  private:
   VulkanBackend backend;
   VulkanDevice device;
@@ -62,6 +65,8 @@ class VulkanContext {
   VulkanPipeline pipeline;
   VulkanCommandPool commandPool;
   VulkanSync sync;
+
+  uint32_t CurrentFrameIndex = 0;
 
   VkInstance instance = VK_NULL_HANDLE;
   VkDescriptorPool descriptorPool;

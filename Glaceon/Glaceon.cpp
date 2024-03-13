@@ -6,7 +6,6 @@
 namespace Glaceon {
 
 static bool swapChainRebuild = false;
-static ImGui_ImplVulkanH_Window g_MainWindowData;
 
 void error_callback(int error, const char *description) { GERROR("GLFW Error: Code: {} - {}", error, description); }
 
@@ -23,54 +22,7 @@ static void CheckVkResult(VkResult err) {
   if (err < 0) abort();
 }
 
-void SetupVulkanWindowForImGui(VulkanContext &context, ImGui_ImplVulkanH_Window *wd, VkSurfaceKHR surface, int width,
-                               int height) {
-  if (wd == nullptr) {
-    GERROR("Failed to create Vulkan Window");
-    exit(-1);
-  }
-  wd->Surface = surface;
-
-  VkBool32 res;
-  // TODO: don't hardcode the graphics queue family index
-  vkGetPhysicalDeviceSurfaceSupportKHR(context.GetVulkanDevice().GetPhysicalDevice(), 0, wd->Surface, &res);
-  if (res != VK_TRUE) {
-    GERROR("Error no WSI support on physical device 0");
-    exit(-1);
-  }
-
-  // Select Surface Format
-  const VkFormat requestSurfaceImageFormat[] = {VK_FORMAT_B8G8R8A8_UNORM, VK_FORMAT_R8G8B8A8_UNORM,
-                                                VK_FORMAT_B8G8R8_UNORM, VK_FORMAT_R8G8B8_UNORM};
-  const VkColorSpaceKHR requestSurfaceColorSpace = VK_COLORSPACE_SRGB_NONLINEAR_KHR;
-  wd->SurfaceFormat = ImGui_ImplVulkanH_SelectSurfaceFormat(
-      context.GetVulkanDevice().GetPhysicalDevice(), wd->Surface, requestSurfaceImageFormat,
-      (size_t)IM_ARRAYSIZE(requestSurfaceImageFormat), requestSurfaceColorSpace);
-
-  GINFO("SurfaceFormat = {}", string_VkFormat(wd->SurfaceFormat.format));
-
-  // uncapped fps - if uncapped present modes are not supported, default to vsync
-  // present_modes[] is a priority list with idx 0 being the highest
-  VkPresentModeKHR present_modes[] = {VK_PRESENT_MODE_MAILBOX_KHR, VK_PRESENT_MODE_IMMEDIATE_KHR,
-                                      VK_PRESENT_MODE_FIFO_KHR};
-
-  wd->PresentMode = ImGui_ImplVulkanH_SelectPresentMode(context.GetVulkanDevice().GetPhysicalDevice(), wd->Surface,
-                                                        &present_modes[0], IM_ARRAYSIZE(present_modes));
-
-  GINFO("PresentMode = {}", string_VkPresentModeKHR(wd->PresentMode));
-
-  // Create SwapChain, RenderPass, Framebuffer, etc.
-  /* IM_ASSERT(g_MinImageCount >= 2); */
-
-  VkInstance instance = context.GetVulkanInstance();
-  VkPhysicalDevice physicalDevice = context.GetVulkanDevice().GetPhysicalDevice();
-  VkDevice device = context.GetVulkanDevice().GetLogicalDevice();
-
-  // creates vk command pool for ImGui ussage
-  ImGui_ImplVulkanH_CreateOrResizeWindow(instance, physicalDevice, device, wd, 0, nullptr, width, height, 2);
-}
-
-static void ImGuiFrameRender(VulkanContext &context, ImGui_ImplVulkanH_Window *wd, ImDrawData *draw_data) {
+static void ImGuiFrameRender(VulkanContext &context, ImDrawData *draw_data) {
   VkResult err;
 
   VkSemaphore image_available_semaphore = context.GetVulkanSync().GetImageAvailableSemaphore();
@@ -84,15 +36,17 @@ static void ImGuiFrameRender(VulkanContext &context, ImGui_ImplVulkanH_Window *w
   VkCommandPool commandPool = context.GetVulkanCommandPool().GetVkCommandPool();
   VkCommandBuffer commandBuffer = *(context.GetVulkanCommandPool().GetMainCommandBuffer());
 
+
+  // This defines the frame index to render to?
+  uint32_t wdFrameIndex = context.GetCurrentFrameIndex();
   err =
-      vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, image_available_semaphore, VK_NULL_HANDLE, &wd->FrameIndex);
+      vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, image_available_semaphore, VK_NULL_HANDLE, &wdFrameIndex);
   if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
     swapChainRebuild = true;
     return;
   }
   CheckVkResult(err);
 
-  ImGui_ImplVulkanH_Frame *fd = &wd->Frames[wd->FrameIndex];
   {
     err = vkWaitForFences(device, 1, &fence, VK_TRUE,
                           UINT64_MAX);  // wait indefinitely instead of periodically checking
@@ -114,10 +68,11 @@ static void ImGuiFrameRender(VulkanContext &context, ImGui_ImplVulkanH_Window *w
     VkRenderPassBeginInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     info.renderPass = context.GetVulkanRenderPass().GetVkRenderPass();
-    info.framebuffer = context.GetVulkanSwapChain().GetSwapChainFrameBuffers()[wd->FrameIndex];
+    info.framebuffer = context.GetVulkanSwapChain().GetSwapChainFrameBuffers()[wdFrameIndex];
     info.renderArea.extent = context.GetVulkanSwapChain().GetSwapChainExtent();
     info.clearValueCount = 1;
-    info.pClearValues = &wd->ClearValue;
+    VkClearValue clear_color = {1.0f, 0.0f, 0.0f, 1.0f};
+    info.pClearValues = &clear_color;
     vkCmdBeginRenderPass(commandBuffer, &info, VK_SUBPASS_CONTENTS_INLINE);
   }
 
@@ -145,7 +100,7 @@ static void ImGuiFrameRender(VulkanContext &context, ImGui_ImplVulkanH_Window *w
   }
 }
 
-static void ImGuiFramePresent(VulkanContext &context, ImGui_ImplVulkanH_Window *wd) {
+static void ImGuiFramePresent(VulkanContext &context) {
   if (swapChainRebuild) return;
   VkSemaphore render_complete_semaphore = context.GetVulkanSync().GetRenderFinishedSemaphore();
   std::vector<VkSwapchainKHR> swapChains;
@@ -156,7 +111,8 @@ static void ImGuiFramePresent(VulkanContext &context, ImGui_ImplVulkanH_Window *
   info.pWaitSemaphores = &render_complete_semaphore;
   info.swapchainCount = 1;
   info.pSwapchains = swapChains.data();
-  info.pImageIndices = &wd->FrameIndex;
+  uint32_t wdFrameIndex = context.GetCurrentFrameIndex();
+  info.pImageIndices = &wdFrameIndex;
   VkResult err = vkQueuePresentKHR(context.GetVulkanDevice().GetPresentQueue(), &info);
   if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
     swapChainRebuild = true;
@@ -241,7 +197,6 @@ void GLACEON_API runGame(Application *app) {
   // Setup Dear ImGui
   int w, h;
   glfwGetFramebufferSize(glfw_window, &w, &h);
-  ImGui_ImplVulkanH_Window *imgui_window = &g_MainWindowData;
 
   // Setup Dear ImGui context
   IMGUI_CHECKVERSION();
@@ -288,7 +243,6 @@ void GLACEON_API runGame(Application *app) {
   while (!glfwWindowShouldClose(glfw_window)) {
     glfwPollEvents();
     app->onUpdate();
-    ImVec4 clear_color = ImVec4(1.0f, 0.0f, 0.0f, 1.00f);
 
     if (swapChainRebuild) {
       GINFO("Rebuilding swapchain...");
@@ -296,7 +250,7 @@ void GLACEON_API runGame(Application *app) {
       glfwGetFramebufferSize(glfw_window, &width, &height);
       if (width > 0 && height > 0) {
         context.GetVulkanSwapChain().RebuildSwapChain(width, height);
-//        g_MainWindowData.FrameIndex = 0;
+        context.ResetCurrentFrameIndex();
         swapChainRebuild = false;
       }
     }
@@ -325,12 +279,8 @@ void GLACEON_API runGame(Application *app) {
     ImDrawData *draw_data = ImGui::GetDrawData();
     const bool is_minimized = (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f);
     if (!is_minimized) {
-      imgui_window->ClearValue.color.float32[0] = clear_color.x * clear_color.w;
-      imgui_window->ClearValue.color.float32[1] = clear_color.y * clear_color.w;
-      imgui_window->ClearValue.color.float32[2] = clear_color.z * clear_color.w;
-      imgui_window->ClearValue.color.float32[3] = clear_color.w;
-      ImGuiFrameRender(context, imgui_window, draw_data);
-      ImGuiFramePresent(context, imgui_window);
+      ImGuiFrameRender(context, draw_data);
+      ImGuiFramePresent(context);
     }
   }
 
@@ -345,7 +295,6 @@ void GLACEON_API runGame(Application *app) {
   ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();
 
-  ImGui_ImplVulkanH_DestroyWindow(instance, context.GetVulkanLogicalDevice(), imgui_window, nullptr);
   vkDestroyDescriptorPool(context.GetVulkanLogicalDevice(), context.GetDescriptorPool(), nullptr);
 
   vkDestroyDevice(context.GetVulkanLogicalDevice(), nullptr);
