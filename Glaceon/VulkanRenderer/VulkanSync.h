@@ -20,10 +20,16 @@ class VulkanSync {
 
   void Initialize();
 
+  const VkSemaphore &GetImageAvailableSemaphore() const { return imageAvailableSemaphore; }
+  const VkSemaphore &GetRenderFinishedSemaphore() const { return renderFinishedSemaphore; }
+  const VkFence &GetInFlightFence() const { return inFlightFence; }
+
  private:
   VulkanContext &context;
 
   VkSemaphore imageAvailableSemaphore;
+
+ private:
   VkSemaphore renderFinishedSemaphore;
   VkFence inFlightFence;
 };

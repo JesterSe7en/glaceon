@@ -13,6 +13,7 @@ class VulkanCommandPool {
   ~VulkanCommandPool();
 
   void Initialize();
+  VkCommandPool GetVkCommandPool() const { return vk_command_pool_; }
   VkCommandBuffer* GetMainCommandBuffer() { return &vk_main_command_buffer_; }
  private:
   VulkanContext& context;
