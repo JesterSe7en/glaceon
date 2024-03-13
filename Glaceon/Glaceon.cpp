@@ -218,6 +218,8 @@ void GLACEON_API runGame(Application *app) {
   context.GetVulkanDevice().Initialize();
   context.GetVulkanRenderPass().Initialize();
   context.GetVulkanSwapChain().Initialize();
+  context.GetVulkanCommandPool().Initialize();
+  context.GetVulkanSync().Initialize();
 
   GraphicsPipelineConfig config = {
       .vertexShaderFile = "../../shaders/vert.spv",

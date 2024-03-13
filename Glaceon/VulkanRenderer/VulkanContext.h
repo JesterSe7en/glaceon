@@ -8,6 +8,8 @@
 #include "VulkanSwapChain.h"
 #include "VulkanRenderPass.h"
 #include "VulkanPipeline.h"
+#include "VulkanCommandPool.h"
+#include "VulkanSync.h"
 
 namespace Glaceon {
 
@@ -48,12 +50,18 @@ class VulkanContext {
 
   VulkanRenderPass &GetVulkanRenderPass() { return renderPass; }
 
+  VulkanCommandPool &GetVulkanCommandPool() { return commandPool; }
+
+  VulkanSync &GetVulkanSync() { return sync; }
+
  private:
   VulkanBackend backend;
   VulkanDevice device;
   VulkanSwapChain swapChain;
   VulkanRenderPass renderPass;
   VulkanPipeline pipeline;
+  VulkanCommandPool commandPool;
+  VulkanSync sync;
 
   VkInstance instance = VK_NULL_HANDLE;
   VkDescriptorPool descriptorPool;
