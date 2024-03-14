@@ -2,13 +2,12 @@
 #define GLACEON_VULKANCONTEXT_H
 
 #include "../pch.h"
-
 #include "VulkanBackend.h"
-#include "VulkanDevice.h"
-#include "VulkanSwapChain.h"
-#include "VulkanRenderPass.h"
-#include "VulkanPipeline.h"
 #include "VulkanCommandPool.h"
+#include "VulkanDevice.h"
+#include "VulkanPipeline.h"
+#include "VulkanRenderPass.h"
+#include "VulkanSwapChain.h"
 #include "VulkanSync.h"
 
 namespace Glaceon {
@@ -56,6 +55,8 @@ class VulkanContext {
 
   uint32_t GetCurrentFrameIndex() { return CurrentFrameIndex; }
   void ResetCurrentFrameIndex() { CurrentFrameIndex = 0; }
+
+  uint32_t semaphoreIndex = 0;
 
  private:
   VulkanBackend backend;

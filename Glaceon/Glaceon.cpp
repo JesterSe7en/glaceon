@@ -25,22 +25,23 @@ static void CheckVkResult(VkResult err) {
 static void ImGuiFrameRender(VulkanContext &context, ImDrawData *draw_data) {
   VkResult err;
 
-  VkSemaphore image_available_semaphore = context.GetVulkanSync().GetImageAvailableSemaphore();
-  VkSemaphore render_complete_semaphore = context.GetVulkanSync().GetRenderFinishedSemaphore();
+  std::vector<VkSemaphore> image_available_semaphores = context.GetVulkanSync().GetImageAvailableSemaphores();
+  std::vector<VkSemaphore> render_complete_semaphores = context.GetVulkanSync().GetRenderFinishedSemaphores();
   VkDevice device = context.GetVulkanDevice().GetLogicalDevice();
   assert(device != VK_NULL_HANDLE);
   VkSwapchainKHR swapChain = context.GetVulkanSwapChain().GetVkSwapChain();
   assert(swapChain != VK_NULL_HANDLE);
+
   std::vector<SwapChainFrame> swapChainFrames = context.GetVulkanSwapChain().GetSwapChainFrames();
   VkFence fence = context.GetVulkanSync().GetInFlightFence();
   VkCommandPool commandPool = context.GetVulkanCommandPool().GetVkCommandPool();
   VkCommandBuffer commandBuffer = *(context.GetVulkanCommandPool().GetMainCommandBuffer());
-
+  uint32_t semaphoreIndex = context.semaphoreIndex;
 
   // This defines the frame index to render to?
   uint32_t wdFrameIndex = context.GetCurrentFrameIndex();
-  err =
-      vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, image_available_semaphore, VK_NULL_HANDLE, &wdFrameIndex);
+  err = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, image_available_semaphores[semaphoreIndex], VK_NULL_HANDLE,
+                              &wdFrameIndex);
   if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
     swapChainRebuild = true;
     return;
@@ -86,12 +87,12 @@ static void ImGuiFrameRender(VulkanContext &context, ImDrawData *draw_data) {
     VkSubmitInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     info.waitSemaphoreCount = 1;
-    info.pWaitSemaphores = &image_available_semaphore;
+    info.pWaitSemaphores = &image_available_semaphores[semaphoreIndex];
     info.pWaitDstStageMask = &wait_stage;
     info.commandBufferCount = 1;
     info.pCommandBuffers = &commandBuffer;
     info.signalSemaphoreCount = 1;
-    info.pSignalSemaphores = &render_complete_semaphore;
+    info.pSignalSemaphores = &render_complete_semaphores[semaphoreIndex];
 
     err = vkEndCommandBuffer(commandBuffer);
     CheckVkResult(err);
@@ -102,16 +103,17 @@ static void ImGuiFrameRender(VulkanContext &context, ImDrawData *draw_data) {
 
 static void ImGuiFramePresent(VulkanContext &context) {
   if (swapChainRebuild) return;
-  VkSemaphore render_complete_semaphore = context.GetVulkanSync().GetRenderFinishedSemaphore();
+  std::vector<VkSemaphore> render_complete_semaphores = context.GetVulkanSync().GetRenderFinishedSemaphores();
+  uint32_t wdFrameIndex = context.GetCurrentFrameIndex();
   std::vector<VkSwapchainKHR> swapChains;
   swapChains.push_back(context.GetVulkanSwapChain().GetVkSwapChain());
+
   VkPresentInfoKHR info = {};
   info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
   info.waitSemaphoreCount = 1;
-  info.pWaitSemaphores = &render_complete_semaphore;
+  info.pWaitSemaphores = &render_complete_semaphores[context.semaphoreIndex];
   info.swapchainCount = 1;
   info.pSwapchains = swapChains.data();
-  uint32_t wdFrameIndex = context.GetCurrentFrameIndex();
   info.pImageIndices = &wdFrameIndex;
   VkResult err = vkQueuePresentKHR(context.GetVulkanDevice().GetPresentQueue(), &info);
   if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
@@ -119,8 +121,10 @@ static void ImGuiFramePresent(VulkanContext &context) {
     return;
   }
   CheckVkResult(err);
-  /* wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->SemaphoreCount;  // Now we can use the next set of semaphores
-   */
+  context.semaphoreIndex =
+      (context.semaphoreIndex + 1) % context.GetVulkanSwapChain()
+                                         .GetSwapChainFrames()
+                                         .size();  // mod semaphore index to wrap indexing back to beginning
 }
 
 // ----------------- Application Class Functions ----------------------

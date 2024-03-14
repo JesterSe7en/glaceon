@@ -8,11 +8,15 @@ VulkanSync::VulkanSync(VulkanContext& context) : context(context) {}
 VulkanSync::~VulkanSync() {
   VkDevice device = context.GetVulkanLogicalDevice();
   assert(device != VK_NULL_HANDLE);
-  if (imageAvailableSemaphore != VK_NULL_HANDLE) {
-    vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
+  for (auto semaphore : imageAvailableSemaphores) {
+    if (semaphore != VK_NULL_HANDLE) {
+      vkDestroySemaphore(device, semaphore, nullptr);
+    }
   }
-  if (renderFinishedSemaphore != VK_NULL_HANDLE) {
-    vkDestroySemaphore(device, renderFinishedSemaphore, nullptr);
+  for (auto semaphore : renderFinishedSemaphores) {
+    if (semaphore != VK_NULL_HANDLE) {
+      vkDestroySemaphore(device, semaphore, nullptr);
+    }
   }
   if (inFlightFence != VK_NULL_HANDLE) {
     vkDestroyFence(device, inFlightFence, nullptr);
@@ -22,22 +26,29 @@ void VulkanSync::Initialize() {
   VkDevice device = context.GetVulkanLogicalDevice();
   assert(device != VK_NULL_HANDLE);
 
+  assert(context.GetVulkanSwapChain().GetVkSwapChain() != VK_NULL_HANDLE &&
+         context.GetVulkanSwapChain().GetSwapChainFrames().size() != 0);
+
+  size_t maxFramesInFlight = context.GetVulkanSwapChain().GetSwapChainFrames().size();
+  imageAvailableSemaphores.resize(maxFramesInFlight);
+  renderFinishedSemaphores.resize(maxFramesInFlight);
+
   VkSemaphoreCreateInfo semaphoreInfo = {};
   semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
   semaphoreInfo.pNext = nullptr;
   semaphoreInfo.flags = 0;
-  if (vkCreateSemaphore(context.GetVulkanLogicalDevice(), &semaphoreInfo, nullptr, &imageAvailableSemaphore) !=
-      VK_SUCCESS) {
-    GERROR("Failed to create image available semaphore")
-  } else {
-    GINFO("Successfully created image available semaphore")
+  for (auto semaphore : imageAvailableSemaphores) {
+    if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &semaphore) != VK_SUCCESS) {
+      GERROR("Failed to create image available semaphore")
+    }
   }
-  if (vkCreateSemaphore(context.GetVulkanLogicalDevice(), &semaphoreInfo, nullptr, &renderFinishedSemaphore) !=
-      VK_SUCCESS) {
-    GERROR("Failed to create render finished semaphore")
-  } else {
-    GINFO("Successfully created render finished semaphore")
+  GINFO("Successfully created image available semaphore")
+  for (auto semaphore : renderFinishedSemaphores) {
+    if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &semaphore) != VK_SUCCESS) {
+      GERROR("Failed to create render finished semaphore")
+    }
   }
+  GINFO("Successfully created render finished semaphore")
 
   VkFenceCreateInfo fenceInfo = {};
   fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;

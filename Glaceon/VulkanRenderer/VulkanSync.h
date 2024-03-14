@@ -20,17 +20,16 @@ class VulkanSync {
 
   void Initialize();
 
-  const VkSemaphore &GetImageAvailableSemaphore() const { return imageAvailableSemaphore; }
-  const VkSemaphore &GetRenderFinishedSemaphore() const { return renderFinishedSemaphore; }
+  const std::vector<VkSemaphore> &GetImageAvailableSemaphores() const { return imageAvailableSemaphores; }
+  const std::vector<VkSemaphore> &GetRenderFinishedSemaphores() const { return renderFinishedSemaphores; }
   const VkFence &GetInFlightFence() const { return inFlightFence; }
 
  private:
   VulkanContext &context;
 
-  VkSemaphore imageAvailableSemaphore;
+  std::vector<VkSemaphore> imageAvailableSemaphores;
+  std::vector<VkSemaphore> renderFinishedSemaphores;
 
- private:
-  VkSemaphore renderFinishedSemaphore;
   VkFence inFlightFence;
 };
 
