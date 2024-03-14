@@ -30,22 +30,29 @@ void VulkanSync::Initialize() {
          context.GetVulkanSwapChain().GetSwapChainFrames().size() != 0);
 
   size_t maxFramesInFlight = context.GetVulkanSwapChain().GetSwapChainFrames().size();
-  imageAvailableSemaphores.resize(maxFramesInFlight);
-  renderFinishedSemaphores.resize(maxFramesInFlight);
 
   VkSemaphoreCreateInfo semaphoreInfo = {};
   semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
   semaphoreInfo.pNext = nullptr;
   semaphoreInfo.flags = 0;
-  for (auto semaphore : imageAvailableSemaphores) {
+  for (uint32_t i = 0; i < maxFramesInFlight; i++) {
+    VkSemaphore semaphore;
     if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &semaphore) != VK_SUCCESS) {
       GERROR("Failed to create image available semaphore")
+      return;
+    } else {
+      imageAvailableSemaphores.push_back(semaphore);
     }
   }
   GINFO("Successfully created image available semaphore")
-  for (auto semaphore : renderFinishedSemaphores) {
+
+  for (uint32_t i = 0; i < maxFramesInFlight; i++) {
+    VkSemaphore semaphore;
     if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &semaphore) != VK_SUCCESS) {
       GERROR("Failed to create render finished semaphore")
+      return;
+    } else {
+      renderFinishedSemaphores.push_back(semaphore);
     }
   }
   GINFO("Successfully created render finished semaphore")
