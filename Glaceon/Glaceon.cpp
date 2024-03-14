@@ -40,9 +40,8 @@ static void ImGuiFrameRender(VulkanContext &context, ImDrawData *draw_data) {
   uint32_t semaphoreIndex = context.semaphoreIndex;
 
   // This defines the frame index to render to?
-  uint32_t wdFrameIndex = context.GetCurrentFrameIndex();
   err = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, image_available_semaphores[semaphoreIndex], VK_NULL_HANDLE,
-                              &wdFrameIndex);
+                              &context.currentFrameIndex);
   if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
     swapChainRebuild = true;
     return;
@@ -70,7 +69,7 @@ static void ImGuiFrameRender(VulkanContext &context, ImDrawData *draw_data) {
     VkRenderPassBeginInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     info.renderPass = context.GetVulkanRenderPass().GetVkRenderPass();
-    info.framebuffer = context.GetVulkanSwapChain().GetSwapChainFrameBuffers()[wdFrameIndex];
+    info.framebuffer = context.GetVulkanSwapChain().GetSwapChainFrameBuffers()[context.currentFrameIndex];
     info.renderArea.extent = context.GetVulkanSwapChain().GetSwapChainExtent();
     info.clearValueCount = 1;
     VkClearValue clear_color = {1.0f, 0.0f, 0.0f, 1.0f};
@@ -105,17 +104,15 @@ static void ImGuiFrameRender(VulkanContext &context, ImDrawData *draw_data) {
 static void ImGuiFramePresent(VulkanContext &context) {
   if (swapChainRebuild) return;
   std::vector<VkSemaphore> render_complete_semaphores = context.GetVulkanSync().GetRenderFinishedSemaphores();
-  uint32_t wdFrameIndex = context.GetCurrentFrameIndex();
-  std::vector<VkSwapchainKHR> swapChains;
-  swapChains.push_back(context.GetVulkanSwapChain().GetVkSwapChain());
+  auto swapChain = context.GetVulkanSwapChain().GetVkSwapChain();
 
   VkPresentInfoKHR info = {};
   info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
   info.waitSemaphoreCount = 1;
   info.pWaitSemaphores = &render_complete_semaphores[context.semaphoreIndex];
   info.swapchainCount = 1;
-  info.pSwapchains = swapChains.data();
-  info.pImageIndices = &wdFrameIndex;
+  info.pSwapchains = &swapChain;
+  info.pImageIndices = &context.currentFrameIndex;
   VkResult err = vkQueuePresentKHR(context.GetVulkanDevice().GetPresentQueue(), &info);
   if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
     swapChainRebuild = true;
@@ -253,7 +250,7 @@ void GLACEON_API runGame(Application *app) {
       glfwGetFramebufferSize(glfw_window, &width, &height);
       if (width > 0 && height > 0) {
         context.GetVulkanSwapChain().RebuildSwapChain(width, height);
-        context.ResetCurrentFrameIndex();
+        context.currentFrameIndex = 0;
         swapChainRebuild = false;
       }
     }

@@ -53,9 +53,7 @@ class VulkanContext {
 
   VulkanSync &GetVulkanSync() { return sync; }
 
-  uint32_t GetCurrentFrameIndex() { return CurrentFrameIndex; }
-  void ResetCurrentFrameIndex() { CurrentFrameIndex = 0; }
-
+  uint32_t currentFrameIndex = 0;
   uint32_t semaphoreIndex = 0;
 
  private:
