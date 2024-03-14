@@ -305,6 +305,19 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
   if (result != VK_SUCCESS) {
     GERROR("Failed to create swap chain");
   }
+
+  // FIXME: causes validation error when trying to resize window
+  //  VUID-VkSwapchainCreateInfoKHR-pNext-07781(ERROR / SPEC): msgNum: 1284057537 - Validation Error: [
+  //  VUID-VkSwapchainCreateInfoKHR-pNext-07781 ] | MessageID = 0x4c8929c1 | vkCreateSwapchainKHR():
+  //  pCreateInfo->imageExtent (551, 465), which is outside the bounds returned by
+  //  vkGetPhysicalDeviceSurfaceCapabilitiesKHR(): currentExtent = (800,600), minImageExtent = (800,600), maxImageExtent
+  //  = (800,600). The Vulkan spec states: If a VkSwapchainPresentScalingCreateInfoEXT structure was not included in the
+  //  pNext chain, or it is included and VkSwapchainPresentScalingCreateInfoEXT::scalingBehavior is zero then
+  //  imageExtent must be between minImageExtent and maxImageExtent, inclusive, where minImageExtent and maxImageExtent
+  //  are members of the VkSurfaceCapabilitiesKHR structure returned by vkGetPhysicalDeviceSurfaceCapabilitiesKHR for
+  //  the surface
+  //  (https://www.khronos.org/registry/vulkan/specs/1.3-extensions/html/vkspec.html#VUID-VkSwapchainCreateInfoKHR-pNext-07781)
+
   GINFO("Successfully regenerated swap chain");
 }
 void VulkanSwapChain::CreateFrameBuffers() {
