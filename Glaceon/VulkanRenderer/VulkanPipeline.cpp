@@ -195,4 +195,14 @@ void VulkanPipeline::CreatePipelineLayout() {
   }
 }
 
+void VulkanPipeline::Destroy() {
+  if (pipelineLayout != nullptr) {
+    vkDestroyPipelineLayout(context.GetVulkanLogicalDevice(), pipelineLayout, nullptr);
+  }
+
+  if (pipeline != nullptr) {
+    vkDestroyPipeline(context.GetVulkanLogicalDevice(), pipeline, nullptr);
+  }
+}
+
 }  // namespace Glaceon

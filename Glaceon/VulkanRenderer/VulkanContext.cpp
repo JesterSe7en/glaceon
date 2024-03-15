@@ -27,4 +27,14 @@ void VulkanContext::RemoveInstanceExtension(const char *ext) {
   }
 }
 
+void VulkanContext::Destroy() {
+  sync.Destroy();
+  commandPool.Destroy();
+  pipeline.Destroy();
+  renderPass.Destroy();
+  swapChain.Destroy();
+  device.Destroy();
+  backend.Destroy();
+}
+
 }  // namespace Glaceon

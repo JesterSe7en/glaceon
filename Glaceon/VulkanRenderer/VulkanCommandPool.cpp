@@ -5,11 +5,6 @@
 
 namespace Glaceon {
 VulkanCommandPool::VulkanCommandPool(VulkanContext& context) : context(context) {}
-VulkanCommandPool::~VulkanCommandPool() {
-  if (vk_command_pool_ != VK_NULL_HANDLE) {
-    vkDestroyCommandPool(context.GetVulkanLogicalDevice(), vk_command_pool_, nullptr);
-  }
-}
 void VulkanCommandPool::Initialize() {
   VkDevice device = context.GetVulkanLogicalDevice();
   assert(device != VK_NULL_HANDLE);
@@ -48,5 +43,11 @@ void VulkanCommandPool::Initialize() {
     }
   }
   GINFO("Successfully allocated command buffers for swap chain frames")
+}
+
+void VulkanCommandPool::Destroy() {
+  if (vk_command_pool_ != VK_NULL_HANDLE) {
+    vkDestroyCommandPool(context.GetVulkanLogicalDevice(), vk_command_pool_, nullptr);
+  }
 }
 }  // namespace Glaceon

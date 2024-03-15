@@ -1,7 +1,7 @@
 #include "VulkanRenderPass.h"
 
-#include "VulkanContext.h"
 #include "../Logger.h"
+#include "VulkanContext.h"
 
 namespace Glaceon {
 
@@ -50,5 +50,13 @@ void VulkanRenderPass::Initialize() {
     GINFO("Successfully created render pass");
   }
 }
+
 const VkRenderPass& VulkanRenderPass::GetVkRenderPass() const { return renderPass; }
+
+void VulkanRenderPass::Destroy() {
+  if (renderPass != nullptr) {
+    vkDestroyRenderPass(context.GetVulkanLogicalDevice(), renderPass, nullptr);
+  }
+}
+
 }  // namespace Glaceon

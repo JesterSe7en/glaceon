@@ -127,6 +127,7 @@ void VulkanSwapChain::PopulateSwapChainSupport() {
     return;
   }
 }
+
 void VulkanSwapChain::CreateSwapChain() {
   VkSurfaceKHR surface = context.GetSurface();
   VkDevice device = context.GetVulkanLogicalDevice();
@@ -320,6 +321,7 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
 
   GINFO("Successfully regenerated swap chain");
 }
+
 void VulkanSwapChain::CreateFrameBuffers() {
   swapChainFrameBuffers.resize(swapChainFrames.size());
   for (size_t i = 0; i < swapChainFrames.size(); i++) {
@@ -338,5 +340,14 @@ void VulkanSwapChain::CreateFrameBuffers() {
     }
   }
   GINFO("Successfully created frame buffers - Count: {}", swapChainFrameBuffers.size());
+}
+
+void VulkanSwapChain::Destroy() {
+  for (auto frameBuffer : swapChainFrameBuffers) {
+    vkDestroyFramebuffer(context.GetVulkanLogicalDevice(), frameBuffer, nullptr);
+  }
+  if (swapChain != VK_NULL_HANDLE) {
+    vkDestroySwapchainKHR(context.GetVulkanLogicalDevice(), swapChain, nullptr);
+  }
 }
 }  // namespace Glaceon

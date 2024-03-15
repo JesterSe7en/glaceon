@@ -16,9 +16,9 @@ class VulkanContext;
 class VulkanSync {
  public:
   VulkanSync(VulkanContext &context);
-  ~VulkanSync();
 
   void Initialize();
+  void Destroy();
 
   const std::vector<VkSemaphore> &GetImageAvailableSemaphores() const { return imageAvailableSemaphores; }
   const std::vector<VkSemaphore> &GetRenderFinishedSemaphores() const { return renderFinishedSemaphores; }

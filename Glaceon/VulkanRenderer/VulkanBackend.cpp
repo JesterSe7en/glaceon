@@ -55,7 +55,6 @@ void VulkanBackend::Initialize() {
   auto instanceExtensions = context.GetInstanceExtensions();
   instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(instanceExtensions.size());
   instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
-  VkInstance vkInstance = VK_NULL_HANDLE;
   VkResult res = vkCreateInstance(&instanceCreateInfo, nullptr, &vkInstance);
   if (res != VK_SUCCESS) {
     GERROR("Failed to create Vulkan instance");
@@ -63,8 +62,6 @@ void VulkanBackend::Initialize() {
   } else {
     GINFO("Successfully created vulkan instance");
   }
-
-  context.SetVulkanInstance(vkInstance);
 }
 
 void VulkanBackend::PopulateInstanceExtensions() {
@@ -129,4 +126,9 @@ VkBool32 VulkanBackend::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT mes
   return VK_FALSE;
 }
 
+void VulkanBackend::Destroy() {
+  if (vkInstance != VK_NULL_HANDLE) {
+    vkDestroyInstance(vkInstance, nullptr);
+  }
+}
 }  // namespace Glaceon

@@ -18,12 +18,13 @@ class VulkanDevice {
  public:
   VulkanDevice(VulkanContext &context);
   void Initialize();
+  void Destroy();
 
   VkPhysicalDevice &GetPhysicalDevice() { return physicalDevice; }
   VkDevice &GetLogicalDevice() { return device; }
   VkQueue GetPresentQueue() { return presentQueue; }
   VkQueue GetGraphicsQueue() { return graphicsQueue; }
-  VkCommandPool GetCommandPool() { return commandPool;}
+  VkCommandPool GetCommandPool() { return commandPool; }
 
   QueueIndexes &GetQueueIndexes() { return queue_indexes_; }
 

@@ -13,7 +13,6 @@ VulkanDevice::VulkanDevice(VulkanContext &context)
 
 void VulkanDevice::Initialize() {
   GINFO("Initializing Vulkan device...");
-
   if (context.GetVulkanInstance() == VK_NULL_HANDLE) {
     GERROR("Vulkan instance not initialized; cannot initialize device");
     return;
@@ -221,4 +220,17 @@ void VulkanDevice::PrintPhysicalDevice(VkPhysicalDevice gpu) {
   GINFO("Device ID: {}", properties.deviceID);
 }
 
+void VulkanDevice::Destroy() {
+  if (descriptorPool != VK_NULL_HANDLE) {
+    vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+  }
+
+  if (commandPool != VK_NULL_HANDLE) {
+    vkDestroyCommandPool(device, commandPool, nullptr);
+  }
+
+  if (device != VK_NULL_HANDLE) {
+    vkDestroyDevice(device, nullptr);
+  }
+}
 }  // namespace Glaceon

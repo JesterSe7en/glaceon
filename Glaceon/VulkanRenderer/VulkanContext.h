@@ -19,8 +19,7 @@ class VulkanContext {
 
   VulkanBackend &GetVulkanBackend() { return backend; }
 
-  VkInstance &GetVulkanInstance() { return instance; }
-  void SetVulkanInstance(VkInstance vkInstance) { this->instance = vkInstance; }
+  VkInstance &GetVulkanInstance() { return backend.GetVkInstance(); }
 
   VulkanDevice &GetVulkanDevice() { return device; }
   VkPhysicalDevice GetVulkanPhysicalDevice() { return device.GetPhysicalDevice(); }
@@ -52,6 +51,8 @@ class VulkanContext {
   VulkanCommandPool &GetVulkanCommandPool() { return commandPool; }
 
   VulkanSync &GetVulkanSync() { return sync; }
+
+  void Destroy();
 
   uint32_t currentFrameIndex = 0;
   uint32_t semaphoreIndex = 0;

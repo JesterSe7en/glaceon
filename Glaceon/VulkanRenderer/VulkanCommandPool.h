@@ -10,11 +10,13 @@ class VulkanContext;
 class VulkanCommandPool {
  public:
   VulkanCommandPool(VulkanContext& context);
-  ~VulkanCommandPool();
 
   void Initialize();
+  void Destroy();
+
   VkCommandPool GetVkCommandPool() const { return vk_command_pool_; }
   VkCommandBuffer* GetMainCommandBuffer() { return &vk_main_command_buffer_; }
+
  private:
   VulkanContext& context;
 

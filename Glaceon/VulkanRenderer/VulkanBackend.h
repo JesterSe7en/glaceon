@@ -11,9 +11,14 @@ class VulkanBackend {
  public:
   VulkanBackend(VulkanContext& context);
   void Initialize();
+  void Destroy();
+
+  VkInstance& GetVkInstance() { return vkInstance; }
 
  private:
   VulkanContext& context;
+
+  VkInstance vkInstance;
   std::vector<VkExtensionProperties> extensions;
 
   void PopulateInstanceExtensions();

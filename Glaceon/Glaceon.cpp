@@ -295,10 +295,7 @@ void GLACEON_API runGame(Application *app) {
   ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();
 
-  vkDestroyDescriptorPool(context.GetVulkanLogicalDevice(), context.GetDescriptorPool(), nullptr);
-
-  vkDestroyDevice(context.GetVulkanLogicalDevice(), nullptr);
-  vkDestroyInstance(instance, nullptr);
+  context.Destroy();
 
   glfwDestroyWindow(glfw_window);
   glfwTerminate();

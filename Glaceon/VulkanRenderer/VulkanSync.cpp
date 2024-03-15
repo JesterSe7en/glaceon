@@ -5,23 +5,6 @@
 
 namespace Glaceon {
 VulkanSync::VulkanSync(VulkanContext& context) : context(context) {}
-VulkanSync::~VulkanSync() {
-  VkDevice device = context.GetVulkanLogicalDevice();
-  assert(device != VK_NULL_HANDLE);
-  for (auto semaphore : imageAvailableSemaphores) {
-    if (semaphore != VK_NULL_HANDLE) {
-      vkDestroySemaphore(device, semaphore, nullptr);
-    }
-  }
-  for (auto semaphore : renderFinishedSemaphores) {
-    if (semaphore != VK_NULL_HANDLE) {
-      vkDestroySemaphore(device, semaphore, nullptr);
-    }
-  }
-  if (inFlightFence != VK_NULL_HANDLE) {
-    vkDestroyFence(device, inFlightFence, nullptr);
-  }
-}
 void VulkanSync::Initialize() {
   VkDevice device = context.GetVulkanLogicalDevice();
   assert(device != VK_NULL_HANDLE);
@@ -67,4 +50,23 @@ void VulkanSync::Initialize() {
     GINFO("Successfully created in flight fence")
   }
 }
+
+void VulkanSync::Destroy() {
+  VkDevice device = context.GetVulkanLogicalDevice();
+  assert(device != VK_NULL_HANDLE);
+  for (auto semaphore : imageAvailableSemaphores) {
+    if (semaphore != VK_NULL_HANDLE) {
+      vkDestroySemaphore(device, semaphore, nullptr);
+    }
+  }
+  for (auto semaphore : renderFinishedSemaphores) {
+    if (semaphore != VK_NULL_HANDLE) {
+      vkDestroySemaphore(device, semaphore, nullptr);
+    }
+  }
+  if (inFlightFence != VK_NULL_HANDLE) {
+    vkDestroyFence(device, inFlightFence, nullptr);
+  }
+}
+
 }  // namespace Glaceon
