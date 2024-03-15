@@ -1,5 +1,7 @@
 #include "VulkanSwapChain.h"
 
+#include <vulkan/vulkan_core.h>
+
 #include "../Logger.h"
 #include "VulkanContext.h"
 
@@ -343,8 +345,16 @@ void VulkanSwapChain::CreateFrameBuffers() {
 }
 
 void VulkanSwapChain::Destroy() {
+  for (auto swapChainFrame : swapChainFrames) {
+    if (swapChainFrame.imageView != VK_NULL_HANDLE) {
+      vkDestroyImageView(context.GetVulkanLogicalDevice(), swapChainFrame.imageView, nullptr);
+    }
+  }
+
   for (auto frameBuffer : swapChainFrameBuffers) {
-    vkDestroyFramebuffer(context.GetVulkanLogicalDevice(), frameBuffer, nullptr);
+    if (frameBuffer != VK_NULL_HANDLE) {
+      vkDestroyFramebuffer(context.GetVulkanLogicalDevice(), frameBuffer, nullptr);
+    }
   }
   if (swapChain != VK_NULL_HANDLE) {
     vkDestroySwapchainKHR(context.GetVulkanLogicalDevice(), swapChain, nullptr);
