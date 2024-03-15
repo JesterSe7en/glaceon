@@ -68,7 +68,6 @@ class VulkanContext {
 
   uint32_t CurrentFrameIndex = 0;
 
-  VkInstance instance = VK_NULL_HANDLE;
   VkDescriptorPool descriptorPool;
   VkSurfaceKHR surface = VK_NULL_HANDLE;
   VkPipelineCache pipelineCache = VK_NULL_HANDLE;

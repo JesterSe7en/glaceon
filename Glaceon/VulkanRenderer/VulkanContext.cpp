@@ -34,6 +34,10 @@ void VulkanContext::Destroy() {
   renderPass.Destroy();
   swapChain.Destroy();
   device.Destroy();
+  if (surface != VK_NULL_HANDLE) {
+    vkDestroySurfaceKHR(backend.GetVkInstance(), surface, nullptr);
+    surface = VK_NULL_HANDLE;
+  }
   backend.Destroy();
 }
 
