@@ -180,6 +180,9 @@ void GLACEON_API runGame(Application *app) {
   if (res != VK_SUCCESS) {
     GERROR("Failed to create window surface");
   }
+
+  //  glfwSetFramebufferSizeCallback(glfw_window, framebufferResizeCallback);
+
   context.SetSurface(surface);
   context.AddDeviceExtension("VK_KHR_swapchain");
   context.GetVulkanDevice().Initialize();

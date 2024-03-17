@@ -24,6 +24,7 @@ class VulkanDevice {
   VkDevice &GetLogicalDevice() { return device; }
   VkQueue GetPresentQueue() { return presentQueue; }
   VkQueue GetGraphicsQueue() { return graphicsQueue; }
+  VkDescriptorPool GetDescriptorPool() { return descriptorPool; }
   VkCommandPool GetCommandPool() { return commandPool; }
 
   QueueIndexes &GetQueueIndexes() { return queue_indexes_; }

@@ -116,8 +116,6 @@ void VulkanDevice::Initialize() {
   } else {
     GINFO("Successfully created descriptor pool");
   }
-
-  context.SetDescriptorPool(descriptorPool);
 }
 
 bool VulkanDevice::CheckDeviceRequirements(VkPhysicalDevice &vkPhysicalDevice) {

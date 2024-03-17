@@ -33,11 +33,7 @@ class VulkanContext {
   void RemoveInstanceExtension(const char *ext);
   std::vector<const char *> &GetInstanceExtensions() { return instanceExtensions; }
 
-  VkDescriptorPool GetDescriptorPool() { return descriptorPool; }
-  void SetDescriptorPool(VkDescriptorPool vkDescriptorPool) { this->descriptorPool = vkDescriptorPool; }
-
-  VkPipelineCache GetPipelineCache() { return pipelineCache; }
-  void SetPipelineCache(VkPipelineCache vkPipelineCache) { this->pipelineCache = vkPipelineCache; }
+  VkDescriptorPool GetDescriptorPool() { return device.GetDescriptorPool(); }
 
   VkSurfaceKHR GetSurface() { return surface; }
   void SetSurface(VkSurfaceKHR vkSurface) { this->surface = vkSurface; }
