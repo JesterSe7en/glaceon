@@ -1,6 +1,7 @@
 #include "Glaceon.h"
 
 #include "Application.h"
+#include "GLFW/glfw3.h"
 #include "Logger.h"
 
 namespace Glaceon {
@@ -153,6 +154,20 @@ void GLACEON_API runGame(Application *app) {
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
   GLFWwindow *glfw_window = glfwCreateWindow(800, 600, "GLFW Test Window", nullptr, nullptr);
+
+  if (glfw_window == nullptr) {
+    GERROR("Failed to create GLFW window");
+
+    const char *description;
+    glfwGetError(&description);
+    GERROR("Cannot initialize GLFW: {}", description);
+    glfwTerminate();
+    return;
+  }
+
+  const char *description;
+  glfwGetError(&description);
+  GERROR("Cannot initialize GLFW: {}", description);
 
   glfwSetKeyCallback(glfw_window, keyboard_callback);
 
