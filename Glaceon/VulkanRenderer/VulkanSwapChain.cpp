@@ -331,6 +331,7 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
     return;
   }
 
+  // FIXME: There's probably another way to set this while doing the PopulateSwapChain function
   swapChainExtent = swapChainSupport.capabilities.currentExtent;
 
   if (oldSwapChain) {
