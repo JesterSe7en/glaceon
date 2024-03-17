@@ -331,6 +331,8 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
     return;
   }
 
+  swapChainExtent = swapChainSupport.capabilities.currentExtent;
+
   if (oldSwapChain) {
     vkDestroySwapchainKHR(context.GetVulkanLogicalDevice(), oldSwapChain, nullptr);
   }
