@@ -263,16 +263,7 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
   auto surface = context.GetSurface();
   VkSwapchainKHR oldSwapChain = swapChain;
 
-  VkResult res = vkDeviceWaitIdle(context.GetVulkanLogicalDevice());
-  if (res != VK_SUCCESS) {
-    GERROR("Failed to wait on device during swap chain rebuild");
-    return;
-  }
-
-  // destroy pipeline and old sync objects
-  context.GetVulkanPipeline().Destroy();
-  context.GetVulkanSync().Destroy();
-
+  DestroyFrames();
 
   uint32_t imageCount =
       std::min(swapChainSupport.capabilities.maxImageCount, swapChainSupport.capabilities.minImageCount + 1);
@@ -347,8 +338,22 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
 
   CreateImageViews();
   CreateFrameBuffers();
-  // recreate sync objects for the new swap chain
-  context.GetVulkanSync().Initialize();
+}
+
+void VulkanSwapChain::DestroyFrames() {
+  for (auto swapChainFrame : swapChainFrames) {
+    if (swapChainFrame.imageView != VK_NULL_HANDLE) {
+      vkDestroyImageView(context.GetVulkanLogicalDevice(), swapChainFrame.imageView, nullptr);
+    }
+  }
+  swapChainFrames.clear();
+
+  for (auto frameBuffer : swapChainFrameBuffers) {
+    if (frameBuffer != VK_NULL_HANDLE) {
+      vkDestroyFramebuffer(context.GetVulkanLogicalDevice(), frameBuffer, nullptr);
+    }
+  }
+  swapChainFrameBuffers.clear();
 }
 
 void VulkanSwapChain::CreateFrameBuffers() {
@@ -374,17 +379,8 @@ void VulkanSwapChain::CreateFrameBuffers() {
 }
 
 void VulkanSwapChain::Destroy() {
-  for (auto swapChainFrame : swapChainFrames) {
-    if (swapChainFrame.imageView != VK_NULL_HANDLE) {
-      vkDestroyImageView(context.GetVulkanLogicalDevice(), swapChainFrame.imageView, nullptr);
-    }
-  }
+  DestroyFrames();
 
-  for (auto frameBuffer : swapChainFrameBuffers) {
-    if (frameBuffer != VK_NULL_HANDLE) {
-      vkDestroyFramebuffer(context.GetVulkanLogicalDevice(), frameBuffer, nullptr);
-    }
-  }
   if (swapChain != VK_NULL_HANDLE) {
     vkDestroySwapchainKHR(context.GetVulkanLogicalDevice(), swapChain, nullptr);
   }

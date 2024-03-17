@@ -56,6 +56,7 @@ class VulkanSwapChain {
   void CreateSwapChain();
   void CreateImageViews();
   void CreateFrameBuffers();
+  void DestroyFrames();
 };
 
 }  // namespace Glaceon
