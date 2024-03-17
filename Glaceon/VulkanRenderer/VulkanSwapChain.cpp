@@ -14,7 +14,7 @@ void VulkanSwapChain::Initialize() {
   // FIFO present mode is guaranteed to be supported
   surfaceFormat = VkFormat::VK_FORMAT_B8G8R8A8_UNORM;
   colorSpace = VkColorSpaceKHR::VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-  presentMode = VkPresentModeKHR::VK_PRESENT_MODE_IMMEDIATE_KHR;
+  presentMode = VkPresentModeKHR::VK_PRESENT_MODE_MAILBOX_KHR;
 
   PopulateSwapChainSupport();
   CreateSwapChain();
