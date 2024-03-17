@@ -56,6 +56,7 @@ const VkRenderPass& VulkanRenderPass::GetVkRenderPass() const { return renderPas
 void VulkanRenderPass::Destroy() {
   if (renderPass != nullptr) {
     vkDestroyRenderPass(context.GetVulkanLogicalDevice(), renderPass, nullptr);
+    renderPass = VK_NULL_HANDLE;
   }
 }
 

@@ -48,6 +48,7 @@ void VulkanCommandPool::Initialize() {
 void VulkanCommandPool::Destroy() {
   if (vk_command_pool_ != VK_NULL_HANDLE) {
     vkDestroyCommandPool(context.GetVulkanLogicalDevice(), vk_command_pool_, nullptr);
+    vk_command_pool_ = VK_NULL_HANDLE;
   }
 }
 }  // namespace Glaceon
