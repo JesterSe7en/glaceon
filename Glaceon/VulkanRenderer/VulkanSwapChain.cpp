@@ -279,25 +279,26 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
   createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
   // Poll surface
-  VkSurfaceCapabilitiesKHR surfaceCapabilities;
-  res = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(context.GetVulkanPhysicalDevice(), surface, &surfaceCapabilities);
-  if (res != VK_SUCCESS) {
+  if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(context.GetVulkanPhysicalDevice(), surface,
+                                                &swapChainSupport.capabilities) != VK_SUCCESS) {
     GERROR("Failed to get surface capabilities");
     return;
   }
 
-  if (createInfo.minImageCount < surfaceCapabilities.minImageCount) {
-    createInfo.minImageCount = surfaceCapabilities.minImageCount;
-  } else if (surfaceCapabilities.maxImageCount != 0 && createInfo.minImageCount > surfaceCapabilities.maxImageCount) {
-    createInfo.minImageCount = surfaceCapabilities.maxImageCount;
+  VkSurfaceCapabilitiesKHR cap = swapChainSupport.capabilities;
+
+  if (createInfo.minImageCount < cap.minImageCount) {
+    createInfo.minImageCount = cap.minImageCount;
+  } else if (cap.maxImageCount != 0 && createInfo.minImageCount > cap.maxImageCount) {
+    createInfo.minImageCount = cap.maxImageCount;
   }
 
-  if (surfaceCapabilities.currentExtent.width == 0xFFFFFFFF) {
+  if (cap.currentExtent.width == 0xFFFFFFFF) {
     createInfo.imageExtent.width = width;
     createInfo.imageExtent.height = height;
   } else {
-    createInfo.imageExtent.width = width = surfaceCapabilities.currentExtent.width;
-    createInfo.imageExtent.height = height = surfaceCapabilities.currentExtent.height;
+    createInfo.imageExtent.width = width = cap.currentExtent.width;
+    createInfo.imageExtent.height = height = cap.currentExtent.height;
   }
 
   assert(context.GetQueueIndexes().graphicsFamily.has_value() && context.GetQueueIndexes().presentFamily.has_value());
@@ -325,9 +326,9 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
   // used during re-initialization from old to speed up creation
   createInfo.oldSwapchain = oldSwapChain == VK_NULL_HANDLE ? VK_NULL_HANDLE : oldSwapChain;
 
-  VkResult result = vkCreateSwapchainKHR(context.GetVulkanLogicalDevice(), &createInfo, nullptr, &swapChain);
-  if (result != VK_SUCCESS) {
+  if (vkCreateSwapchainKHR(context.GetVulkanLogicalDevice(), &createInfo, nullptr, &swapChain) != VK_SUCCESS) {
     GERROR("Failed to create swap chain");
+    return;
   }
 
   if (oldSwapChain) {
