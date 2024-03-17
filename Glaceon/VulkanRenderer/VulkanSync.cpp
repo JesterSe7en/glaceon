@@ -59,14 +59,17 @@ void VulkanSync::Destroy() {
       vkDestroySemaphore(device, semaphore, nullptr);
     }
   }
+  imageAvailableSemaphores.clear();
   for (auto semaphore : renderFinishedSemaphores) {
     if (semaphore != VK_NULL_HANDLE) {
       vkDestroySemaphore(device, semaphore, nullptr);
     }
   }
+  renderFinishedSemaphores.clear();
   if (inFlightFence != VK_NULL_HANDLE) {
     vkDestroyFence(device, inFlightFence, nullptr);
   }
+  inFlightFence = VK_NULL_HANDLE;
 }
 
 }  // namespace Glaceon

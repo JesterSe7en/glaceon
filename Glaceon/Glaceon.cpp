@@ -165,10 +165,6 @@ void GLACEON_API runGame(Application *app) {
     return;
   }
 
-  const char *description;
-  glfwGetError(&description);
-  GERROR("Cannot initialize GLFW: {}", description);
-
   glfwSetKeyCallback(glfw_window, keyboard_callback);
 
   // For reference on integrating ImGui with GLFW and Vulkan

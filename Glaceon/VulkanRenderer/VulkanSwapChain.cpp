@@ -1,7 +1,5 @@
 #include "VulkanSwapChain.h"
 
-#include <vulkan/vulkan_core.h>
-
 #include "../Logger.h"
 #include "VulkanContext.h"
 
@@ -222,6 +220,19 @@ void VulkanSwapChain::CreateImageViews() {
   imageViews.resize(imageCount);
   // For each swapChaimImage, we need to construct an image view
   // create a std::vector that matches up with the number of images in the swapChainImages
+  VkImageViewCreateInfo create_info = {};
+  create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+  create_info.format = surfaceFormat;
+  create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+  create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
+  create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
+  create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
+  create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
+  create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  create_info.subresourceRange.baseMipLevel = 0;
+  create_info.subresourceRange.levelCount = 1;
+  create_info.subresourceRange.baseArrayLayer = 0;
+  create_info.subresourceRange.layerCount = 1;
   for (uint32_t i = 0; i < imageCount; i++) {
     //    typedef struct VkImageViewCreateInfo {
     //      VkStructureType            sType;
@@ -233,20 +244,7 @@ void VulkanSwapChain::CreateImageViews() {
     //      VkComponentMapping         components;
     //      VkImageSubresourceRange    subresourceRange;
     //    } VkImageViewCreateInfo;
-    VkImageViewCreateInfo create_info = {};
-    create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
-    create_info.format = surfaceFormat;
     create_info.image = images[i];
-    create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
-    create_info.components.r = VK_COMPONENT_SWIZZLE_IDENTITY;
-    create_info.components.g = VK_COMPONENT_SWIZZLE_IDENTITY;
-    create_info.components.b = VK_COMPONENT_SWIZZLE_IDENTITY;
-    create_info.components.a = VK_COMPONENT_SWIZZLE_IDENTITY;
-    create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    create_info.subresourceRange.baseMipLevel = 0;
-    create_info.subresourceRange.levelCount = 1;
-    create_info.subresourceRange.baseArrayLayer = 0;
-    create_info.subresourceRange.layerCount = 1;
     VkResult result = vkCreateImageView(device, &create_info, nullptr, &imageViews[i]);
     if (result != VK_SUCCESS) {
       GERROR("Failed to create image view");
@@ -263,6 +261,18 @@ void VulkanSwapChain::CreateImageViews() {
 
 void VulkanSwapChain::RebuildSwapChain(int width, int height) {
   auto surface = context.GetSurface();
+  VkSwapchainKHR oldSwapChain = swapChain;
+
+  VkResult res = vkDeviceWaitIdle(context.GetVulkanLogicalDevice());
+  if (res != VK_SUCCESS) {
+    GERROR("Failed to wait on device during swap chain rebuild");
+    return;
+  }
+
+  // destroy pipeline and old sync objects
+  context.GetVulkanPipeline().Destroy();
+  context.GetVulkanSync().Destroy();
+
 
   uint32_t imageCount =
       std::min(swapChainSupport.capabilities.maxImageCount, swapChainSupport.capabilities.minImageCount + 1);
@@ -274,10 +284,30 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
   createInfo.minImageCount = imageCount;
   createInfo.imageFormat = surfaceFormat;
   createInfo.imageColorSpace = colorSpace;
-  createInfo.imageExtent.width = width;
-  createInfo.imageExtent.height = height;
   createInfo.imageArrayLayers = 1;
   createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+
+  // Poll surface
+  VkSurfaceCapabilitiesKHR surfaceCapabilities;
+  res = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(context.GetVulkanPhysicalDevice(), surface, &surfaceCapabilities);
+  if (res != VK_SUCCESS) {
+    GERROR("Failed to get surface capabilities");
+    return;
+  }
+
+  if (createInfo.minImageCount < surfaceCapabilities.minImageCount) {
+    createInfo.minImageCount = surfaceCapabilities.minImageCount;
+  } else if (surfaceCapabilities.maxImageCount != 0 && createInfo.minImageCount > surfaceCapabilities.maxImageCount) {
+    createInfo.minImageCount = surfaceCapabilities.maxImageCount;
+  }
+
+  if (surfaceCapabilities.currentExtent.width == 0xFFFFFFFF) {
+    createInfo.imageExtent.width = width;
+    createInfo.imageExtent.height = height;
+  } else {
+    createInfo.imageExtent.width = width = surfaceCapabilities.currentExtent.width;
+    createInfo.imageExtent.height = height = surfaceCapabilities.currentExtent.height;
+  }
 
   assert(context.GetQueueIndexes().graphicsFamily.has_value() && context.GetQueueIndexes().presentFamily.has_value());
 
@@ -302,40 +332,39 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
   createInfo.clipped = VK_TRUE;  // if a window is rendered above the rendering window, it will be clipped
   createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
   // used during re-initialization from old to speed up creation
-  createInfo.oldSwapchain = swapChain == VK_NULL_HANDLE ? VK_NULL_HANDLE : swapChain;
+  createInfo.oldSwapchain = oldSwapChain == VK_NULL_HANDLE ? VK_NULL_HANDLE : oldSwapChain;
 
   VkResult result = vkCreateSwapchainKHR(context.GetVulkanLogicalDevice(), &createInfo, nullptr, &swapChain);
   if (result != VK_SUCCESS) {
     GERROR("Failed to create swap chain");
   }
 
-  // FIXME: causes validation error when trying to resize window
-  //  VUID-VkSwapchainCreateInfoKHR-pNext-07781(ERROR / SPEC): msgNum: 1284057537 - Validation Error: [
-  //  VUID-VkSwapchainCreateInfoKHR-pNext-07781 ] | MessageID = 0x4c8929c1 | vkCreateSwapchainKHR():
-  //  pCreateInfo->imageExtent (551, 465), which is outside the bounds returned by
-  //  vkGetPhysicalDeviceSurfaceCapabilitiesKHR(): currentExtent = (800,600), minImageExtent = (800,600), maxImageExtent
-  //  = (800,600). The Vulkan spec states: If a VkSwapchainPresentScalingCreateInfoEXT structure was not included in the
-  //  pNext chain, or it is included and VkSwapchainPresentScalingCreateInfoEXT::scalingBehavior is zero then
-  //  imageExtent must be between minImageExtent and maxImageExtent, inclusive, where minImageExtent and maxImageExtent
-  //  are members of the VkSurfaceCapabilitiesKHR structure returned by vkGetPhysicalDeviceSurfaceCapabilitiesKHR for
-  //  the surface
-  //  (https://www.khronos.org/registry/vulkan/specs/1.3-extensions/html/vkspec.html#VUID-VkSwapchainCreateInfoKHR-pNext-07781)
+  if (oldSwapChain) {
+    vkDestroySwapchainKHR(context.GetVulkanLogicalDevice(), oldSwapChain, nullptr);
+  }
 
   GINFO("Successfully regenerated swap chain");
+
+  CreateImageViews();
+  CreateFrameBuffers();
+  // recreate sync objects for the new swap chain
+  context.GetVulkanSync().Initialize();
 }
 
 void VulkanSwapChain::CreateFrameBuffers() {
   swapChainFrameBuffers.resize(swapChainFrames.size());
+
+  VkFramebufferCreateInfo createInfo = {};
+  createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+  createInfo.renderPass = context.GetVulkanRenderPass().GetVkRenderPass();
+  createInfo.attachmentCount = 1;
+  createInfo.width = swapChainSupport.capabilities.currentExtent.width;
+  createInfo.height = swapChainSupport.capabilities.currentExtent.height;
+  createInfo.layers = 1;
+
   for (size_t i = 0; i < swapChainFrames.size(); i++) {
     VkImageView attachments[] = {swapChainFrames[i].imageView};
-    VkFramebufferCreateInfo createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-    createInfo.renderPass = context.GetVulkanRenderPass().GetVkRenderPass();
-    createInfo.attachmentCount = 1;
     createInfo.pAttachments = attachments;
-    createInfo.width = swapChainSupport.capabilities.currentExtent.width;
-    createInfo.height = swapChainSupport.capabilities.currentExtent.height;
-    createInfo.layers = 1;
     if (vkCreateFramebuffer(context.GetVulkanLogicalDevice(), &createInfo, nullptr, &swapChainFrameBuffers[i]) !=
         VK_SUCCESS) {
       GERROR("Failed to create frame buffers");
