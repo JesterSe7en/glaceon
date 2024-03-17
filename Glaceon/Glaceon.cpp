@@ -263,7 +263,19 @@ void GLACEON_API runGame(Application *app) {
       int width, height;
       glfwGetFramebufferSize(glfw_window, &width, &height);
       if (width > 0 && height > 0) {
+        if (vkDeviceWaitIdle(context.GetVulkanLogicalDevice()) != VK_SUCCESS) {
+          GERROR("Failed to wait on device during swap chain rebuild");
+          return;
+        }
+        // destroy pipeline and old sync objects
+        context.GetVulkanRenderPass().Destroy();
+        context.GetVulkanRenderPass().Initialize();
+        context.GetVulkanPipeline().Destroy();
         context.GetVulkanSwapChain().RebuildSwapChain(width, height);
+        context.GetVulkanCommandPool().Destroy();
+        context.GetVulkanCommandPool().Initialize();
+        context.GetVulkanSync().Destroy();
+        context.GetVulkanSync().Initialize();
         context.currentFrameIndex = 0;
         swapChainRebuild = false;
       }
