@@ -54,22 +54,25 @@ void VulkanSync::Initialize() {
 void VulkanSync::Destroy() {
   VkDevice device = context.GetVulkanLogicalDevice();
   assert(device != VK_NULL_HANDLE);
+
   for (auto semaphore : imageAvailableSemaphores) {
     if (semaphore != VK_NULL_HANDLE) {
       vkDestroySemaphore(device, semaphore, nullptr);
+      semaphore = VK_NULL_HANDLE;
     }
   }
   imageAvailableSemaphores.clear();
   for (auto semaphore : renderFinishedSemaphores) {
     if (semaphore != VK_NULL_HANDLE) {
       vkDestroySemaphore(device, semaphore, nullptr);
+      semaphore = VK_NULL_HANDLE;
     }
   }
   renderFinishedSemaphores.clear();
   if (inFlightFence != VK_NULL_HANDLE) {
     vkDestroyFence(device, inFlightFence, nullptr);
+    inFlightFence = VK_NULL_HANDLE;
   }
-  inFlightFence = VK_NULL_HANDLE;
 }
 
 }  // namespace Glaceon

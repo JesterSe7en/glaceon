@@ -14,6 +14,17 @@ void VulkanPipeline::Initialize(GraphicsPipelineConfig pipelineConfig) {
   VkDevice device = context.GetVulkanLogicalDevice();
   assert(device != nullptr);
 
+  VkPipelineCacheCreateInfo cache_create_info = {};
+  cache_create_info.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
+  cache_create_info.pNext = nullptr;
+  cache_create_info.flags = 0;
+  cache_create_info.initialDataSize = 0;
+  cache_create_info.pInitialData = nullptr;
+  if (vkCreatePipelineCache(device, &cache_create_info, nullptr, &pipelineCache) != VK_SUCCESS) {
+    GERROR("Failed to create pipeline cache")
+    return;
+  }
+
   VkGraphicsPipelineCreateInfo pipelineInfo = {};
   pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
   pipelineInfo.pNext = nullptr;
@@ -158,7 +169,7 @@ void VulkanPipeline::Initialize(GraphicsPipelineConfig pipelineConfig) {
   pipelineInfo.basePipelineHandle = VK_NULL_HANDLE;  // Optional - to base pipeline on
 
   // Create pipeline - for now just one pipeline
-  if (vkCreateGraphicsPipelines(device, VK_NULL_HANDLE, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS) {
+  if (vkCreateGraphicsPipelines(device, pipelineCache, 1, &pipelineInfo, nullptr, &pipeline) != VK_SUCCESS) {
     GERROR("Failed to create graphics pipeline");
     pipeline = nullptr;
   } else {
@@ -191,6 +202,11 @@ void VulkanPipeline::CreatePipelineLayout() {
 }
 
 void VulkanPipeline::Destroy() {
+  if (pipelineCache != VK_NULL_HANDLE) {
+    vkDestroyPipelineCache(context.GetVulkanLogicalDevice(), pipelineCache, nullptr);
+    pipelineCache = VK_NULL_HANDLE;
+  }
+
   if (pipelineLayout != VK_NULL_HANDLE) {
     vkDestroyPipelineLayout(context.GetVulkanLogicalDevice(), pipelineLayout, nullptr);
     pipelineLayout = VK_NULL_HANDLE;

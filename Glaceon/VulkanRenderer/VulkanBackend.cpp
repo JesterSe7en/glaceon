@@ -129,6 +129,7 @@ VkBool32 VulkanBackend::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT mes
 void VulkanBackend::Destroy() {
   if (vkInstance != VK_NULL_HANDLE) {
     vkDestroyInstance(vkInstance, nullptr);
+    vkInstance = VK_NULL_HANDLE;
   }
 }
 }  // namespace Glaceon

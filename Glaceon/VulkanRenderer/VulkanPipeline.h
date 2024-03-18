@@ -19,6 +19,8 @@ class VulkanPipeline {
   VulkanPipeline(VulkanContext& context);
   void Initialize(GraphicsPipelineConfig pipelineConfig);
 
+  VkPipelineCache GetPipelineCache() { return pipelineCache; }
+
   void Recreate();
   void Destroy();
 
@@ -27,7 +29,9 @@ class VulkanPipeline {
 
   VkPipelineLayout pipelineLayout;
   VkPipeline pipeline;
+  VkPipelineCache pipelineCache;
 
+ private:
   void CreatePipelineLayout();
 };
 

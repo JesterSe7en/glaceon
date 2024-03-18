@@ -221,14 +221,17 @@ void VulkanDevice::PrintPhysicalDevice(VkPhysicalDevice gpu) {
 void VulkanDevice::Destroy() {
   if (descriptorPool != VK_NULL_HANDLE) {
     vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+    descriptorPool = VK_NULL_HANDLE;
   }
 
   if (commandPool != VK_NULL_HANDLE) {
     vkDestroyCommandPool(device, commandPool, nullptr);
+    commandPool = VK_NULL_HANDLE;
   }
 
   if (device != VK_NULL_HANDLE) {
     vkDestroyDevice(device, nullptr);
+    device = VK_NULL_HANDLE;
   }
 }
 }  // namespace Glaceon
