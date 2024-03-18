@@ -126,6 +126,10 @@ static void ImGuiFramePresent(VulkanContext &context) {
                                          .size();  // mod semaphore index to wrap indexing back to beginning
 }
 
+// void framebufferResizeCallback(GLFWwindow *window, int width, int height) {
+//   GTRACE("WHOA, framebuffer resize callback");
+// }
+
 // ----------------- Application Class Functions ----------------------
 
 void GLACEON_API runGame(Application *app) {
@@ -192,7 +196,8 @@ void GLACEON_API runGame(Application *app) {
     GERROR("Failed to create window surface");
   }
 
-  //  glfwSetFramebufferSizeCallback(glfw_window, framebufferResizeCallback);
+  // TODO: set up resize callback instead of using a flag
+  // glfwSetFramebufferSizeCallback(glfw_window, framebufferResizeCallback);
 
   context.SetSurface(surface);
   context.AddDeviceExtension("VK_KHR_swapchain");
