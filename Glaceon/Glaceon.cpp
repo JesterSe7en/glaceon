@@ -142,10 +142,9 @@ static void GameFrameRender(VulkanContext &context) {
   vkResetFences(device, 1, &inFlightFence);
 
   // get image from swap chain
-  uint32_t imageIndex;
   // the semaphore passes is what is going to be signaled once the image is acquired
   if (vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, image_available_semaphores[context.semaphoreIndex],
-                            VK_NULL_HANDLE, &imageIndex) != VK_SUCCESS) {
+                            VK_NULL_HANDLE, &context.currentFrameIndex) != VK_SUCCESS) {
     GERROR("Failed to acquire next swap chain image")
     return;
   }
@@ -154,7 +153,7 @@ static void GameFrameRender(VulkanContext &context) {
   std::vector<VkCommandBuffer> frame_command_buffers = context.GetVulkanCommandPool().GetFrameCommandBuffers();
   VkCommandBuffer commandBuffer = frame_command_buffers[context.currentFrameIndex];
   vkResetCommandBuffer(commandBuffer, 0);
-  recordDrawCommands(commandBuffer, imageIndex);
+  recordDrawCommands(commandBuffer, context.currentFrameIndex);
 
   VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
   VkSubmitInfo info = {};
