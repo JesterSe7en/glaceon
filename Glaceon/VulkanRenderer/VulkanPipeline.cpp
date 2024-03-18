@@ -198,10 +198,12 @@ void VulkanPipeline::CreatePipelineLayout() {
 void VulkanPipeline::Destroy() {
   if (pipelineLayout != VK_NULL_HANDLE) {
     vkDestroyPipelineLayout(context.GetVulkanLogicalDevice(), pipelineLayout, nullptr);
+    pipelineLayout = VK_NULL_HANDLE;
   }
 
   if (pipeline != VK_NULL_HANDLE) {
     vkDestroyPipeline(context.GetVulkanLogicalDevice(), pipeline, nullptr);
+    pipeline = VK_NULL_HANDLE;
   }
 }
 
