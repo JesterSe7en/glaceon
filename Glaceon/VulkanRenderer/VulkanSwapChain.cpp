@@ -372,10 +372,10 @@ void VulkanSwapChain::CreateFrameBuffers() {
   createInfo.height = swapChainSupport.capabilities.currentExtent.height;
   createInfo.layers = 1;
 
-  for (size_t i = 0; i < swapChainFrames.size(); i++) {
-    VkImageView attachments[] = {swapChainFrames[i].imageView};
+  for (auto & swapChainFrame : swapChainFrames) {
+    VkImageView attachments[] = {swapChainFrame.imageView};
     createInfo.pAttachments = attachments;
-    if (vkCreateFramebuffer(context.GetVulkanLogicalDevice(), &createInfo, nullptr, &swapChainFrameBuffers[i]) !=
+    if (vkCreateFramebuffer(context.GetVulkanLogicalDevice(), &createInfo, nullptr, &swapChainFrame.framebuffer) !=
         VK_SUCCESS) {
       GERROR("Failed to create frame buffers");
     }

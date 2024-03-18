@@ -7,6 +7,7 @@
 namespace Glaceon {
 
 static bool swapChainRebuild = false;
+static Application* currentApp = nullptr;
 
 void error_callback(int error, const char *description) { GERROR("GLFW Error: Code: {} - {}", error, description); }
 
@@ -70,7 +71,7 @@ static void ImGuiFrameRender(VulkanContext &context, ImDrawData *draw_data) {
     VkRenderPassBeginInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     info.renderPass = context.GetVulkanRenderPass().GetVkRenderPass();
-    info.framebuffer = context.GetVulkanSwapChain().GetSwapChainFrameBuffers()[context.currentFrameIndex];
+    info.framebuffer = context.GetVulkanSwapChain().GetSwapChainFrames()[context.currentFrameIndex].framebuffer;
     info.renderArea.extent = context.GetVulkanSwapChain().GetSwapChainExtent();
     info.clearValueCount = 1;
     VkClearValue clear_color = {1.0f, 0.0f, 0.0f, 1.0f};
@@ -126,6 +127,83 @@ static void ImGuiFramePresent(VulkanContext &context) {
                                          .size();  // mod semaphore index to wrap indexing back to beginning
 }
 
+void GameFrameRender(VulkanContext &context) {
+
+  VkFence inFlightFence = context.GetVulkanSync().GetInFlightFence();
+  VkDevice device = context.GetVulkanLogicalDevice();
+  VkSwapchainKHR swapChain = context.GetVulkanSwapChain().GetVkSwapChain();
+  std::vector<VkSemaphore> image_available_semaphores = context.GetVulkanSync().GetImageAvailableSemaphores();
+  std::vector<VkSemaphore> render_complete_semaphores = context.GetVulkanSync().GetRenderFinishedSemaphores();
+
+  if (vkWaitForFences(device, 1, &inFlightFence, VK_TRUE, UINT64_MAX) != VK_SUCCESS) {
+    GERROR("Failed to wait for fence")
+    return;
+  }
+  // reset the fence - "close the fence behind us"
+  vkResetFences(device, 1, &inFlightFence);
+
+  // get image from swap chain
+  uint32_t imageIndex;
+  // the semaphore passes is what is going to be signaled once the image is acquired
+  if (vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, image_available_semaphores[context.semaphoreIndex], VK_NULL_HANDLE, &imageIndex) != VK_SUCCESS) {
+    GERROR("Failed to acquire next swap chain image")
+    return;
+  }
+
+  // get the frame's own command buffer
+  std::vector<SwapChainFrame> swapChainFrames = context.GetVulkanSwapChain().GetSwapChainFrames();
+  VkCommandBuffer commandBuffer = swapChainFrames[context.currentFrameIndex].commandBuffer;
+  vkResetCommandBuffer(commandBuffer, 0);
+  recordDrawCommands(commandBuffer, imageIndex);
+
+  VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+  VkSubmitInfo info = {};
+  info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+  info.waitSemaphoreCount = 1;
+  info.pWaitSemaphores = &image_available_semaphores[context.semaphoreIndex];
+  info.pWaitDstStageMask = &wait_stage;
+  info.commandBufferCount = 1;
+  info.pCommandBuffers = &commandBuffer;
+  info.signalSemaphoreCount = 1;
+  info.pSignalSemaphores = &render_complete_semaphores[context.semaphoreIndex];
+
+  if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
+    GERROR("Failed to end command buffer")
+    return;
+  }
+
+  // fence is provided here so that once we submit the command buffer, we can safely reset the fence
+  if (vkQueueSubmit(context.GetVulkanDevice().GetGraphicsQueue(), 1, &info, inFlightFence) != VK_SUCCESS) {
+    GERROR("Failed to submit to queue")
+    return;
+  }
+}
+
+void GameFramePresent(VulkanContext &context) {
+  std::vector<VkSemaphore> render_complete_semaphores = context.GetVulkanSync().GetRenderFinishedSemaphores();
+  VkSwapchainKHR swapChain = context.GetVulkanSwapChain().GetVkSwapChain();
+  VkQueue presentQueue = context.GetVulkanDevice().GetPresentQueue();
+
+  // submit command buffer aka present
+  VkPresentInfoKHR info = {};
+  info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+  info.waitSemaphoreCount = 1;
+  info.pWaitSemaphores = &render_complete_semaphores[context.semaphoreIndex];
+  info.swapchainCount = 1;
+  info.pSwapchains = &swapChain;
+  info.pImageIndices = &context.currentFrameIndex;
+  VkResult err = vkQueuePresentKHR(presentQueue, &info);
+  if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
+    swapChainRebuild = true;
+    return;
+  }
+  CheckVkResult(err);
+  context.semaphoreIndex =
+      (context.semaphoreIndex + 1) % context.GetVulkanSwapChain()
+                                         .GetSwapChainFrames()
+                                         .size();  // mod semaphore index to wrap indexing back to beginning
+}
+
 // void framebufferResizeCallback(GLFWwindow *window, int width, int height) {
 //   GTRACE("WHOA, framebuffer resize callback");
 // }
@@ -137,6 +215,8 @@ void GLACEON_API runGame(Application *app) {
     GTRACE("Application is null");
     return;
   }
+
+  currentApp = app;
 
   if (!glfwInit()) {
     GTRACE("GLFW initialization failed");
@@ -259,6 +339,7 @@ void GLACEON_API runGame(Application *app) {
   GINFO("ImGui successfully initialized")
 
   app->onStart();
+  // ----------------------------- MAIN LOOP ----------------------------- //
   while (!glfwWindowShouldClose(glfw_window)) {
     glfwPollEvents();
     app->onUpdate();
@@ -286,6 +367,7 @@ void GLACEON_API runGame(Application *app) {
       }
     }
 
+    // ------------------ Render ImGui Frame ------------------ //
     // Start the Dear ImGui frame
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
@@ -313,6 +395,12 @@ void GLACEON_API runGame(Application *app) {
       ImGuiFrameRender(context, draw_data);
       ImGuiFramePresent(context);
     }
+
+    // ------------------ Render Game Frame ------------------ //
+    // Essentially we are doing the same thing as ImGuiRender and ImGuiPresent
+    // Just that we are rendering the game frames
+    GameFrameRender(context);
+    GameFramePresent(context);
   }
 
   res = vkDeviceWaitIdle(context.GetVulkanDevice().GetLogicalDevice());
@@ -331,6 +419,37 @@ void GLACEON_API runGame(Application *app) {
   glfwDestroyWindow(glfw_window);
   glfwTerminate();
   app->onShutdown();
+}
+
+void GLACEON_API recordDrawCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+  VulkanContext &context = currentApp->GetVulkanContext();
+
+  VkCommandBufferBeginInfo  begin_info = {};
+  begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+  if (vkBeginCommandBuffer(commandBuffer, &begin_info)!= VK_SUCCESS) {
+    GERROR("Failed to begin recording command buffer")
+    return;
+  }
+
+  VkRenderPassBeginInfo render_pass_info = {};
+  render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+  render_pass_info.renderPass = context.GetVulkanRenderPass().GetVkRenderPass();
+  render_pass_info.framebuffer = context.GetVulkanSwapChain().GetSwapChainFrames()[imageIndex].framebuffer;
+  render_pass_info.renderArea.offset = {0, 0};
+  render_pass_info.renderArea.extent = context.GetVulkanSwapChain().GetSwapChainExtent();
+  VkClearValue clear_value = {1.0f, 0.5f, 0.25f, 1.0f};
+  render_pass_info.clearValueCount = 1;
+  render_pass_info.pClearValues = &clear_value;
+
+  vkCmdBeginRenderPass(commandBuffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+  vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, context.GetVulkanPipeline().GetVkPipeline());
+  vkCmdDraw(commandBuffer, 3, 1, 0, 0); // This draws a triangle - hard coded for now
+  vkCmdEndRenderPass(commandBuffer);
+
+  if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
+    GERROR("Failed to record command buffer")
+    return;
+  }
 }
 
 }  // namespace Glaceon

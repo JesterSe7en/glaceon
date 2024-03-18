@@ -19,7 +19,8 @@ class VulkanPipeline {
   VulkanPipeline(VulkanContext& context);
   void Initialize(GraphicsPipelineConfig pipelineConfig);
 
-  VkPipelineCache GetPipelineCache() { return pipelineCache; }
+  VkPipeline GetVkPipeline() { return pipeline; }
+  VkPipelineCache GetVkPipelineCache() { return pipelineCache; }
 
   void Recreate();
   void Destroy();
