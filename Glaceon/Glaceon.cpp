@@ -127,7 +127,7 @@ static void ImGuiFramePresent(VulkanContext &context) {
                                          .size();  // mod semaphore index to wrap indexing back to beginning
 }
 
-void GameFrameRender(VulkanContext &context) {
+static void GameFrameRender(VulkanContext &context) {
   VkFence inFlightFence = context.GetVulkanSync().GetInFlightFence();
   VkDevice device = context.GetVulkanLogicalDevice();
   VkSwapchainKHR swapChain = context.GetVulkanSwapChain().GetVkSwapChain();
@@ -179,7 +179,7 @@ void GameFrameRender(VulkanContext &context) {
   }
 }
 
-void GameFramePresent(VulkanContext &context) {
+static void GameFramePresent(VulkanContext &context) {
   std::vector<VkSemaphore> render_complete_semaphores = context.GetVulkanSync().GetRenderFinishedSemaphores();
   VkSwapchainKHR swapChain = context.GetVulkanSwapChain().GetVkSwapChain();
   VkQueue presentQueue = context.GetVulkanDevice().GetPresentQueue();
@@ -202,6 +202,38 @@ void GameFramePresent(VulkanContext &context) {
       (context.semaphoreIndex + 1) % context.GetVulkanSwapChain()
                                          .GetSwapChainFrames()
                                          .size();  // mod semaphore index to wrap indexing back to beginning
+}
+
+void recordDrawCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
+  VulkanContext &context = currentApp->GetVulkanContext();
+
+  VkCommandBufferBeginInfo begin_info = {};
+  begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+  if (vkBeginCommandBuffer(commandBuffer, &begin_info) != VK_SUCCESS) {
+    GERROR("Failed to begin recording command buffer")
+    return;
+  }
+
+  VkRenderPassBeginInfo render_pass_info = {};
+  render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+  render_pass_info.renderPass = context.GetVulkanRenderPass().GetVkRenderPass();
+  render_pass_info.framebuffer = context.GetVulkanSwapChain().GetSwapChainFrames()[imageIndex].framebuffer;
+  render_pass_info.renderArea.offset = {0, 0};
+  render_pass_info.renderArea.extent = context.GetVulkanSwapChain().GetSwapChainExtent();
+  VkClearValue clear_value = {1.0f, 0.5f, 0.25f, 1.0f};
+  render_pass_info.clearValueCount = 1;
+  render_pass_info.pClearValues = &clear_value;
+
+  vkCmdBeginRenderPass(commandBuffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
+  VkPipeline pipeline = context.GetVulkanPipeline().GetVkPipeline();
+  vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
+  vkCmdDraw(commandBuffer, 3, 1, 0, 0);  // This draws a triangle - hard coded for now
+  vkCmdEndRenderPass(commandBuffer);
+
+  if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
+    GERROR("Failed to record command buffer")
+    return;
+  }
 }
 
 // void framebufferResizeCallback(GLFWwindow *window, int width, int height) {
@@ -419,37 +451,6 @@ void GLACEON_API runGame(Application *app) {
   glfwDestroyWindow(glfw_window);
   glfwTerminate();
   app->onShutdown();
-}
-
-void GLACEON_API recordDrawCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
-  VulkanContext &context = currentApp->GetVulkanContext();
-
-  VkCommandBufferBeginInfo begin_info = {};
-  begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-  if (vkBeginCommandBuffer(commandBuffer, &begin_info) != VK_SUCCESS) {
-    GERROR("Failed to begin recording command buffer")
-    return;
-  }
-
-  VkRenderPassBeginInfo render_pass_info = {};
-  render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-  render_pass_info.renderPass = context.GetVulkanRenderPass().GetVkRenderPass();
-  render_pass_info.framebuffer = context.GetVulkanSwapChain().GetSwapChainFrames()[imageIndex].framebuffer;
-  render_pass_info.renderArea.offset = {0, 0};
-  render_pass_info.renderArea.extent = context.GetVulkanSwapChain().GetSwapChainExtent();
-  VkClearValue clear_value = {1.0f, 0.5f, 0.25f, 1.0f};
-  render_pass_info.clearValueCount = 1;
-  render_pass_info.pClearValues = &clear_value;
-
-  vkCmdBeginRenderPass(commandBuffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
-  vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, context.GetVulkanPipeline().GetVkPipeline());
-  vkCmdDraw(commandBuffer, 3, 1, 0, 0);  // This draws a triangle - hard coded for now
-  vkCmdEndRenderPass(commandBuffer);
-
-  if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
-    GERROR("Failed to record command buffer")
-    return;
-  }
 }
 
 }  // namespace Glaceon
