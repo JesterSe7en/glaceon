@@ -38,7 +38,6 @@ class VulkanSwapChain {
   // relevant to swap chain
   VkSwapchainKHR swapChain;
   std::vector<SwapChainFrame> swapChainFrames;
-  std::vector<VkFramebuffer> swapChainFrameBuffers;
 
  private:
   VkFormat swapChainImageFormat;

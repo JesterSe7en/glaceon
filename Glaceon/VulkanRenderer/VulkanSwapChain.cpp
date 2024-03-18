@@ -361,8 +361,6 @@ void VulkanSwapChain::DestroyFrames() {
 }
 
 void VulkanSwapChain::CreateFrameBuffers() {
-  swapChainFrameBuffers.resize(swapChainFrames.size());
-
   VkFramebufferCreateInfo createInfo = {};
   createInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
   createInfo.renderPass = context.GetVulkanRenderPass().GetVkRenderPass();
@@ -379,7 +377,7 @@ void VulkanSwapChain::CreateFrameBuffers() {
       GERROR("Failed to create frame buffers");
     }
   }
-  GINFO("Successfully created frame buffers - Count: {}", swapChainFrameBuffers.size());
+  GINFO("Successfully created frame buffers");
 }
 
 void VulkanSwapChain::Destroy() {
