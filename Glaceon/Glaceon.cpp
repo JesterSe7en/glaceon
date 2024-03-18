@@ -7,7 +7,7 @@
 namespace Glaceon {
 
 static bool swapChainRebuild = false;
-static Application* currentApp = nullptr;
+static Application *currentApp = nullptr;
 
 void error_callback(int error, const char *description) { GERROR("GLFW Error: Code: {} - {}", error, description); }
 
@@ -128,7 +128,6 @@ static void ImGuiFramePresent(VulkanContext &context) {
 }
 
 void GameFrameRender(VulkanContext &context) {
-
   VkFence inFlightFence = context.GetVulkanSync().GetInFlightFence();
   VkDevice device = context.GetVulkanLogicalDevice();
   VkSwapchainKHR swapChain = context.GetVulkanSwapChain().GetVkSwapChain();
@@ -145,7 +144,8 @@ void GameFrameRender(VulkanContext &context) {
   // get image from swap chain
   uint32_t imageIndex;
   // the semaphore passes is what is going to be signaled once the image is acquired
-  if (vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, image_available_semaphores[context.semaphoreIndex], VK_NULL_HANDLE, &imageIndex) != VK_SUCCESS) {
+  if (vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, image_available_semaphores[context.semaphoreIndex],
+                            VK_NULL_HANDLE, &imageIndex) != VK_SUCCESS) {
     GERROR("Failed to acquire next swap chain image")
     return;
   }
@@ -358,8 +358,8 @@ void GLACEON_API runGame(Application *app) {
         context.GetVulkanRenderPass().Initialize();
         context.GetVulkanPipeline().Destroy();
         context.GetVulkanSwapChain().RebuildSwapChain(width, height);
-        context.GetVulkanCommandPool().Destroy();
-        context.GetVulkanCommandPool().Initialize();
+        context.GetVulkanCommandPool().ResetCommandPool();
+        context.GetVulkanCommandPool().RebuildCommandBuffers();
         context.GetVulkanSync().Destroy();
         context.GetVulkanSync().Initialize();
         context.currentFrameIndex = 0;
@@ -399,8 +399,8 @@ void GLACEON_API runGame(Application *app) {
     // ------------------ Render Game Frame ------------------ //
     // Essentially we are doing the same thing as ImGuiRender and ImGuiPresent
     // Just that we are rendering the game frames
-    //    GameFrameRender(context);
-    //    GameFramePresent(context);
+    GameFrameRender(context);
+    GameFramePresent(context);
   }
 
   res = vkDeviceWaitIdle(context.GetVulkanDevice().GetLogicalDevice());
@@ -424,9 +424,9 @@ void GLACEON_API runGame(Application *app) {
 void GLACEON_API recordDrawCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
   VulkanContext &context = currentApp->GetVulkanContext();
 
-  VkCommandBufferBeginInfo  begin_info = {};
+  VkCommandBufferBeginInfo begin_info = {};
   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-  if (vkBeginCommandBuffer(commandBuffer, &begin_info)!= VK_SUCCESS) {
+  if (vkBeginCommandBuffer(commandBuffer, &begin_info) != VK_SUCCESS) {
     GERROR("Failed to begin recording command buffer")
     return;
   }
@@ -443,7 +443,7 @@ void GLACEON_API recordDrawCommands(VkCommandBuffer commandBuffer, uint32_t imag
 
   vkCmdBeginRenderPass(commandBuffer, &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
   vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, context.GetVulkanPipeline().GetVkPipeline());
-  vkCmdDraw(commandBuffer, 3, 1, 0, 0); // This draws a triangle - hard coded for now
+  vkCmdDraw(commandBuffer, 3, 1, 0, 0);  // This draws a triangle - hard coded for now
   vkCmdEndRenderPass(commandBuffer);
 
   if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {

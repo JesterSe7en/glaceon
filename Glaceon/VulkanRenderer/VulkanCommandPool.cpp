@@ -54,4 +54,36 @@ void VulkanCommandPool::Destroy() {
     vk_command_pool_ = VK_NULL_HANDLE;
   }
 }
+void VulkanCommandPool::ResetCommandPool() {
+  if (vkResetCommandPool(context.GetVulkanLogicalDevice(), vk_command_pool_, 0) != VK_SUCCESS) {
+    GERROR("Failed to reset command pool")
+  }
+}
+void VulkanCommandPool::RebuildCommandBuffers() {
+  vkFreeCommandBuffers(context.GetVulkanLogicalDevice(), vk_command_pool_, 1, &vk_main_command_buffer_);
+  vkFreeCommandBuffers(context.GetVulkanLogicalDevice(), vk_command_pool_, vk_frame_command_buffers_.size(),
+                       vk_frame_command_buffers_.data());
+
+  vk_frame_command_buffers_.clear();
+  std::vector<SwapChainFrame> swapChainFrames = context.GetVulkanSwapChain().GetSwapChainFrames();
+  vk_frame_command_buffers_.resize(swapChainFrames.size());
+  VkCommandBufferAllocateInfo allocInfo = {};
+  allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+  allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+  allocInfo.commandPool = vk_command_pool_;
+  allocInfo.commandBufferCount = 1;
+
+  if (vkAllocateCommandBuffers(context.GetVulkanLogicalDevice(), &allocInfo, &vk_main_command_buffer_) != VK_SUCCESS) {
+    GERROR("Failed to allocate main command buffer")
+    return;
+  }
+
+  for (size_t i = 0; i < swapChainFrames.size(); ++i) {
+    if (vkAllocateCommandBuffers(context.GetVulkanLogicalDevice(), &allocInfo, &vk_frame_command_buffers_[i]) !=
+        VK_SUCCESS) {
+      GERROR("Failed to allocate command buffer for swap chain frame")
+      return;
+    }
+  }
+}
 }  // namespace Glaceon

@@ -12,6 +12,8 @@ class VulkanCommandPool {
   VulkanCommandPool(VulkanContext& context);
 
   void Initialize();
+  void ResetCommandPool();
+  void RebuildCommandBuffers();
   void Destroy();
 
   VkCommandPool GetVkCommandPool() const { return vk_command_pool_; }
