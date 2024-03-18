@@ -168,11 +168,6 @@ void VulkanPipeline::Initialize(GraphicsPipelineConfig pipelineConfig) {
   // Clean up shader modules
   vkDestroyShaderModule(device, vertexShader, nullptr);
   vkDestroyShaderModule(device, fragmentShader, nullptr);
-
-  // TODO: Probably need access to these from the pipeline
-  // 1. Pipeline layout
-  // 2. Render pass
-  // 3. The pipeline itself
 }
 
 // This is so we can push constants and descriptor sets aka. Uniforms
