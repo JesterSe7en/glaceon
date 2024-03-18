@@ -346,19 +346,18 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
 }
 
 void VulkanSwapChain::DestroyFrames() {
-  for (auto swapChainFrame : swapChainFrames) {
+  for (auto &swapChainFrame : swapChainFrames) {
     if (swapChainFrame.imageView != VK_NULL_HANDLE) {
       vkDestroyImageView(context.GetVulkanLogicalDevice(), swapChainFrame.imageView, nullptr);
+      swapChainFrame.imageView = VK_NULL_HANDLE;
+    }
+
+    if (swapChainFrame.framebuffer != VK_NULL_HANDLE) {
+      vkDestroyFramebuffer(context.GetVulkanLogicalDevice(), swapChainFrame.framebuffer, nullptr);
+      swapChainFrame.framebuffer = VK_NULL_HANDLE;
     }
   }
   swapChainFrames.clear();
-
-  for (auto frameBuffer : swapChainFrameBuffers) {
-    if (frameBuffer != VK_NULL_HANDLE) {
-      vkDestroyFramebuffer(context.GetVulkanLogicalDevice(), frameBuffer, nullptr);
-    }
-  }
-  swapChainFrameBuffers.clear();
 }
 
 void VulkanSwapChain::CreateFrameBuffers() {
