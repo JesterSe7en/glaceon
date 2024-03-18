@@ -74,7 +74,7 @@ static void ImGuiFrameRender(VulkanContext &context, ImDrawData *draw_data) {
     info.framebuffer = context.GetVulkanSwapChain().GetSwapChainFrames()[context.currentFrameIndex].framebuffer;
     info.renderArea.extent = context.GetVulkanSwapChain().GetSwapChainExtent();
     info.clearValueCount = 1;
-    VkClearValue clear_color = {1.0f, 0.0f, 0.0f, 1.0f};
+    VkClearValue clear_color = {0.0f, 0.0f, 0.0f, 0.0f};
     info.pClearValues = &clear_color;
     vkCmdBeginRenderPass(commandBuffer, &info, VK_SUBPASS_CONTENTS_INLINE);
   }
@@ -166,11 +166,6 @@ static void GameFrameRender(VulkanContext &context) {
   info.signalSemaphoreCount = 1;
   info.pSignalSemaphores = &render_complete_semaphores[context.semaphoreIndex];
 
-  if (vkEndCommandBuffer(commandBuffer) != VK_SUCCESS) {
-    GERROR("Failed to end command buffer")
-    return;
-  }
-
   // fence is provided here so that once we submit the command buffer, we can safely reset the fence
   if (vkQueueSubmit(context.GetVulkanDevice().GetGraphicsQueue(), 1, &info, inFlightFence) != VK_SUCCESS) {
     GERROR("Failed to submit to queue")
@@ -219,6 +214,7 @@ void recordDrawCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
   render_pass_info.framebuffer = context.GetVulkanSwapChain().GetSwapChainFrames()[imageIndex].framebuffer;
   render_pass_info.renderArea.offset = {0, 0};
   render_pass_info.renderArea.extent = context.GetVulkanSwapChain().GetSwapChainExtent();
+  //  VkClearValue clear_value = {0.0f, 0.0f, 0.0f, 0.0f};
   VkClearValue clear_value = {1.0f, 0.5f, 0.25f, 1.0f};
   render_pass_info.clearValueCount = 1;
   render_pass_info.pClearValues = &clear_value;
@@ -376,10 +372,12 @@ void GLACEON_API runGame(Application *app) {
     app->onUpdate();
 
     if (swapChainRebuild) {
-      GINFO("Rebuilding swapchain...");
       int width, height;
       glfwGetFramebufferSize(glfw_window, &width, &height);
+
       if (width > 0 && height > 0) {
+        GINFO("Rebuilding swapchain... width: {}, height: {}", width, height);
+
         if (vkDeviceWaitIdle(context.GetVulkanLogicalDevice()) != VK_SUCCESS) {
           GERROR("Failed to wait on device during swap chain rebuild");
           return;
@@ -387,7 +385,7 @@ void GLACEON_API runGame(Application *app) {
         // destroy pipeline and old sync objects
         context.GetVulkanRenderPass().Destroy();
         context.GetVulkanRenderPass().Initialize();
-        context.GetVulkanPipeline().Destroy();
+        // context.GetVulkanPipeline().Destroy();
         context.GetVulkanSwapChain().RebuildSwapChain(width, height);
         context.GetVulkanCommandPool().ResetCommandPool();
         context.GetVulkanCommandPool().RebuildCommandBuffers();
@@ -398,40 +396,42 @@ void GLACEON_API runGame(Application *app) {
       }
     }
 
-    // ------------------ Render ImGui Frame ------------------ //
-    // Start the Dear ImGui frame
-    ImGui_ImplGlfw_NewFrame();
-    ImGui::NewFrame();
-
-    {
-      // bool showDemo = true;
-      // ImGui::ShowDemoWindow(&showDemo);
-
-      ImGui::Begin("FPS");
-      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-      ImGui::End();
-    }
-
-    // Rendering
-    ImGui::Render();
-    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-      // for multi-port support
-      ImGui::UpdatePlatformWindows();
-      ImGui::RenderPlatformWindowsDefault();
-    }
-
-    ImDrawData *draw_data = ImGui::GetDrawData();
-    const bool is_minimized = (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f);
-    if (!is_minimized) {
-      ImGuiFrameRender(context, draw_data);
-      ImGuiFramePresent(context);
-    }
-
     // ------------------ Render Game Frame ------------------ //
     // Essentially we are doing the same thing as ImGuiRender and ImGuiPresent
     // Just that we are rendering the game frames
     GameFrameRender(context);
     GameFramePresent(context);
+
+//#if _DEBUG
+//    // ------------------ Render ImGui Frame ------------------ //
+//    // Start the Dear ImGui frame
+//    ImGui_ImplGlfw_NewFrame();
+//    ImGui::NewFrame();
+//
+//    {
+//      // bool showDemo = true;
+//      // ImGui::ShowDemoWindow(&showDemo);
+//
+//      ImGui::Begin("FPS");
+//      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+//      ImGui::End();
+//    }
+//
+//    // Rendering
+//    ImGui::Render();
+//    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+//      // for multi-port support
+//      ImGui::UpdatePlatformWindows();
+//      ImGui::RenderPlatformWindowsDefault();
+//    }
+//
+//    ImDrawData *draw_data = ImGui::GetDrawData();
+//    const bool is_minimized = (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f);
+//    if (!is_minimized) {
+//      ImGuiFrameRender(context, draw_data);
+//      ImGuiFramePresent(context);
+//    }
+//#endif
   }
 
   res = vkDeviceWaitIdle(context.GetVulkanDevice().GetLogicalDevice());
