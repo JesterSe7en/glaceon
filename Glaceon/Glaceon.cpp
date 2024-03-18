@@ -38,12 +38,12 @@ static void ImGuiFrameRender(VulkanContext &context, ImDrawData *draw_data) {
   std::vector<SwapChainFrame> swapChainFrames = context.GetVulkanSwapChain().GetSwapChainFrames();
   VkFence fence = context.GetVulkanSync().GetInFlightFence();
   VkCommandPool commandPool = context.GetVulkanCommandPool().GetVkCommandPool();
-  VkCommandBuffer commandBuffer = *(context.GetVulkanCommandPool().GetMainCommandBuffer());
   uint32_t semaphoreIndex = context.semaphoreIndex;
 
-  // This defines the frame index to render to?
+  // This defines the frame index to render to?, give me an available image from the swap chain
   err = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, image_available_semaphores[semaphoreIndex], VK_NULL_HANDLE,
                               &context.currentFrameIndex);
+  VkCommandBuffer commandBuffer = context.GetVulkanCommandPool().GetFrameCommandBuffers()[context.currentFrameIndex];
   if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
     swapChainRebuild = true;
     return;
@@ -151,8 +151,8 @@ void GameFrameRender(VulkanContext &context) {
   }
 
   // get the frame's own command buffer
-  std::vector<SwapChainFrame> swapChainFrames = context.GetVulkanSwapChain().GetSwapChainFrames();
-  VkCommandBuffer commandBuffer = swapChainFrames[context.currentFrameIndex].commandBuffer;
+  std::vector<VkCommandBuffer> frame_command_buffers = context.GetVulkanCommandPool().GetFrameCommandBuffers();
+  VkCommandBuffer commandBuffer = frame_command_buffers[context.currentFrameIndex];
   vkResetCommandBuffer(commandBuffer, 0);
   recordDrawCommands(commandBuffer, imageIndex);
 
@@ -399,8 +399,8 @@ void GLACEON_API runGame(Application *app) {
     // ------------------ Render Game Frame ------------------ //
     // Essentially we are doing the same thing as ImGuiRender and ImGuiPresent
     // Just that we are rendering the game frames
-    GameFrameRender(context);
-    GameFramePresent(context);
+    //    GameFrameRender(context);
+    //    GameFramePresent(context);
   }
 
   res = vkDeviceWaitIdle(context.GetVulkanDevice().GetLogicalDevice());

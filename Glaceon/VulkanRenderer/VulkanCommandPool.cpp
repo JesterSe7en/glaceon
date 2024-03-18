@@ -36,12 +36,15 @@ void VulkanCommandPool::Initialize() {
 
   // create command buffer for each swap chain frame
   std::vector<SwapChainFrame> swapChainFrames = context.GetVulkanSwapChain().GetSwapChainFrames();
-  for (auto& swapChainFrame : swapChainFrames) {
-    if (vkAllocateCommandBuffers(device, &allocInfo, &swapChainFrame.commandBuffer) != VK_SUCCESS) {
+  vk_frame_command_buffers_.resize(swapChainFrames.size());
+  // Allocate command buffers outside the loop
+  for (size_t i = 0; i < swapChainFrames.size(); ++i) {
+    if (vkAllocateCommandBuffers(device, &allocInfo, &vk_frame_command_buffers_[i]) != VK_SUCCESS) {
       GERROR("Failed to allocate command buffer for swap chain frame")
       return;
     }
   }
+
   GINFO("Successfully allocated command buffers for swap chain frames")
 }
 

@@ -18,7 +18,6 @@ struct SwapChainFrame {
   VkImageView imageView;
   // for rendering
   VkFramebuffer framebuffer;
-  VkCommandBuffer commandBuffer;
 };
 
 class VulkanSwapChain {
