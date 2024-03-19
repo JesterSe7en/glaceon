@@ -56,7 +56,6 @@ source_group("Source Files" FILES ${Source_Files})
 set(ALL_FILES
         ${Header_Files}
         ${Source_Files}
-        VulkanRenderer/VulkanBackend2.h
 )
 
 # Target
