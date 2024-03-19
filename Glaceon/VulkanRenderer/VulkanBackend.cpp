@@ -68,6 +68,8 @@ void VulkanBackend::Initialize() {
 
   // glfw has some required extensions, this gets set during runGame()
   std::vector<const char *> instance_extensions = context_.GetInstanceExtensions();
+  // add requested extensions
+  instance_extensions.insert(instance_extensions.end(), requested_extensions.begin(), requested_extensions.end());
 
   // check if extensions are available, remove if not
   for (auto &extension : instance_extensions) {
