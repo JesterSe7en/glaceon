@@ -1,5 +1,5 @@
-#ifndef GLACEON_VULKANBACKEND_H
-#define GLACEON_VULKANBACKEND_H
+#ifndef GLACEON_GLACEON_VULKANRENDERER_VULKANBACKEND_H_
+#define GLACEON_GLACEON_VULKANRENDERER_VULKANBACKEND_H_
 
 #include "../pch.h"
 
@@ -9,22 +9,19 @@ class VulkanContext;
 
 class VulkanBackend {
  public:
-  VulkanBackend(VulkanContext& context);
+  explicit VulkanBackend(VulkanContext& context);
   void Initialize();
   void Destroy();
 
-  VkInstance& GetVkInstance() { return vkInstance; }
+  [[nodiscard]] const vk::Instance& GetVkInstance() const { return instance_; }
 
  private:
   VulkanContext& context;
+  vk::Instance instance_;
 
-  VkInstance vkInstance;
-  std::vector<VkExtensionProperties> extensions;
-
-  void PopulateInstanceExtensions();
-
-  static bool IsLayerAvailable(const std::vector<VkLayerProperties>& layerProperties, const char* layerName);
-  static bool IsExtensionAvailable(const std::vector<VkExtensionProperties>& extensions, const char* extension);
+  static bool IsLayerAvailable(const std::vector<vk::LayerProperties>& layers, const char* layerToCheck);
+  static bool IsExtensionAvailable(const std::vector<vk::ExtensionProperties>& allExtensions,
+                                   const char* extensionToCheck);
   static VkBool32 debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
                                 VkDebugUtilsMessageTypeFlagsEXT messageType,
                                 const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
@@ -32,4 +29,4 @@ class VulkanBackend {
 
 }  // namespace Glaceon
 
-#endif  // GLACEON_VULKANBACKEND_H
+#endif  // GLACEON_GLACEON_VULKANRENDERER_VULKANBACKEND_H_

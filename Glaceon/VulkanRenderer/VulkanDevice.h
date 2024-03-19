@@ -1,5 +1,5 @@
-#ifndef GLACEON_VULKANDEVICE_H
-#define GLACEON_VULKANDEVICE_H
+#ifndef GLACEON_GLACEON_VULKANRENDERER_VULKANDEVICE_H
+#define GLACEON_GLACEON_VULKANRENDERER_VULKANDEVICE_H
 
 #include "../pch.h"
 
@@ -8,54 +8,59 @@ namespace Glaceon {
 class VulkanContext;
 
 struct QueueIndexes {
-  std::optional<uint32_t> graphicsFamily = std::nullopt;
-  std::optional<uint32_t> presentFamily = std::nullopt;
+  std::optional<uint32_t> graphics_family = std::nullopt;
+  std::optional<uint32_t> present_family = std::nullopt;
 
-  [[nodiscard]] bool isComplete() const { return graphicsFamily.has_value() && presentFamily.has_value(); }
+  [[nodiscard]] bool IsComplete() const { return graphics_family.has_value() && present_family.has_value(); }
 };
 
 class VulkanDevice {
  public:
-  VulkanDevice(VulkanContext &context);
+  explicit VulkanDevice(VulkanContext &context);
   void Initialize();
   void Destroy();
 
-  VkPhysicalDevice &GetPhysicalDevice() { return physicalDevice; }
-  VkDevice &GetLogicalDevice() { return device; }
-  VkQueue GetPresentQueue() { return presentQueue; }
-  VkQueue GetGraphicsQueue() { return graphicsQueue; }
-  VkDescriptorPool GetDescriptorPool() { return descriptorPool; }
-  VkCommandPool GetCommandPool() { return commandPool; }
+  [[nodiscard]] const vk::PhysicalDevice &GetVkPhysicalDevice() const {
+    return vk_physical_device_;
+  }
+  [[nodiscard]] const vk::Device &GetVkDevice() const {
+    return vk_device_;
+  }
+  [[nodiscard]] const vk::Queue &GetVkPresentQueue() const {
+    return vk_present_queue_;
+  }
+  [[nodiscard]] const vk::Queue &GetVkGraphicsQueue() const {
+    return vk_graphics_queue_;
+  }
+  [[nodiscard]] const vk::CommandPool &GetVkCommandPool() const {
+    return vk_command_pool_;
+  }
+  [[nodiscard]] const vk::DescriptorPool &GetVkDescriptorPool() const {
+    return vk_descriptor_pool_;
+  }
 
   QueueIndexes &GetQueueIndexes() { return queue_indexes_; }
 
  private:
-  VkPhysicalDevice physicalDevice;
-  VkDevice device;
-  VkQueue presentQueue;
-  VkQueue graphicsQueue;
-  VkCommandPool commandPool;
-  VkDescriptorPool descriptorPool;
-  VulkanContext &context;
-  std::vector<VkQueueFamilyProperties> queueFamily;
-  std::vector<VkExtensionProperties> deviceExtensions;
+  vk::PhysicalDevice vk_physical_device_;
+  vk::Device vk_device_;
+  vk::Queue vk_present_queue_;
+  vk::Queue vk_graphics_queue_;
+  vk::CommandPool vk_command_pool_;
+  vk::DescriptorPool vk_descriptor_pool_;
+
+  std::vector<vk::QueueFamilyProperties> queue_family_;
+  std::vector<vk::ExtensionProperties> device_extensions_;
+
+  VulkanContext &context_;
 
   QueueIndexes queue_indexes_;
 
-  bool CheckDeviceRequirements(VkPhysicalDevice &vkPhysicalDevice);
+  bool CheckDeviceRequirements(vk::PhysicalDevice &vk_physical_device);
   bool IsExtensionAvailable(const char *ext);
-
-  /**
-   * Get the index of the queue family that supports the specified queue flags.
-   * @param bits the queue flags to check
-   * @return the index of the queue family that supports the specified queue flags, or -1 if not found
-   * @throws None
-   */
-  int GetQueueFamilyIndex(VkQueueFlagBits bits);
-
-  static void PrintPhysicalDevice(VkPhysicalDevice gpu);
+  static void PrintPhysicalDevice(vk::PhysicalDevice gpu);
 };
 
 }  // namespace Glaceon
 
-#endif  // GLACEON_VULKANDEVICE_H
+#endif  // GLACEON_GLACEON_VULKANRENDERER_VULKANDEVICE_H

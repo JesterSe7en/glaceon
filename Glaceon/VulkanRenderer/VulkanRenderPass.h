@@ -9,15 +9,15 @@ class VulkanContext;
 
 class VulkanRenderPass {
  public:
-  VulkanRenderPass(VulkanContext& context);
+  explicit VulkanRenderPass(VulkanContext& context);
   void Initialize();
   void Destroy();
 
-  const VkRenderPass& GetVkRenderPass() const;
+  [[nodiscard]] const vk::RenderPass& GetVkRenderPass() const { return vk_render_pass_; }
 
  private:
-  VulkanContext& context;
-  VkRenderPass renderPass;
+  VulkanContext& context_;
+  vk::RenderPass vk_render_pass_;
 };
 
 }  // namespace Glaceon

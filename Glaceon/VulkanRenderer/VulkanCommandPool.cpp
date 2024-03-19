@@ -4,17 +4,19 @@
 #include "VulkanContext.h"
 
 namespace Glaceon {
-VulkanCommandPool::VulkanCommandPool(VulkanContext& context) : context(context) {}
-void VulkanCommandPool::Initialize() {
-  VkDevice device = context.GetVulkanLogicalDevice();
-  assert(device != VK_NULL_HANDLE);
-  assert(context.GetQueueIndexes().graphicsFamily.has_value());
+VulkanCommandPool::VulkanCommandPool(VulkanContext &context) : context_(context) {}
 
-  VkCommandPoolCreateInfo poolInfo = {};
-  poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-  poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
-  poolInfo.queueFamilyIndex = context.GetQueueIndexes().graphicsFamily.value();
-  if (vkCreateCommandPool(device, &poolInfo, nullptr, &vk_command_pool_) != VK_SUCCESS) {
+void VulkanCommandPool::Initialize() {
+  vk::Device device = context_.GetVulkanLogicalDevice();
+  assert(device != VK_NULL_HANDLE);
+  assert(context_.GetQueueIndexes().graphics_family.has_value());
+
+  // create command pool
+  vk::CommandPoolCreateInfo command_pool_create_info = {};
+  command_pool_create_info.sType = vk::StructureType::eCommandPoolCreateInfo;
+  command_pool_create_info.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
+  command_pool_create_info.queueFamilyIndex = context_.GetQueueIndexes().graphics_family.value();
+  if (device.createCommandPool(&command_pool_create_info, nullptr, &vk_command_pool_) != vk::Result::eSuccess) {
     GERROR("Failed to create command pool")
     return;
   } else {
@@ -22,12 +24,12 @@ void VulkanCommandPool::Initialize() {
   }
 
   // initialize main command buffer
-  VkCommandBufferAllocateInfo allocInfo = {};
-  allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-  allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-  allocInfo.commandPool = vk_command_pool_;
-  allocInfo.commandBufferCount = 1;
-  if (vkAllocateCommandBuffers(device, &allocInfo, &vk_main_command_buffer_) != VK_SUCCESS) {
+  vk::CommandBufferAllocateInfo allocate_info = {};
+  allocate_info.sType = vk::StructureType::eCommandBufferAllocateInfo;
+  allocate_info.level = vk::CommandBufferLevel::ePrimary;
+  allocate_info.commandPool = vk_command_pool_;
+  allocate_info.commandBufferCount = 1;
+  if (device.allocateCommandBuffers(&allocate_info, &vk_main_command_buffer_) != vk::Result::eSuccess) {
     GERROR("Failed to allocate main command buffer")
     return;
   } else {
@@ -35,11 +37,11 @@ void VulkanCommandPool::Initialize() {
   }
 
   // create command buffer for each swap chain frame
-  std::vector<SwapChainFrame> swapChainFrames = context.GetVulkanSwapChain().GetSwapChainFrames();
-  vk_frame_command_buffers_.resize(swapChainFrames.size());
+  std::vector<SwapChainFrame> swap_chain_frames = context_.GetVulkanSwapChain().GetSwapChainFrames();
+  vk_frame_command_buffers_.resize(swap_chain_frames.size());
   // Allocate command buffers outside the loop
-  for (size_t i = 0; i < swapChainFrames.size(); ++i) {
-    if (vkAllocateCommandBuffers(device, &allocInfo, &vk_frame_command_buffers_[i]) != VK_SUCCESS) {
+  for (size_t i = 0; i < swap_chain_frames.size(); ++i) {
+    if (device.allocateCommandBuffers(&allocate_info, &vk_frame_command_buffers_[i]) != vk::Result::eSuccess) {
       GERROR("Failed to allocate command buffer for swap chain frame")
       return;
     }
@@ -50,40 +52,47 @@ void VulkanCommandPool::Initialize() {
 
 void VulkanCommandPool::Destroy() {
   if (vk_command_pool_ != VK_NULL_HANDLE) {
-    vkDestroyCommandPool(context.GetVulkanLogicalDevice(), vk_command_pool_, nullptr);
+    vkDestroyCommandPool(context_.GetVulkanLogicalDevice(), vk_command_pool_, nullptr);
     vk_command_pool_ = VK_NULL_HANDLE;
   }
 }
 void VulkanCommandPool::ResetCommandPool() {
-  if (vkResetCommandPool(context.GetVulkanLogicalDevice(), vk_command_pool_, 0) != VK_SUCCESS) {
+  if (vkResetCommandPool(context_.GetVulkanLogicalDevice(), vk_command_pool_, 0) != VK_SUCCESS) {
     GERROR("Failed to reset command pool")
   }
 }
+
 void VulkanCommandPool::RebuildCommandBuffers() {
-  vkFreeCommandBuffers(context.GetVulkanLogicalDevice(), vk_command_pool_, 1, &vk_main_command_buffer_);
-  vkFreeCommandBuffers(context.GetVulkanLogicalDevice(), vk_command_pool_, vk_frame_command_buffers_.size(),
-                       vk_frame_command_buffers_.data());
+  vk::Device device = context_.GetVulkanLogicalDevice();
+  assert(device != VK_NULL_HANDLE);
+
+  // destroy all old command buffers
+  device.freeCommandBuffers(vk_command_pool_, 1, &vk_main_command_buffer_);
+  device.freeCommandBuffers(vk_command_pool_, vk_frame_command_buffers_.size(), vk_frame_command_buffers_.data());
 
   vk_frame_command_buffers_.clear();
-  std::vector<SwapChainFrame> swapChainFrames = context.GetVulkanSwapChain().GetSwapChainFrames();
-  vk_frame_command_buffers_.resize(swapChainFrames.size());
-  VkCommandBufferAllocateInfo allocInfo = {};
-  allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-  allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-  allocInfo.commandPool = vk_command_pool_;
-  allocInfo.commandBufferCount = 1;
+  std::vector<SwapChainFrame> swap_chain_frames = context_.GetVulkanSwapChain().GetSwapChainFrames();
+  vk_frame_command_buffers_.resize(swap_chain_frames.size());
 
-  if (vkAllocateCommandBuffers(context.GetVulkanLogicalDevice(), &allocInfo, &vk_main_command_buffer_) != VK_SUCCESS) {
+  vk::CommandBufferAllocateInfo command_buffer_allocate_info = {};
+  command_buffer_allocate_info.sType = vk::StructureType::eCommandBufferAllocateInfo;
+  command_buffer_allocate_info.level = vk::CommandBufferLevel::ePrimary;
+  command_buffer_allocate_info.commandPool = vk_command_pool_;
+  command_buffer_allocate_info.commandBufferCount = 1;
+
+  if (device.allocateCommandBuffers(&command_buffer_allocate_info, &vk_main_command_buffer_) != vk::Result::eSuccess) {
     GERROR("Failed to allocate main command buffer")
     return;
   }
 
-  for (size_t i = 0; i < swapChainFrames.size(); ++i) {
-    if (vkAllocateCommandBuffers(context.GetVulkanLogicalDevice(), &allocInfo, &vk_frame_command_buffers_[i]) !=
-        VK_SUCCESS) {
+  for (size_t i = 0; i < swap_chain_frames.size(); ++i) {
+    // allocate command buffers for each swap chain frame
+    if (device.allocateCommandBuffers(&command_buffer_allocate_info, &vk_frame_command_buffers_[i])
+        != vk::Result::eSuccess) {
       GERROR("Failed to allocate command buffer for swap chain frame")
       return;
     }
   }
+  GINFO("Successfully rebuilt command buffers")
 }
 }  // namespace Glaceon

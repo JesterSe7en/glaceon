@@ -1,5 +1,5 @@
-#ifndef GLACEON_VULKANSWAPCHAIN_H_
-#define GLACEON_VULKANSWAPCHAIN_H_
+#ifndef GLACEON_GLACEON_VULKANRENDERER_VULKANSWAPCHAIN_H_
+#define GLACEON_GLACEON_VULKANRENDERER_VULKANSWAPCHAIN_H_
 
 #include "../pch.h"
 
@@ -8,45 +8,43 @@ namespace Glaceon {
 class VulkanContext;
 
 struct SwapChainSupportDetails {
-  VkSurfaceCapabilitiesKHR capabilities;
-  std::vector<VkSurfaceFormatKHR> formats;
-  std::vector<VkPresentModeKHR> presentModes;
+  vk::SurfaceCapabilitiesKHR capabilities;
+  std::vector<vk::SurfaceFormatKHR> formats;
+  std::vector<vk::PresentModeKHR> present_modes;
 };
 
+
 struct SwapChainFrame {
-  VkImage image;
-  VkImageView imageView;
-  // for rendering
-  VkFramebuffer framebuffer;
+  vk::Image image;
+  vk::ImageView image_view;
+  vk::Framebuffer frame_buffer;
 };
 
 class VulkanSwapChain {
  public:
-  VulkanSwapChain(VulkanContext& context);
+  explicit VulkanSwapChain(VulkanContext& context);
   void Initialize();
   void Destroy();
 
-  VkSwapchainKHR GetVkSwapChain() { return swapChain; }
-  std::vector<SwapChainFrame>& GetSwapChainFrames() { return swapChainFrames; }
-  VkExtent2D GetSwapChainExtent() { return swapChainExtent; }
+  [[nodiscard]] const vk::SwapchainKHR &GetVkSwapchain() const {
+    return vk_swapchain_;
+  }
+  std::vector<SwapChainFrame>& GetSwapChainFrames() { return swap_chain_frames_; }
+  vk::Extent2D GetSwapChainExtent() { return swap_chain_extent_; }
 
   void RebuildSwapChain(int width, int height);
 
  private:
-  VulkanContext& context;
+  VulkanContext& context_;
 
-  // relevant to swap chain
-  VkSwapchainKHR swapChain;
-  std::vector<SwapChainFrame> swapChainFrames;
+  vk::SwapchainKHR vk_swapchain_;
+  std::vector<SwapChainFrame> swap_chain_frames_;
+  vk::Extent2D swap_chain_extent_;
 
- private:
-  VkFormat swapChainImageFormat;
-  VkExtent2D swapChainExtent;
-
-  SwapChainSupportDetails swapChainSupport;
-  VkFormat surfaceFormat;
-  VkColorSpaceKHR colorSpace;
-  VkPresentModeKHR presentMode;
+  SwapChainSupportDetails swap_chain_support_;
+  vk::Format surface_format_;
+  vk::ColorSpaceKHR color_space_;
+  vk::PresentModeKHR present_mode_;
 
   void PopulateSwapChainSupport();
   void CreateSwapChain();

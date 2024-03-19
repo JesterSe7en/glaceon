@@ -15,22 +15,21 @@ class VulkanContext;
 
 class VulkanSync {
  public:
-  VulkanSync(VulkanContext &context);
+  explicit VulkanSync(VulkanContext &context);
 
   void Initialize();
   void Destroy();
 
-  const std::vector<VkSemaphore> &GetImageAvailableSemaphores() const { return imageAvailableSemaphores; }
-  const std::vector<VkSemaphore> &GetRenderFinishedSemaphores() const { return renderFinishedSemaphores; }
-  const VkFence &GetInFlightFence() const { return inFlightFence; }
+  [[nodiscard]] const std::vector<vk::Semaphore> &GetImageAvailableSemaphores() const { return image_available_semaphores_; }
+  [[nodiscard]] const std::vector<vk::Semaphore> &GetRenderFinishedSemaphores() const { return render_finished_semaphores_; }
+  [[nodiscard]] const vk::Fence &GetInFlightFence() const { return in_flight_fence_; }
 
  private:
-  VulkanContext &context;
+  VulkanContext &context_;
 
-  std::vector<VkSemaphore> imageAvailableSemaphores;
-  std::vector<VkSemaphore> renderFinishedSemaphores;
-
-  VkFence inFlightFence;
+  std::vector<vk::Semaphore> image_available_semaphores_;
+  std::vector<vk::Semaphore> render_finished_semaphores_;
+  vk::Fence in_flight_fence_;
 };
 
 }  // namespace Glaceon

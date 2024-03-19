@@ -4,47 +4,50 @@
 #include "VulkanContext.h"
 
 namespace Glaceon {
-VulkanSync::VulkanSync(VulkanContext& context) : context(context) {}
+
+VulkanSync::VulkanSync(VulkanContext &context) : context_(context) {}
+
 void VulkanSync::Initialize() {
-  VkDevice device = context.GetVulkanLogicalDevice();
+  vk::Device device = context_.GetVulkanLogicalDevice();
   assert(device != VK_NULL_HANDLE);
 
-  assert(context.GetVulkanSwapChain().GetVkSwapChain() != VK_NULL_HANDLE &&
-         context.GetVulkanSwapChain().GetSwapChainFrames().size() != 0);
+  assert(context_.GetVulkanSwapChain().GetVkSwapchain() != VK_NULL_HANDLE &&
+      !context_.GetVulkanSwapChain().GetSwapChainFrames().empty());
 
-  size_t maxFramesInFlight = context.GetVulkanSwapChain().GetSwapChainFrames().size();
+  size_t max_frames_in_flight = context_.GetVulkanSwapChain().GetSwapChainFrames().size();
 
-  VkSemaphoreCreateInfo semaphoreInfo = {};
-  semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
-  semaphoreInfo.pNext = nullptr;
-  semaphoreInfo.flags = 0;
-  for (uint32_t i = 0; i < maxFramesInFlight; i++) {
-    VkSemaphore semaphore;
-    if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &semaphore) != VK_SUCCESS) {
+  vk::SemaphoreCreateInfo semaphore_create_info = {};
+  semaphore_create_info.sType = vk::StructureType::eSemaphoreCreateInfo;
+  semaphore_create_info.pNext = nullptr;
+  semaphore_create_info.flags = vk::SemaphoreCreateFlags();
+  for (uint32_t i = 0; i < max_frames_in_flight; i++) {
+    vk::Semaphore semaphore;
+    if (device.createSemaphore(&semaphore_create_info, nullptr, &semaphore) != vk::Result::eSuccess) {
       GERROR("Failed to create image available semaphore")
       return;
     } else {
-      imageAvailableSemaphores.push_back(semaphore);
+      image_available_semaphores_.push_back(semaphore);
     }
   }
   GINFO("Successfully created image available semaphore")
 
-  for (uint32_t i = 0; i < maxFramesInFlight; i++) {
-    VkSemaphore semaphore;
-    if (vkCreateSemaphore(device, &semaphoreInfo, nullptr, &semaphore) != VK_SUCCESS) {
-      GERROR("Failed to create render finished semaphore")
+  for (uint32_t i = 0; i < max_frames_in_flight; i++) {
+    vk::Semaphore semaphore;
+    if (device.createSemaphore(&semaphore_create_info, nullptr, &semaphore) != vk::Result::eSuccess) {
+      GERROR("Failed to create image available semaphore")
       return;
     } else {
-      renderFinishedSemaphores.push_back(semaphore);
+      render_finished_semaphores_.push_back(semaphore);
     }
   }
   GINFO("Successfully created render finished semaphore")
 
-  VkFenceCreateInfo fenceInfo = {};
-  fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-  fenceInfo.pNext = nullptr;
-  fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;  // initialize fence in signaled state (ready to be used)
-  if (vkCreateFence(device, &fenceInfo, nullptr, &inFlightFence) != VK_SUCCESS) {
+  vk::FenceCreateInfo fence_create_info = {};
+  fence_create_info.sType = vk::StructureType::eFenceCreateInfo;
+  fence_create_info.pNext = nullptr;
+  fence_create_info.flags =
+      vk::FenceCreateFlags(vk::FenceCreateFlagBits::eSignaled);  // initialize fence in signaled state (ready to be used)
+  if (device.createFence(&fence_create_info, nullptr, &in_flight_fence_) != vk::Result::eSuccess) {
     GERROR("Failed to create in flight fence")
   } else {
     GINFO("Successfully created in flight fence")
@@ -52,26 +55,26 @@ void VulkanSync::Initialize() {
 }
 
 void VulkanSync::Destroy() {
-  VkDevice device = context.GetVulkanLogicalDevice();
+  vk::Device device = context_.GetVulkanLogicalDevice();
   assert(device != VK_NULL_HANDLE);
 
-  for (auto semaphore : imageAvailableSemaphores) {
+  for (vk::Semaphore semaphore : image_available_semaphores_) {
     if (semaphore != VK_NULL_HANDLE) {
-      vkDestroySemaphore(device, semaphore, nullptr);
+      device.destroy(semaphore, nullptr);
       semaphore = VK_NULL_HANDLE;
     }
   }
-  imageAvailableSemaphores.clear();
-  for (auto semaphore : renderFinishedSemaphores) {
+  image_available_semaphores_.clear();
+  for (vk::Semaphore semaphore : render_finished_semaphores_) {
     if (semaphore != VK_NULL_HANDLE) {
-      vkDestroySemaphore(device, semaphore, nullptr);
+      device.destroy(semaphore, nullptr);
       semaphore = VK_NULL_HANDLE;
     }
   }
-  renderFinishedSemaphores.clear();
-  if (inFlightFence != VK_NULL_HANDLE) {
-    vkDestroyFence(device, inFlightFence, nullptr);
-    inFlightFence = VK_NULL_HANDLE;
+  render_finished_semaphores_.clear();
+  if (in_flight_fence_ != VK_NULL_HANDLE) {
+    device.destroy(in_flight_fence_, nullptr);
+    in_flight_fence_ = VK_NULL_HANDLE;
   }
 }
 

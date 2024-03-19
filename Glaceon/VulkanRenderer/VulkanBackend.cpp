@@ -8,96 +8,83 @@ namespace Glaceon {
 VulkanBackend::VulkanBackend(VulkanContext &context) : context(context) {}
 
 void VulkanBackend::Initialize() {
-  VkInstanceCreateInfo instanceCreateInfo = {};
-  instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+  std::vector<const char *> requestedExtensions;
+
+  vk::InstanceCreateInfo instanceCreateInfo;
+  instanceCreateInfo.sType = vk::StructureType::eInstanceCreateInfo;
   instanceCreateInfo.pNext = nullptr;
-  instanceCreateInfo.flags = 0;
+  instanceCreateInfo.flags = vk::InstanceCreateFlags();
 
 #if _DEBUG
+  // Enable validation layers
   uint32_t layerCount;
-  std::vector<VkLayerProperties> layerProperties;
-  vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+  std::vector<vk::LayerProperties> layerProperties;
+  (void)vk::enumerateInstanceLayerProperties(&layerCount, nullptr);
   layerProperties.resize(layerCount);
-  vkEnumerateInstanceLayerProperties(&layerCount, layerProperties.data());
+  (void)vk::enumerateInstanceLayerProperties(&layerCount, layerProperties.data());
 
-  const char *validationLayers[] = {"VK_LAYER_KHRONOS_validation"};
+  std::vector<const char *> validationLayers = {"VK_LAYER_KHRONOS_validation"};
 
-  if (IsLayerAvailable(layerProperties, "VK_LAYER_KHRONOS_validation")) {
-    instanceCreateInfo.enabledLayerCount = 1;
-    instanceCreateInfo.ppEnabledLayerNames = validationLayers;
-  } else {
-    GERROR("VK_LAYER_KHRONOS_validation layer not available");
+  // Check if all validation layers are available
+  // if not remove it from the vector
+  for (const char *layer : validationLayers) {
+    if (!IsLayerAvailable(layerProperties, layer)) {
+      GERROR("Validation layer {} not available", layer);
+      validationLayers.erase(std::remove(validationLayers.begin(), validationLayers.end(), layer),
+                             validationLayers.end());
+    }
   }
 
-  VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo = {};
-  debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+  instanceCreateInfo.enabledLayerCount = validationLayers.size();
+  instanceCreateInfo.ppEnabledLayerNames = validationLayers.data();
+
+  vk::DebugUtilsMessengerCreateInfoEXT debugCreateInfo;
+  debugCreateInfo.sType = vk::StructureType::eDebugUtilsMessengerCreateInfoEXT;
+  debugCreateInfo.pNext = nullptr;
+  debugCreateInfo.flags = vk::DebugUtilsMessengerCreateFlagsEXT();
   debugCreateInfo.messageSeverity =
-      VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
-  debugCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT |
-                                VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT |
-                                VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+      vk::DebugUtilsMessageSeverityFlagBitsEXT::eError | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning;
+  debugCreateInfo.messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
+                                vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
+                                vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
   debugCreateInfo.pfnUserCallback = debugCallback;
   debugCreateInfo.pUserData = nullptr;
   instanceCreateInfo.pNext = &debugCreateInfo;
 
-  context.AddInstanceExtension(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+  requestedExtensions.push_back(vk::EXTDebugUtilsExtensionName);
 
 #else
   instanceCreateInfo.enabledLayerCount = 0;
   instanceCreateInfo.ppEnabledLayerNames = nullptr;
 #endif
 
-  context.AddInstanceExtension(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-  context.AddInstanceExtension(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+  requestedExtensions.push_back(vk::KHRPortabilityEnumerationExtensionName);
 
-  PopulateInstanceExtensions();
-
-  auto instanceExtensions = context.GetInstanceExtensions();
-  instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(instanceExtensions.size());
-  instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
-  VkResult res = vkCreateInstance(&instanceCreateInfo, nullptr, &vkInstance);
-  if (res != VK_SUCCESS) {
-    GERROR("Failed to create Vulkan instance");
-    return;
-  } else {
-    GINFO("Successfully created vulkan instance");
-  }
-}
-
-void VulkanBackend::PopulateInstanceExtensions() {
   uint32_t property_count = 0;
-  vkEnumerateInstanceExtensionProperties(nullptr, &property_count, nullptr);
-  std::vector<VkExtensionProperties> properties;
+  (void)vk::enumerateInstanceExtensionProperties(nullptr, &property_count, nullptr);
+  std::vector<vk::ExtensionProperties> properties;
   properties.resize(property_count);
-  vkEnumerateInstanceExtensionProperties(nullptr, &property_count, properties.data());
+  (void)vk::enumerateInstanceExtensionProperties(nullptr, &property_count, properties.data());
 
+  // glfw has some required extensions, this gets set during runGame()
   std::vector<const char *> instanceExtensions = context.GetInstanceExtensions();
 
   // check if extensions are available, remove if not
   for (auto &extension : instanceExtensions) {
     if (!IsExtensionAvailable(properties, extension)) {
       GERROR("Extension {} not available", extension);
-      context.RemoveInstanceExtension(extension);
+      instanceExtensions.erase(std::remove(instanceExtensions.begin(), instanceExtensions.end(), extension),
+                               instanceExtensions.end());
     }
   }
-}
+  instanceCreateInfo.enabledExtensionCount = instanceExtensions.size();
+  instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
 
-bool VulkanBackend::IsLayerAvailable(const std::vector<VkLayerProperties> &layers, const char *layer) {
-  for (const auto &l : layers) {
-    if (strcmp(l.layerName, layer) == 0) {
-      return true;
-    }
+  if (vk::createInstance(&instanceCreateInfo, nullptr, &instance_) != vk::Result::eSuccess) {
+    GERROR("Failed to create Vulkan instance");
+    return;
   }
-  return false;
-}
-
-bool VulkanBackend::IsExtensionAvailable(const std::vector<VkExtensionProperties> &extensions, const char *extension) {
-  for (const auto &ext : extensions) {
-    if (strcmp(ext.extensionName, extension) == 0) {
-      return true;
-    }
-  }
-  return false;
+  GINFO("Successfully created Vulkan instance");
 }
 
 VkBool32 VulkanBackend::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
@@ -115,8 +102,6 @@ VkBool32 VulkanBackend::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT mes
       GWARN("Validation layer: {}", pCallbackData->pMessage);
       break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-      GERROR("Validation layer: {}", pCallbackData->pMessage);
-      break;
     default:
       GERROR("Validation layer: {}", pCallbackData->pMessage);
       break;
@@ -127,9 +112,26 @@ VkBool32 VulkanBackend::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT mes
 }
 
 void VulkanBackend::Destroy() {
-  if (vkInstance != VK_NULL_HANDLE) {
-    vkDestroyInstance(vkInstance, nullptr);
-    vkInstance = VK_NULL_HANDLE;
+  if (instance_ != VK_NULL_HANDLE) {
+    vkDestroyInstance(instance_, nullptr);
+    instance_ = VK_NULL_HANDLE;
   }
+}
+bool VulkanBackend::IsLayerAvailable(const std::vector<vk::LayerProperties> &layers, const char *layerToCheck) {
+  for (const auto &l : layers) {
+    if (strcmp(l.layerName, layerToCheck) == 0) {
+      return true;
+    }
+  }
+  return false;
+}
+bool VulkanBackend::IsExtensionAvailable(const std::vector<vk::ExtensionProperties> &allExtensions,
+                                         const char *extensionToCheck) {
+  for (const auto &ext : allExtensions) {
+    if (strcmp(ext.extensionName, extensionToCheck) == 0) {
+      return true;
+    }
+  }
+  return false;
 }
 }  // namespace Glaceon

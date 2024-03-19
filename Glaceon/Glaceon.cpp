@@ -9,94 +9,99 @@ namespace Glaceon {
 static bool swapChainRebuild = false;
 static Application *currentApp = nullptr;
 
-void error_callback(int error, const char *description) { GERROR("GLFW Error: Code: {} - {}", error, description); }
+void ErrorCallback(int error, const char *description) { GERROR("GLFW Error: Code: {} - {}", error, description); }
 
-void keyboard_callback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, int action,
-                       [[maybe_unused]] int mods) {
+void KeyboardCallback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, int action,
+                      [[maybe_unused]] int mods) {
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
     GINFO("Escape key pressed, closing window...");
     glfwSetWindowShouldClose(window, GLFW_TRUE);
   }
 }
 
-static void CheckVkResult(VkResult err) {
-  if (err == 0) return;
-  GERROR("[Vulkan] Error: VkResult = {}", string_VkResult(err));
-  if (err < 0) abort();
-}
-
 static void ImGuiFrameRender(VulkanContext &context, ImDrawData *draw_data) {
-  VkResult err;
-
-  std::vector<VkSemaphore> image_available_semaphores = context.GetVulkanSync().GetImageAvailableSemaphores();
-  std::vector<VkSemaphore> render_complete_semaphores = context.GetVulkanSync().GetRenderFinishedSemaphores();
-  VkDevice device = context.GetVulkanDevice().GetLogicalDevice();
+  std::vector<vk::Semaphore> image_available_semaphores = context.GetVulkanSync().GetImageAvailableSemaphores();
+  std::vector<vk::Semaphore> render_complete_semaphores = context.GetVulkanSync().GetRenderFinishedSemaphores();
+  vk::Device device = context.GetVulkanLogicalDevice();
   assert(device != VK_NULL_HANDLE);
-  VkSwapchainKHR swapChain = context.GetVulkanSwapChain().GetVkSwapChain();
-  assert(swapChain != VK_NULL_HANDLE);
+  vk::SwapchainKHR swap_chain = context.GetVulkanSwapChain().GetVkSwapchain();
+  assert(swap_chain != VK_NULL_HANDLE);
 
-  std::vector<SwapChainFrame> swapChainFrames = context.GetVulkanSwapChain().GetSwapChainFrames();
-  VkFence fence = context.GetVulkanSync().GetInFlightFence();
-  VkCommandPool commandPool = context.GetVulkanCommandPool().GetVkCommandPool();
-  uint32_t semaphoreIndex = context.semaphoreIndex;
+  std::vector<SwapChainFrame> swap_chain_frames = context.GetVulkanSwapChain().GetSwapChainFrames();
+  vk::Fence fence = context.GetVulkanSync().GetInFlightFence();
+  vk::CommandPool command_pool = context.GetVulkanCommandPool().GetVkCommandPool();
+  uint32_t semaphore_index = context.semaphore_index_;
 
   // This defines the frame index to render to?, give me an available image from the swap chain
-  err = vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, image_available_semaphores[semaphoreIndex], VK_NULL_HANDLE,
-                              &context.currentFrameIndex);
-  VkCommandBuffer commandBuffer = context.GetVulkanCommandPool().GetFrameCommandBuffers()[context.currentFrameIndex];
-  if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
+  vk::Result res = device.acquireNextImageKHR(swap_chain,
+                                        UINT64_MAX,
+                                        image_available_semaphores[semaphore_index],
+                                        VK_NULL_HANDLE,
+                                        &context.current_frame_index_) != vk::Result::eSuccess;
+
+    GERROR("Failed to acquire swap chain image");
+    return;
+
+
+  vk::CommandBuffer command_buffer = context.GetVulkanCommandPool().GetVkFrameCommandBuffers()[context.current_frame_index_];
+  if (res == vk::Result::eErrorOutOfDateKHR|| res == vk::Result::eSuboptimalKHR) {
     swapChainRebuild = true;
     return;
   }
-  CheckVkResult(err);
+
 
   {
-    err = vkWaitForFences(device, 1, &fence, VK_TRUE,
-                          UINT64_MAX);  // wait indefinitely instead of periodically checking
-    CheckVkResult(err);
+    vk::Result err = device.waitForFences(1, &fence, VK_TRUE, UINT64_MAX);
+    if (err == vk::Result::eTimeout) {
+      GERROR("Fence timeout!");
+      return;
+    }
 
-    err = vkResetFences(device, 1, &fence);
-    CheckVkResult(err);
+    err = device.resetFences(1, &fence);
+    if (err != vk::Result::eSuccess) {
+        GERROR("Failed to reset fences!");
+        return;
+    }
   }
   {
-    err = vkResetCommandPool(device, commandPool, 0);
+    vk::Result err = device.resetCommandPool(command_pool, 0);
     CheckVkResult(err);
     VkCommandBufferBeginInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     info.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-    err = vkBeginCommandBuffer(commandBuffer, &info);
+    err = vkBeginCommandBuffer(command_buffer, &info);
     CheckVkResult(err);
   }
   {
     VkRenderPassBeginInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     info.renderPass = context.GetVulkanRenderPass().GetVkRenderPass();
-    info.framebuffer = context.GetVulkanSwapChain().GetSwapChainFrames()[context.currentFrameIndex].framebuffer;
+    info.framebuffer = context.GetVulkanSwapChain().GetSwapChainFrames()[context.current_frame_index_].framebuffer;
     info.renderArea.extent = context.GetVulkanSwapChain().GetSwapChainExtent();
     info.clearValueCount = 1;
     VkClearValue clear_color = {0.0f, 0.0f, 0.0f, 0.0f};
     info.pClearValues = &clear_color;
-    vkCmdBeginRenderPass(commandBuffer, &info, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(command_buffer, &info, VK_SUBPASS_CONTENTS_INLINE);
   }
 
   // Record dear imgui primitives into command buffer
-  ImGui_ImplVulkan_RenderDrawData(draw_data, commandBuffer);
+  ImGui_ImplVulkan_RenderDrawData(draw_data, command_buffer);
 
   // Submit command buffer
-  vkCmdEndRenderPass(commandBuffer);
+  vkCmdEndRenderPass(command_buffer);
   {
     VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     VkSubmitInfo info = {};
     info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     info.waitSemaphoreCount = 1;
-    info.pWaitSemaphores = &image_available_semaphores[semaphoreIndex];
+    info.pWaitSemaphores = &image_available_semaphores[semaphore_index];
     info.pWaitDstStageMask = &wait_stage;
     info.commandBufferCount = 1;
     info.pCommandBuffers = &commandBuffer;
     info.signalSemaphoreCount = 1;
-    info.pSignalSemaphores = &render_complete_semaphores[semaphoreIndex];
+    info.pSignalSemaphores = &render_complete_semaphores[semaphore_index];
 
-    err = vkEndCommandBuffer(commandBuffer);
+    err = vkEndCommandBuffer(command_buffer);
     CheckVkResult(err);
     err = vkQueueSubmit(context.GetVulkanDevice().GetPresentQueue(), 1, &info, fence);
     CheckVkResult(err);
@@ -111,20 +116,20 @@ static void ImGuiFramePresent(VulkanContext &context) {
   VkPresentInfoKHR info = {};
   info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
   info.waitSemaphoreCount = 1;
-  info.pWaitSemaphores = &render_complete_semaphores[context.semaphoreIndex];
+  info.pWaitSemaphores = &render_complete_semaphores[context.semaphore_index_];
   info.swapchainCount = 1;
   info.pSwapchains = &swapChain;
-  info.pImageIndices = &context.currentFrameIndex;
+  info.pImageIndices = &context.current_frame_index_;
   VkResult err = vkQueuePresentKHR(context.GetVulkanDevice().GetPresentQueue(), &info);
   if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
     swapChainRebuild = true;
     return;
   }
   CheckVkResult(err);
-  context.semaphoreIndex =
-      (context.semaphoreIndex + 1) % context.GetVulkanSwapChain()
-                                         .GetSwapChainFrames()
-                                         .size();  // mod semaphore index to wrap indexing back to beginning
+  context.semaphore_index_ =
+      (context.semaphore_index_ + 1) % context.GetVulkanSwapChain()
+          .GetSwapChainFrames()
+          .size();  // mod semaphore index to wrap indexing back to beginning
 }
 
 static void GameFrameRender(VulkanContext &context) {
@@ -143,28 +148,28 @@ static void GameFrameRender(VulkanContext &context) {
 
   // get image from swap chain
   // the semaphore passes is what is going to be signaled once the image is acquired
-  if (vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, image_available_semaphores[context.semaphoreIndex],
-                            VK_NULL_HANDLE, &context.currentFrameIndex) != VK_SUCCESS) {
+  if (vkAcquireNextImageKHR(device, swapChain, UINT64_MAX, image_available_semaphores[context.semaphore_index_],
+                            VK_NULL_HANDLE, &context.current_frame_index_) != VK_SUCCESS) {
     GERROR("Failed to acquire next swap chain image")
     return;
   }
 
   // get the frame's own command buffer
   std::vector<VkCommandBuffer> frame_command_buffers = context.GetVulkanCommandPool().GetFrameCommandBuffers();
-  VkCommandBuffer commandBuffer = frame_command_buffers[context.currentFrameIndex];
+  VkCommandBuffer commandBuffer = frame_command_buffers[context.current_frame_index_];
   vkResetCommandBuffer(commandBuffer, 0);
-  recordDrawCommands(commandBuffer, context.currentFrameIndex);
+  recordDrawCommands(commandBuffer, context.current_frame_index_);
 
   VkPipelineStageFlags wait_stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
   VkSubmitInfo info = {};
   info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
   info.waitSemaphoreCount = 1;
-  info.pWaitSemaphores = &image_available_semaphores[context.semaphoreIndex];
+  info.pWaitSemaphores = &image_available_semaphores[context.semaphore_index_];
   info.pWaitDstStageMask = &wait_stage;
   info.commandBufferCount = 1;
   info.pCommandBuffers = &commandBuffer;
   info.signalSemaphoreCount = 1;
-  info.pSignalSemaphores = &render_complete_semaphores[context.semaphoreIndex];
+  info.pSignalSemaphores = &render_complete_semaphores[context.semaphore_index_];
 
   // fence is provided here so that once we submit the command buffer, we can safely reset the fence
   if (vkQueueSubmit(context.GetVulkanDevice().GetGraphicsQueue(), 1, &info, inFlightFence) != VK_SUCCESS) {
@@ -182,20 +187,20 @@ static void GameFramePresent(VulkanContext &context) {
   VkPresentInfoKHR info = {};
   info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
   info.waitSemaphoreCount = 1;
-  info.pWaitSemaphores = &render_complete_semaphores[context.semaphoreIndex];
+  info.pWaitSemaphores = &render_complete_semaphores[context.semaphore_index_];
   info.swapchainCount = 1;
   info.pSwapchains = &swapChain;
-  info.pImageIndices = &context.currentFrameIndex;
+  info.pImageIndices = &context.current_frame_index_;
   VkResult err = vkQueuePresentKHR(presentQueue, &info);
   if (err == VK_ERROR_OUT_OF_DATE_KHR || err == VK_SUBOPTIMAL_KHR) {
     swapChainRebuild = true;
     return;
   }
   CheckVkResult(err);
-  context.semaphoreIndex =
-      (context.semaphoreIndex + 1) % context.GetVulkanSwapChain()
-                                         .GetSwapChainFrames()
-                                         .size();  // mod semaphore index to wrap indexing back to beginning
+  context.semaphore_index_ =
+      (context.semaphore_index_ + 1) % context.GetVulkanSwapChain()
+          .GetSwapChainFrames()
+          .size();  // mod semaphore index to wrap indexing back to beginning
 }
 
 void recordDrawCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex) {
@@ -259,7 +264,7 @@ void GLACEON_API runGame(Application *app) {
   }
 
   VulkanContext &context = app->GetVulkanContext();
-  glfwSetErrorCallback(error_callback);
+  glfwSetErrorCallback(ErrorCallback);
 
   // we are using vulkan, don't load in other apis
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -276,7 +281,7 @@ void GLACEON_API runGame(Application *app) {
     return;
   }
 
-  glfwSetKeyCallback(glfw_window, keyboard_callback);
+  glfwSetKeyCallback(glfw_window, KeyboardCallback);
 
   // For reference on integrating ImGui with GLFW and Vulkan
   // https://github.com/ocornut/imgui/blob/master/examples/example_glfw_vulkan/main.cpp
@@ -315,8 +320,8 @@ void GLACEON_API runGame(Application *app) {
   context.GetVulkanSync().Initialize();
 
   GraphicsPipelineConfig config = {
-      .vertexShaderFile = "../../shaders/vert.spv",
-      .fragmentShaderFile = "../../shaders/frag.spv",
+      .vertex_shader_file = "../../shaders/vert.spv",
+      .fragment_shader_file = "../../shaders/frag.spv",
   };
   context.GetVulkanPipeline().Initialize(config);
 
@@ -328,7 +333,7 @@ void GLACEON_API runGame(Application *app) {
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
   ImGuiIO &io = ImGui::GetIO();
-  (void)io;
+  (void) io;
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
   io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
   io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // Enable Docking
@@ -344,7 +349,7 @@ void GLACEON_API runGame(Application *app) {
   init_info.Instance = context.GetVulkanInstance();
   init_info.PhysicalDevice = context.GetVulkanPhysicalDevice();
   init_info.Device = context.GetVulkanLogicalDevice();
-  init_info.QueueFamily = context.GetQueueIndexes().graphicsFamily.value();
+  init_info.QueueFamily = context.GetQueueIndexes().graphics_family.value();
   init_info.Queue = context.GetVulkanDevice().GetGraphicsQueue();
   init_info.PipelineCache = VK_NULL_HANDLE;
   init_info.DescriptorPool = context.GetDescriptorPool();
@@ -391,7 +396,7 @@ void GLACEON_API runGame(Application *app) {
         context.GetVulkanCommandPool().RebuildCommandBuffers();
         context.GetVulkanSync().Destroy();
         context.GetVulkanSync().Initialize();
-        context.currentFrameIndex = 0;
+        context.current_frame_index_ = 0;
         swapChainRebuild = false;
       }
     }

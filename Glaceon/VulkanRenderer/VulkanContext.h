@@ -1,5 +1,5 @@
-#ifndef GLACEON_VULKANCONTEXT_H
-#define GLACEON_VULKANCONTEXT_H
+#ifndef GLACEON_GLACEON_VULKANRENDERER_VULKANCONTEXT_H_
+#define GLACEON_GLACEON_VULKANRENDERER_VULKANCONTEXT_H_
 
 #include "../pch.h"
 #include "VulkanBackend.h"
@@ -17,61 +17,53 @@ class VulkanContext {
   VulkanContext();
   ~VulkanContext() = default;
 
-  VulkanBackend &GetVulkanBackend() { return backend; }
 
-  VkInstance &GetVulkanInstance() { return backend.GetVkInstance(); }
+  const vk::Instance &GetVulkanInstance() { return backend_.GetVkInstance(); }
 
-  VulkanDevice &GetVulkanDevice() { return device; }
-  VkPhysicalDevice GetVulkanPhysicalDevice() { return device.GetPhysicalDevice(); }
-  VkDevice GetVulkanLogicalDevice() { return device.GetLogicalDevice(); }
-  QueueIndexes &GetQueueIndexes() { return device.GetQueueIndexes(); }
+  vk::PhysicalDevice GetVulkanPhysicalDevice() { return device_.GetVkPhysicalDevice(); }
+  vk::Device GetVulkanLogicalDevice() { return device_.GetVkDevice(); }
+  QueueIndexes &GetQueueIndexes() { return device_.GetQueueIndexes(); }
 
   void AddDeviceExtension(const char *ext);
   void RemoveDeviceExtension(const char *ext);
-  std::vector<const char *> &GetDeviceExtensions() { return deviceExtensions; }
+  std::vector<const char *> &GetDeviceExtensions() { return device_extensions_; }
   void AddInstanceExtension(const char *ext);
   void RemoveInstanceExtension(const char *ext);
-  std::vector<const char *> &GetInstanceExtensions() { return instanceExtensions; }
+  std::vector<const char *> &GetInstanceExtensions() { return instance_extensions_; }
 
-  VkDescriptorPool GetDescriptorPool() { return device.GetDescriptorPool(); }
+  vk::DescriptorPool GetDescriptorPool() { return device_.GetVkDescriptorPool(); }
 
-  VkSurfaceKHR GetSurface() { return surface; }
-  void SetSurface(VkSurfaceKHR vkSurface) { this->surface = vkSurface; }
+  vk::SurfaceKHR GetSurface() { return surface_; }
+  void SetSurface(vk::SurfaceKHR vk_surface) { this->surface_ = vk_surface; }
 
-  VulkanSwapChain &GetVulkanSwapChain() { return swapChain; }
-
-  VulkanPipeline &GetVulkanPipeline() { return pipeline; }
-
-  VulkanRenderPass &GetVulkanRenderPass() { return renderPass; }
-
-  VulkanCommandPool &GetVulkanCommandPool() { return commandPool; }
-
-  VulkanSync &GetVulkanSync() { return sync; }
+  VulkanBackend &GetVulkanBackend() { return backend_; }
+  VulkanDevice &GetVulkanDevice() { return device_; }
+  VulkanSwapChain &GetVulkanSwapChain() { return swap_chain_; }
+  VulkanRenderPass &GetVulkanRenderPass() { return render_pass_; }
+  VulkanPipeline &GetVulkanPipeline() { return pipeline_; }
+  VulkanCommandPool &GetVulkanCommandPool() { return command_pool_; }
+  VulkanSync &GetVulkanSync() { return sync_; }
 
   void Destroy();
 
-  uint32_t currentFrameIndex = 0;
-  uint32_t semaphoreIndex = 0;
+  uint32_t current_frame_index_ = 0;
+  uint32_t semaphore_index_ = 0;
 
  private:
-  VulkanBackend backend;
-  VulkanDevice device;
-  VulkanSwapChain swapChain;
-  VulkanRenderPass renderPass;
-  VulkanPipeline pipeline;
-  VulkanCommandPool commandPool;
-  VulkanSync sync;
+  VulkanBackend backend_;
+  VulkanDevice device_;
+  VulkanSwapChain swap_chain_;
+  VulkanRenderPass render_pass_;
+  VulkanPipeline pipeline_;
+  VulkanCommandPool command_pool_;
+  VulkanSync sync_;
 
-  uint32_t CurrentFrameIndex = 0;
+  vk::SurfaceKHR surface_ = VK_NULL_HANDLE;
 
-  VkDescriptorPool descriptorPool;
-  VkSurfaceKHR surface = VK_NULL_HANDLE;
-  VkPipelineCache pipelineCache = VK_NULL_HANDLE;
-
-  std::vector<const char *> deviceExtensions;
-  std::vector<const char *> instanceExtensions;
+  std::vector<const char *> device_extensions_;
+  std::vector<const char *> instance_extensions_;
 };
 
 }  // namespace Glaceon
 
-#endif  // GLACEON_VULKANCONTEXT_H
+#endif  // GLACEON_GLACEON_VULKANRENDERER_VULKANCONTEXT_H_

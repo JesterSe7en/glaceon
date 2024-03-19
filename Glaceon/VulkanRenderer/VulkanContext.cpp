@@ -3,42 +3,42 @@
 namespace Glaceon {
 
 VulkanContext::VulkanContext()
-    : backend(*this),
-      device(*this),
-      swapChain(*this),
-      renderPass(*this),
-      pipeline(*this),
-      commandPool(*this),
-      sync(*this),
-      deviceExtensions(),
-      instanceExtensions() {}
-void VulkanContext::AddDeviceExtension(const char *ext) { deviceExtensions.push_back(ext); }
-void VulkanContext::AddInstanceExtension(const char *ext) { instanceExtensions.push_back(ext); }
+    : backend_(*this),
+      device_(*this),
+      swap_chain_(*this),
+      render_pass_(*this),
+      pipeline_(*this),
+      command_pool_(*this),
+      sync_(*this),
+      device_extensions_(),
+      instance_extensions_() {}
+void VulkanContext::AddDeviceExtension(const char *ext) { device_extensions_.push_back(ext); }
+void VulkanContext::AddInstanceExtension(const char *ext) { instance_extensions_.push_back(ext); }
 void VulkanContext::RemoveDeviceExtension(const char *ext) {
-  auto it = std::find(deviceExtensions.begin(), deviceExtensions.end(), ext);
-  if (it != deviceExtensions.end()) {
-    deviceExtensions.erase(it);
+  auto it = std::find(device_extensions_.begin(), device_extensions_.end(), ext);
+  if (it != device_extensions_.end()) {
+    device_extensions_.erase(it);
   }
 }
 void VulkanContext::RemoveInstanceExtension(const char *ext) {
-  auto it = std::find(instanceExtensions.begin(), instanceExtensions.end(), ext);
-  if (it != instanceExtensions.end()) {
-    instanceExtensions.erase(it);
+  auto it = std::find(instance_extensions_.begin(), instance_extensions_.end(), ext);
+  if (it != instance_extensions_.end()) {
+    instance_extensions_.erase(it);
   }
 }
 
 void VulkanContext::Destroy() {
-  sync.Destroy();
-  commandPool.Destroy();
-  pipeline.Destroy();
-  renderPass.Destroy();
-  swapChain.Destroy();
-  device.Destroy();
-  if (surface != VK_NULL_HANDLE) {
-    vkDestroySurfaceKHR(backend.GetVkInstance(), surface, nullptr);
-    surface = VK_NULL_HANDLE;
+  sync_.Destroy();
+  command_pool_.Destroy();
+  pipeline_.Destroy();
+  render_pass_.Destroy();
+  swap_chain_.Destroy();
+  device_.Destroy();
+  if (surface_ != VK_NULL_HANDLE) {
+    vkDestroySurfaceKHR(backend_.GetVkInstance(), surface_, nullptr);
+    surface_ = VK_NULL_HANDLE;
   }
-  backend.Destroy();
+  backend_.Destroy();
 }
 
 }  // namespace Glaceon

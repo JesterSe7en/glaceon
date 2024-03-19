@@ -25,7 +25,8 @@
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
-#include <vulkan/vulkan.h>
+#include <vulkan/vulkan.hpp>
+//#include <vulkan/vulkan.h>
 #include <vulkan/vulkan_core.h>
 #include <vulkan/vk_enum_string_helper.h>
 

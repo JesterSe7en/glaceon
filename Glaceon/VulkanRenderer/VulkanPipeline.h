@@ -8,29 +8,38 @@ namespace Glaceon {
 class VulkanContext;
 
 struct GraphicsPipelineConfig {
-  std::string vertexShaderFile;
-  std::string fragmentShaderFile;
+  std::string vertex_shader_file;
+  std::string fragment_shader_file;
 };
 
 struct GraphicsPipelineOutBundle {};
 
 class VulkanPipeline {
  public:
-  VulkanPipeline(VulkanContext& context);
-  void Initialize(GraphicsPipelineConfig pipelineConfig);
+  explicit VulkanPipeline(VulkanContext& context);
+  void Initialize(const GraphicsPipelineConfig& pipeline_config);
 
-  VkPipeline GetVkPipeline() { return pipeline; }
-  VkPipelineCache GetVkPipelineCache() { return pipelineCache; }
+  [[nodiscard]] const vk::PipelineLayout &GetVkPipelineLayout() const {
+    return vk_pipeline_layout_;
+  }
+
+  [[nodiscard]] const vk::Pipeline &GetVkPipeline() const {
+    return vk_pipeline_;
+  }
+
+  [[nodiscard]] const vk::PipelineCache &GetVkPipelineCache() const {
+    return vk_pipeline_cache_;
+  }
 
   void Recreate();
   void Destroy();
 
  private:
-  VulkanContext& context;
+  VulkanContext& context_;
 
-  VkPipelineLayout pipelineLayout;
-  VkPipeline pipeline;
-  VkPipelineCache pipelineCache;
+  vk::PipelineLayout vk_pipeline_layout_;
+  vk::Pipeline vk_pipeline_;
+  vk::PipelineCache vk_pipeline_cache_;
 
  private:
   void CreatePipelineLayout();

@@ -5,58 +5,56 @@
 
 namespace Glaceon {
 
-VulkanRenderPass::VulkanRenderPass(VulkanContext& context) : context(context) {}
+VulkanRenderPass::VulkanRenderPass(VulkanContext &context) : context_(context), vk_render_pass_(VK_NULL_HANDLE) {}
 
 void VulkanRenderPass::Initialize() {
   // An attachment is essentially an image or a memory buffer that serves as a rendering target or source within a
   // render pass Attachments are used to store the results of rendering operations, such as color, depth, or stencil
   // values. Each subpass in a render pass can read or write to the attachment
-  VkAttachmentDescription colorAttachment = {};
-  colorAttachment.format = VK_FORMAT_B8G8R8A8_UNORM;
+
+  vk::AttachmentDescription color_attachment = {};
+  color_attachment.format = vk::Format::eB8G8R8A8Unorm;
   // TODO: Uncomment this out once we have a swap chain
   //    colorAttachment.format = context.GetVulkanSwapChain().GetSwapChainImageFormat();
-  colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-  colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-  colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-  colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-  colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-  colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-  colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+  color_attachment.samples = vk::SampleCountFlagBits::e1;
+  color_attachment.loadOp = vk::AttachmentLoadOp::eClear;
+  color_attachment.storeOp = vk::AttachmentStoreOp::eStore;
+  color_attachment.stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
+  color_attachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
+  color_attachment.initialLayout = vk::ImageLayout::eUndefined;
+  color_attachment.finalLayout = vk::ImageLayout::ePresentSrcKHR;
 
-  VkAttachmentReference colorAttachmentRef = {};
-  colorAttachmentRef.attachment = 0;
-  colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+  vk::AttachmentReference color_attachment_ref = {};
+  color_attachment_ref.attachment = 0;
+  color_attachment_ref.layout = vk::ImageLayout::eColorAttachmentOptimal;
 
   // A render pass always has at LEAST one subpass
-  VkSubpassDescription subpass = {};
-  subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-  subpass.colorAttachmentCount = 1;
-  subpass.pColorAttachments = &colorAttachmentRef;
+  vk::SubpassDescription subpass_description = {};
+  subpass_description.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
+  subpass_description.colorAttachmentCount = 1;
+  subpass_description.pColorAttachments = &color_attachment_ref;
 
-  VkRenderPassCreateInfo renderPassInfo = {};
-  renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-  renderPassInfo.attachmentCount = 1;
-  renderPassInfo.pAttachments = &colorAttachment;
-  renderPassInfo.subpassCount = 1;
-  renderPassInfo.pSubpasses = &subpass;
+  vk::RenderPassCreateInfo render_pass_create_info = {};
+  render_pass_create_info.sType = vk::StructureType::eRenderPassCreateInfo;
+  render_pass_create_info.attachmentCount = 1;
+  render_pass_create_info.pAttachments = &color_attachment;
+  render_pass_create_info.subpassCount = 1;
+  render_pass_create_info.pSubpasses = &subpass_description;
 
-  VkDevice device = context.GetVulkanLogicalDevice();
+  vk::Device device = context_.GetVulkanLogicalDevice();
   assert(device != nullptr);
 
-  if (vkCreateRenderPass(device, &renderPassInfo, nullptr, &renderPass) != VK_SUCCESS) {
+  if (device.createRenderPass(&render_pass_create_info, nullptr, &vk_render_pass_) != vk::Result::eSuccess) {
     GERROR("Failed to create render pass");
-    renderPass = nullptr;
   } else {
     GINFO("Successfully created render pass");
   }
 }
 
-const VkRenderPass& VulkanRenderPass::GetVkRenderPass() const { return renderPass; }
-
 void VulkanRenderPass::Destroy() {
-  if (renderPass != nullptr) {
-    vkDestroyRenderPass(context.GetVulkanLogicalDevice(), renderPass, nullptr);
-    renderPass = VK_NULL_HANDLE;
+  if (vk_render_pass_ != nullptr) {
+    vkDestroyRenderPass(context_.GetVulkanLogicalDevice(), vk_render_pass_, nullptr);
+    vk_render_pass_ = VK_NULL_HANDLE;
   }
 }
 

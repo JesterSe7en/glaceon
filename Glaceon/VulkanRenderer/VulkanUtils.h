@@ -1,7 +1,3 @@
-//
-// Created by alyxc on 3/10/2024.
-//
-
 #ifndef GLACEON_GLACEON_VULKANRENDERER_VULKANUTILS_H_
 #define GLACEON_GLACEON_VULKANRENDERER_VULKANUTILS_H_
 
@@ -12,8 +8,8 @@ namespace Glaceon {
 class VulkanUtils {
  public:
   static std::vector<char> ReadFile(const std::string &filename);
-  static VkShaderModule CreateShaderModule(const VkDevice &device, const std::vector<char> &code);
-  static VkShaderModule CreateShaderModule(const VkDevice &device, const std::string &filename);
+  static vk::ShaderModule CreateShaderModule(const vk::Device &device, const std::vector<char> &code);
+  static vk::ShaderModule CreateShaderModule(const vk::Device &device, const std::string &filename);
 };
 
 }  // namespace Glaceon
