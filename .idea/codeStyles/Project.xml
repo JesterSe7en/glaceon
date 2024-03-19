@@ -47,9 +47,6 @@
         <rule entity="GLOBAL_VARIABLE,LOCAL_VARIABLE" visibility="ANY" specifier="CONST" prefix="k" style="PASCAL_CASE" suffix="" />
       </rules>
     </Objective-C-extensions>
-    <clangFormatSettings>
-      <option name="ENABLED" value="true" />
-    </clangFormatSettings>
     <files>
       <extensions>
         <pair source="cpp" header="h" fileNamingConvention="PASCAL_CASE" />
