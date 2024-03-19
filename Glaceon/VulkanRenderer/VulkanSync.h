@@ -22,14 +22,14 @@ class VulkanSync {
 
   [[nodiscard]] const std::vector<vk::Semaphore> &GetImageAvailableSemaphores() const { return image_available_semaphores_; }
   [[nodiscard]] const std::vector<vk::Semaphore> &GetRenderFinishedSemaphores() const { return render_finished_semaphores_; }
-  [[nodiscard]] const vk::Fence &GetInFlightFence() const { return in_flight_fence_; }
+  [[nodiscard]] const std::vector<vk::Fence> &GetInFlightFences() const { return in_flight_fences_; }
 
  private:
   VulkanContext &context_;
 
   std::vector<vk::Semaphore> image_available_semaphores_;
   std::vector<vk::Semaphore> render_finished_semaphores_;
-  vk::Fence in_flight_fence_;
+  std::vector<vk::Fence> in_flight_fences_; // TODO: change to have one fence for each frame
 };
 
 }  // namespace Glaceon

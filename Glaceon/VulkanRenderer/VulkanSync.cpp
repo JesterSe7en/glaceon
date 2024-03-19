@@ -47,10 +47,14 @@ void VulkanSync::Initialize() {
   fence_create_info.pNext = nullptr;
   fence_create_info.flags =
       vk::FenceCreateFlags(vk::FenceCreateFlagBits::eSignaled);  // initialize fence in signaled state (ready to be used)
-  if (device.createFence(&fence_create_info, nullptr, &in_flight_fence_) != vk::Result::eSuccess) {
-    GERROR("Failed to create in flight fence");
-  } else {
-    GINFO("Successfully created in flight fence");
+  for (uint32_t i = 0; i < max_frames_in_flight; i++) {
+    vk::Fence fence;
+    if (device.createFence(&fence_create_info, nullptr, &fence) != vk::Result::eSuccess) {
+      GERROR("Failed to create in flight fence");
+      return;
+    } else {
+      in_flight_fences_.push_back(fence);
+    }
   }
 }
 
@@ -72,9 +76,11 @@ void VulkanSync::Destroy() {
     }
   }
   render_finished_semaphores_.clear();
-  if (in_flight_fence_ != VK_NULL_HANDLE) {
-    device.destroy(in_flight_fence_, nullptr);
-    in_flight_fence_ = VK_NULL_HANDLE;
+  for (vk::Fence fence : in_flight_fences_) {
+    if (fence != VK_NULL_HANDLE) {
+      device.destroy(fence, nullptr);
+      fence = VK_NULL_HANDLE;
+    }
   }
 }
 

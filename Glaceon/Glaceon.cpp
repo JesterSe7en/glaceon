@@ -42,7 +42,7 @@ static void ImGuiFrameRender(VulkanContext &context, ImDrawData *draw_data) {
 
   std::vector<SwapChainFrame> swap_chain_frames =
       context.GetVulkanSwapChain().GetSwapChainFrames();
-  vk::Fence fence = context.GetVulkanSync().GetInFlightFence();
+  std::vector<vk::Fence> fences = context.GetVulkanSync().GetInFlightFences();
   vk::CommandPool command_pool =
       context.GetVulkanCommandPool().GetVkCommandPool();
   uint32_t semaphore_index = context.semaphore_index_;
@@ -63,13 +63,13 @@ static void ImGuiFrameRender(VulkanContext &context, ImDrawData *draw_data) {
   }
 
   {
-    vk::Result err = device.waitForFences(1, &fence, VK_TRUE, UINT64_MAX);
+    vk::Result err = device.waitForFences(1, &fences[context.current_frame_index_], VK_TRUE, UINT64_MAX);
     if (err == vk::Result::eTimeout) {
       GERROR("Fence timeout!");
       return;
     }
 
-    err = device.resetFences(1, &fence);
+    err = device.resetFences(1, &fences[context.current_frame_index_]);
     if (err != vk::Result::eSuccess) {
       GERROR("Failed to reset fences!");
       return;
@@ -128,7 +128,7 @@ static void ImGuiFrameRender(VulkanContext &context, ImDrawData *draw_data) {
 
     command_buffer.end();
     vk::Queue queue = context.GetVulkanDevice().GetVkPresentQueue();
-    if (queue.submit(1, &info, fence) != vk::Result::eSuccess) {
+    if (queue.submit(1, &info, fences[context.current_frame_index_]) != vk::Result::eSuccess) {
       GERROR("Failed to submit draw command buffer");
       return;
     }
@@ -204,7 +204,7 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
 }
 
 static void GameFrameRender(VulkanContext &context) {
-  vk::Fence in_flight_fence = context.GetVulkanSync().GetInFlightFence();
+  std::vector<vk::Fence> in_flight_fences = context.GetVulkanSync().GetInFlightFences();
   vk::Device device = context.GetVulkanLogicalDevice();
   vk::SwapchainKHR swap_chain = context.GetVulkanSwapChain().GetVkSwapchain();
   vk::Queue graphics_queue = context.GetVulkanDevice().GetVkGraphicsQueue();
@@ -213,14 +213,7 @@ static void GameFrameRender(VulkanContext &context) {
   std::vector<vk::Semaphore> render_complete_semaphores =
       context.GetVulkanSync().GetRenderFinishedSemaphores();
 
-  if (device.waitForFences(1, &in_flight_fence, VK_TRUE, UINT64_MAX) !=
-      vk::Result::eSuccess) {
-    GERROR("Failed to wait for fence");
-    return;
-  }
-  // reset the fence - "close the fence behind us"
-  (void) device.resetFences(1, &in_flight_fence);
-
+  (void) device.waitForFences(1, &in_flight_fences[context.current_frame_index_], VK_TRUE, UINT64_MAX);
   // get image from swap chain
   // the semaphore passes is what is going to be signaled once the image is
   // acquired
@@ -229,6 +222,9 @@ static void GameFrameRender(VulkanContext &context) {
       swap_chain, UINT64_MAX,
       image_available_semaphores[context.semaphore_index_], VK_NULL_HANDLE,
       &context.current_frame_index_);
+
+  // reset the fence - "close the fence behind us"
+  (void) device.resetFences(1, &in_flight_fences[context.current_frame_index_]);
 
   if (res == vk::Result::eErrorOutOfDateKHR ||
       res == vk::Result::eSuboptimalKHR) {
@@ -241,9 +237,10 @@ static void GameFrameRender(VulkanContext &context) {
       context.GetVulkanCommandPool().GetVkFrameCommandBuffers();
   vk::CommandBuffer command_buffer =
       frame_command_buffers[context.current_frame_index_];
-  vkResetCommandBuffer(command_buffer, 0);
+  command_buffer.reset();
   RecordDrawCommands(command_buffer, context.current_frame_index_);
 
+  // submit the command buffer
   auto wait_stage =
       vk::PipelineStageFlags(vk::PipelineStageFlagBits::eColorAttachmentOutput);
   vk::SubmitInfo submit_info = {};
@@ -260,7 +257,7 @@ static void GameFrameRender(VulkanContext &context) {
 
   // fence is provided here so that once we submit the command buffer, we can
   // safely reset the fence
-  if (graphics_queue.submit(1, &submit_info, in_flight_fence) !=
+  if (graphics_queue.submit(1, &submit_info, in_flight_fences[context.current_frame_index_]) !=
       vk::Result::eSuccess) {
     GERROR("Failed to submit to queue");
     return;
@@ -425,7 +422,7 @@ void GLACEON_API RunGame(Application *app) {
   init_info.Subpass = 0;
   init_info.MinImageCount = 2;
   init_info.ImageCount =
-      context.GetVulkanSwapChain().GetSwapChainFrames().size();
+      static_cast<uint32_t>(context.GetVulkanSwapChain().GetSwapChainFrames().size());
   init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
   init_info.Allocator = nullptr;
   init_info.CheckVkResultFn = CheckVkResult;
