@@ -94,14 +94,18 @@ VkBool32 VulkanBackend::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT mes
                                       const VkDebugUtilsMessengerCallbackDataEXT *p_callback_data,
                                       [[maybe_unused]] void *p_user_data) {
   switch (message_severity) {
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:GTRACE("Validation layer: {}", p_callback_data->pMessage);
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
+      GTRACE("Validation layer: {}", p_callback_data->pMessage);
       break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:GINFO("Validation layer: {}", p_callback_data->pMessage);
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT:
+      GINFO("Validation layer: {}", p_callback_data->pMessage);
       break;
-    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:GWARN("Validation layer: {}", p_callback_data->pMessage);
+    case VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT:
+      GWARN("Validation layer: {}", p_callback_data->pMessage);
       break;
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT:
-    default:GERROR("Validation layer: {}", p_callback_data->pMessage);
+    default:
+      GERROR("Validation layer: {}", p_callback_data->pMessage);
       break;
   }
 
