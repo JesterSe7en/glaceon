@@ -1,7 +1,7 @@
 #include "VulkanUtils.h"
 #include "../Logger.h"
 
-namespace Glaceon {
+namespace glaceon {
 std::vector<char> VulkanUtils::ReadFile(const std::string& filename) {
   std::vector<char> buffer;
   try {

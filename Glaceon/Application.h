@@ -1,5 +1,5 @@
-#ifndef GLACEON_GLACEON_GLACEON_CPP_APPLICATION_H_
-#define GLACEON_GLACEON_GLACEON_CPP_APPLICATION_H_
+#ifndef GLACEON_GLACEON_APPLICATION_H_
+#define GLACEON_GLACEON_APPLICATION_H_
 
 #include "pch.h"
 
@@ -7,7 +7,7 @@
 #include "Logger.h"
 #include "VulkanRenderer/VulkanContext.h"
 
-namespace Glaceon {
+namespace glaceon {
 
 struct GLACEON_API ApplicationInfo {
   std::string name;
@@ -15,16 +15,16 @@ struct GLACEON_API ApplicationInfo {
 
 class GLACEON_API Application {
  public:
-  Application(ApplicationInfo* info);
-  virtual void onStart() = 0;
-  virtual void onUpdate() = 0;
-  virtual void onShutdown() = 0;
+  explicit Application(ApplicationInfo* info);
+  virtual void OnStart() = 0;
+  virtual void OnUpdate() = 0;
+  virtual void OnShutdown() = 0;
 
-  VulkanContext& GetVulkanContext() { return context; }
+  VulkanContext& GetVulkanContext() { return context_; }
 
  private:
-  VulkanContext context;
+  VulkanContext context_;
 };
 }  // namespace Glaceon
 
-#endif  // GLACEON_GLACEON_GLACEON_CPP_APPLICATION_H_
+#endif  // GLACEON_GLACEON_APPLICATION_H_

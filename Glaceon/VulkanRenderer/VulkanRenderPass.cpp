@@ -3,7 +3,7 @@
 #include "../Logger.h"
 #include "VulkanContext.h"
 
-namespace Glaceon {
+namespace glaceon {
 
 VulkanRenderPass::VulkanRenderPass(VulkanContext &context) : context_(context), vk_render_pass_(VK_NULL_HANDLE) {}
 

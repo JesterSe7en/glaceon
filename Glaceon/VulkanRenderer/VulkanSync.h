@@ -1,7 +1,7 @@
 #ifndef GLACEON_GLACEON_VULKANRENDERER_VULKANSYNC_H_
 #define GLACEON_GLACEON_VULKANRENDERER_VULKANSYNC_H_
 
-namespace Glaceon {
+namespace glaceon {
 
 // https://vulkan-tutorial.com/Drawing_a_triangle/Drawing/Frames_in_flight
 // The point of this class is to manage the synchronization objects between the GPU and the CPU.

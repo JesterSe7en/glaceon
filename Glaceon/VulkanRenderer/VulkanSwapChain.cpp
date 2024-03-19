@@ -3,7 +3,7 @@
 #include "../Logger.h"
 #include "VulkanContext.h"
 
-namespace Glaceon {
+namespace glaceon {
 VulkanSwapChain::VulkanSwapChain(VulkanContext &context)
     : context_(context),
       vk_swapchain_(VK_NULL_HANDLE),
@@ -78,7 +78,6 @@ void VulkanSwapChain::PopulateSwapChainSupport() {
 #if _DEBUG
   for (auto &format : swap_chain_support_.formats) {
     // print out supported surface formats
-    ;
     GTRACE("Supported surface format:");
     GTRACE("  format: {}", vk::to_string(format.format));
     GTRACE("  colorSpace: {}", vk::to_string(format.colorSpace));
@@ -393,7 +392,7 @@ void VulkanSwapChain::CreateFrameBuffers() {
     framebuffer_create_info.pAttachments = attachments;
     if (device.createFramebuffer(&framebuffer_create_info, nullptr, &swap_chain_frame.frame_buffer)
         != vk::Result::eSuccess) {
-      GERROR("Failed to create frame buffers")
+      GERROR("Failed to create frame buffers");
       return;
     }
   }

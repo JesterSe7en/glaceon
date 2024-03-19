@@ -4,10 +4,10 @@
 
 int main() {
   SandBoxApplication app;
-  Glaceon::runGame(&app);
+  glaceon::RunGame(&app);
 }
-SandBoxApplication::SandBoxApplication() : Glaceon::Application(&app_info) {}
+SandBoxApplication::SandBoxApplication() : glaceon::Application(&app_info) {}
 
-void SandBoxApplication::onStart() {}
-void SandBoxApplication::onUpdate() {}
-void SandBoxApplication::onShutdown() {}
+void SandBoxApplication::OnStart() {}
+void SandBoxApplication::OnUpdate() {}
+void SandBoxApplication::OnShutdown() {}

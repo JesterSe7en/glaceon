@@ -9,12 +9,13 @@
 #endif
 #elif __linux__
 #ifdef GLACEON_EXPORTS
-#define GLACEON_API __attribute__((visibility("default")))
+    #define GLACEON_API __attribute__((visibility("default")))
+  #else
+    #define GLACEON_API
+  #endif
 #else
-#define GLACEON_API
+  #error "Unsupported platform"
 #endif
-#else
-#error "Unsupported platform"
-#endif
+
 
 #endif  // GLACEON_GLACEON_BASE_H_

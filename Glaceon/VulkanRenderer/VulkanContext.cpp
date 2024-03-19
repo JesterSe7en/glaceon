@@ -1,6 +1,6 @@
 #include "VulkanContext.h"
 
-namespace Glaceon {
+namespace glaceon {
 
 VulkanContext::VulkanContext()
     : backend_(*this),
@@ -35,7 +35,7 @@ void VulkanContext::Destroy() {
   swap_chain_.Destroy();
   device_.Destroy();
   if (surface_ != VK_NULL_HANDLE) {
-    vkDestroySurfaceKHR(backend_.GetVkInstance(), surface_, nullptr);
+    backend_.GetVkInstance().destroy(surface_, nullptr);
     surface_ = VK_NULL_HANDLE;
   }
   backend_.Destroy();

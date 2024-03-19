@@ -10,13 +10,12 @@
 #include "VulkanSwapChain.h"
 #include "VulkanSync.h"
 
-namespace Glaceon {
+namespace glaceon {
 
 class VulkanContext {
  public:
   VulkanContext();
   ~VulkanContext() = default;
-
 
   const vk::Instance &GetVulkanInstance() { return backend_.GetVkInstance(); }
 

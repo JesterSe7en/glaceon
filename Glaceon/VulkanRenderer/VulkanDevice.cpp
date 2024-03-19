@@ -3,7 +3,7 @@
 #include "../Logger.h"
 #include "VulkanContext.h"
 
-namespace Glaceon {
+namespace glaceon {
 
 VulkanDevice::VulkanDevice(VulkanContext &context) : context_(context) {
   queue_indexes_.graphics_family = std::nullopt;
@@ -13,7 +13,7 @@ VulkanDevice::VulkanDevice(VulkanContext &context) : context_(context) {
 void VulkanDevice::Initialize() {
   GINFO("Initializing Vulkan device...");
   if (context_.GetVulkanInstance() == VK_NULL_HANDLE) {
-    GERROR("Vulkan instance not initialized; cannot initialize device")
+    GERROR("Vulkan instance not initialized; cannot initialize device");
     return;
   }
 
@@ -21,14 +21,14 @@ void VulkanDevice::Initialize() {
 
   uint32_t gpu_count = 0;
   std::vector<vk::PhysicalDevice> gpus;
-  if (instance.enumeratePhysicalDevices(&gpu_count, nullptr) != VK_SUCCESS) {
-    GERROR("Failed to poll number of physical devices")
+  if (instance.enumeratePhysicalDevices(&gpu_count, nullptr) != vk::Result::eSuccess) {
+    GERROR("Failed to poll number of physical devices");
     assert(gpu_count > 0);
     return;
   }
   gpus.resize(gpu_count);
-  if (instance.enumeratePhysicalDevices(&gpu_count, gpus.data()) != VK_SUCCESS) {
-    GERROR("Failed to enumerate physical devices info")
+  if (instance.enumeratePhysicalDevices(&gpu_count, gpus.data()) != vk::Result::eSuccess) {
+    GERROR("Failed to enumerate physical devices info");
     return;
   }
 
@@ -115,7 +115,6 @@ void VulkanDevice::Initialize() {
 }
 
 bool VulkanDevice::CheckDeviceRequirements(vk::PhysicalDevice &vk_physical_device) {
-  vk::Instance instance = context_.GetVulkanInstance();
   vk::PhysicalDeviceProperties properties = vk_physical_device.getProperties();
 
   if (properties.deviceType != vk::PhysicalDeviceType::eDiscreteGpu) {
@@ -125,6 +124,7 @@ bool VulkanDevice::CheckDeviceRequirements(vk::PhysicalDevice &vk_physical_devic
 
   uint32_t queue_family_count;
   queue_family_ = vk_physical_device.getQueueFamilyProperties();
+  queue_family_count = queue_family_.size();
 
 #if _DEBUG
   for (uint32_t i = 0; i < queue_family_count; i++) {

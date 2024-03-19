@@ -3,7 +3,7 @@
 
 #include "../pch.h"
 
-namespace Glaceon {
+namespace glaceon {
 
 class VulkanContext;
 

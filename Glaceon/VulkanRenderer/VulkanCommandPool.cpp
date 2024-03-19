@@ -3,7 +3,7 @@
 #include "../Logger.h"
 #include "VulkanContext.h"
 
-namespace Glaceon {
+namespace glaceon {
 VulkanCommandPool::VulkanCommandPool(VulkanContext &context) : context_(context) {}
 
 void VulkanCommandPool::Initialize() {
@@ -17,10 +17,10 @@ void VulkanCommandPool::Initialize() {
   command_pool_create_info.flags = vk::CommandPoolCreateFlagBits::eResetCommandBuffer;
   command_pool_create_info.queueFamilyIndex = context_.GetQueueIndexes().graphics_family.value();
   if (device.createCommandPool(&command_pool_create_info, nullptr, &vk_command_pool_) != vk::Result::eSuccess) {
-    GERROR("Failed to create command pool")
+    GERROR("Failed to create command pool");
     return;
   } else {
-    GINFO("Successfully created command pool")
+    GINFO("Successfully created command pool");
   }
 
   // initialize main command buffer
@@ -30,10 +30,10 @@ void VulkanCommandPool::Initialize() {
   allocate_info.commandPool = vk_command_pool_;
   allocate_info.commandBufferCount = 1;
   if (device.allocateCommandBuffers(&allocate_info, &vk_main_command_buffer_) != vk::Result::eSuccess) {
-    GERROR("Failed to allocate main command buffer")
+    GERROR("Failed to allocate main command buffer");
     return;
   } else {
-    GINFO("Successfully allocated main command buffer")
+    GINFO("Successfully allocated main command buffer");
   }
 
   // create command buffer for each swap chain frame
@@ -42,12 +42,12 @@ void VulkanCommandPool::Initialize() {
   // Allocate command buffers outside the loop
   for (size_t i = 0; i < swap_chain_frames.size(); ++i) {
     if (device.allocateCommandBuffers(&allocate_info, &vk_frame_command_buffers_[i]) != vk::Result::eSuccess) {
-      GERROR("Failed to allocate command buffer for swap chain frame")
+      GERROR("Failed to allocate command buffer for swap chain frame");
       return;
     }
   }
 
-  GINFO("Successfully allocated command buffers for swap chain frames")
+  GINFO("Successfully allocated command buffers for swap chain frames");
 }
 
 void VulkanCommandPool::Destroy() {
@@ -58,7 +58,7 @@ void VulkanCommandPool::Destroy() {
 }
 void VulkanCommandPool::ResetCommandPool() {
   if (vkResetCommandPool(context_.GetVulkanLogicalDevice(), vk_command_pool_, 0) != VK_SUCCESS) {
-    GERROR("Failed to reset command pool")
+    GERROR("Failed to reset command pool");
   }
 }
 
@@ -81,7 +81,7 @@ void VulkanCommandPool::RebuildCommandBuffers() {
   command_buffer_allocate_info.commandBufferCount = 1;
 
   if (device.allocateCommandBuffers(&command_buffer_allocate_info, &vk_main_command_buffer_) != vk::Result::eSuccess) {
-    GERROR("Failed to allocate main command buffer")
+    GERROR("Failed to allocate main command buffer");
     return;
   }
 
@@ -89,10 +89,10 @@ void VulkanCommandPool::RebuildCommandBuffers() {
     // allocate command buffers for each swap chain frame
     if (device.allocateCommandBuffers(&command_buffer_allocate_info, &vk_frame_command_buffers_[i])
         != vk::Result::eSuccess) {
-      GERROR("Failed to allocate command buffer for swap chain frame")
+      GERROR("Failed to allocate command buffer for swap chain frame");
       return;
     }
   }
-  GINFO("Successfully rebuilt command buffers")
+  GINFO("Successfully rebuilt command buffers");
 }
 }  // namespace Glaceon

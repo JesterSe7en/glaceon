@@ -6,13 +6,9 @@
 #include "Application.h"
 #include "Base.h"
 
-namespace Glaceon {
+namespace glaceon {
 
-void GLACEON_API runGame(Application* app);
-
-void GLACEON_API recordDrawCommands(VkCommandBuffer commandBuffer, uint32_t imageIndex);
-
-
+void GLACEON_API RunGame(Application *app);
 
 }  // namespace Glaceon
 #endif  // GLACEON_GLACEON_GLACEON_H_

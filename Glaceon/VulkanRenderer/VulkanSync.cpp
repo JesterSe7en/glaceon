@@ -3,7 +3,7 @@
 #include "../Logger.h"
 #include "VulkanContext.h"
 
-namespace Glaceon {
+namespace glaceon {
 
 VulkanSync::VulkanSync(VulkanContext &context) : context_(context) {}
 
@@ -23,24 +23,24 @@ void VulkanSync::Initialize() {
   for (uint32_t i = 0; i < max_frames_in_flight; i++) {
     vk::Semaphore semaphore;
     if (device.createSemaphore(&semaphore_create_info, nullptr, &semaphore) != vk::Result::eSuccess) {
-      GERROR("Failed to create image available semaphore")
+      GERROR("Failed to create image available semaphore");
       return;
     } else {
       image_available_semaphores_.push_back(semaphore);
     }
   }
-  GINFO("Successfully created image available semaphore")
+  GINFO("Successfully created image available semaphore");
 
   for (uint32_t i = 0; i < max_frames_in_flight; i++) {
     vk::Semaphore semaphore;
     if (device.createSemaphore(&semaphore_create_info, nullptr, &semaphore) != vk::Result::eSuccess) {
-      GERROR("Failed to create image available semaphore")
+      GERROR("Failed to create image available semaphore");
       return;
     } else {
       render_finished_semaphores_.push_back(semaphore);
     }
   }
-  GINFO("Successfully created render finished semaphore")
+  GINFO("Successfully created render finished semaphore");
 
   vk::FenceCreateInfo fence_create_info = {};
   fence_create_info.sType = vk::StructureType::eFenceCreateInfo;
@@ -48,9 +48,9 @@ void VulkanSync::Initialize() {
   fence_create_info.flags =
       vk::FenceCreateFlags(vk::FenceCreateFlagBits::eSignaled);  // initialize fence in signaled state (ready to be used)
   if (device.createFence(&fence_create_info, nullptr, &in_flight_fence_) != vk::Result::eSuccess) {
-    GERROR("Failed to create in flight fence")
+    GERROR("Failed to create in flight fence");
   } else {
-    GINFO("Successfully created in flight fence")
+    GINFO("Successfully created in flight fence");
   }
 }
 

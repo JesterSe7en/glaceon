@@ -3,7 +3,7 @@
 
 #include "../pch.h"
 
-namespace Glaceon {
+namespace glaceon {
 
 class VulkanContext;
 
@@ -12,12 +12,10 @@ struct GraphicsPipelineConfig {
   std::string fragment_shader_file;
 };
 
-struct GraphicsPipelineOutBundle {};
-
 class VulkanPipeline {
  public:
-  explicit VulkanPipeline(VulkanContext& context);
-  void Initialize(const GraphicsPipelineConfig& pipeline_config);
+  explicit VulkanPipeline(VulkanContext &context);
+  void Initialize(const GraphicsPipelineConfig &pipeline_config);
 
   [[nodiscard]] const vk::PipelineLayout &GetVkPipelineLayout() const {
     return vk_pipeline_layout_;
@@ -35,7 +33,7 @@ class VulkanPipeline {
   void Destroy();
 
  private:
-  VulkanContext& context_;
+  VulkanContext &context_;
 
   vk::PipelineLayout vk_pipeline_layout_;
   vk::Pipeline vk_pipeline_;

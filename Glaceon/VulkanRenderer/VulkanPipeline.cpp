@@ -4,7 +4,7 @@
 #include "VulkanContext.h"
 #include "VulkanUtils.h"
 
-namespace Glaceon {
+namespace glaceon {
 
 VulkanPipeline::VulkanPipeline(VulkanContext &context) : context_(context) {}
 
@@ -19,7 +19,7 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   pipeline_cache_info.initialDataSize = 0;
   pipeline_cache_info.pInitialData = nullptr;
   if (device.createPipelineCache(&pipeline_cache_info, nullptr, &vk_pipeline_cache_) != vk::Result::eSuccess) {
-    GERROR("Failed to create pipeline cache")
+    GERROR("Failed to create pipeline cache");
     return;
   }
 
@@ -42,7 +42,7 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   vertex_input_info.pVertexBindingDescriptions = nullptr;
   pipeline_create_info.pVertexInputState = &vertex_input_info;
 
-  // Input Assembly - What sort of shapes are we creating?
+  // Input Assembly - What sorts of shapes are we creating?
   vk::PipelineInputAssemblyStateCreateInfo input_assembly_info = {};
   input_assembly_info.sType = vk::StructureType::ePipelineInputAssemblyStateCreateInfo;
   input_assembly_info.topology = vk::PrimitiveTopology::eTriangleList;
@@ -80,7 +80,7 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   viewport.maxDepth = 1.0f;
 
   vk::Rect2D scissor = {};
-  scissor.offset = {0, 0};
+  scissor.offset = vk::Offset2D {0, 0};
   scissor.extent = extent;
 
   vk::PipelineViewportStateCreateInfo viewport_state = {};

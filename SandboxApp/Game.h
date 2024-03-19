@@ -4,15 +4,15 @@
 #include "Application.h"
 #include "Glaceon.h"
 
-class SandBoxApplication : public Glaceon::Application {
+class SandBoxApplication : public glaceon::Application {
  public:
   SandBoxApplication();
-  void onStart() override;
-  void onUpdate() override;
-  void onShutdown() override;
+  void OnStart() override;
+  void OnUpdate() override;
+  void OnShutdown() override;
 
  private:
-  Glaceon::ApplicationInfo app_info = {.name = "Sandbox"};
+  glaceon::ApplicationInfo app_info = {.name = "Sandbox"};
 };
 
 #endif  // GLACEON_SANDBOXAPP_GAME_H_

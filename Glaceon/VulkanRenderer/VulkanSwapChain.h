@@ -3,7 +3,7 @@
 
 #include "../pch.h"
 
-namespace Glaceon {
+namespace glaceon {
 
 class VulkanContext;
 
@@ -13,7 +13,6 @@ struct SwapChainSupportDetails {
   std::vector<vk::PresentModeKHR> present_modes;
 };
 
-
 struct SwapChainFrame {
   vk::Image image;
   vk::ImageView image_view;
@@ -22,20 +21,20 @@ struct SwapChainFrame {
 
 class VulkanSwapChain {
  public:
-  explicit VulkanSwapChain(VulkanContext& context);
+  explicit VulkanSwapChain(VulkanContext &context);
   void Initialize();
   void Destroy();
 
   [[nodiscard]] const vk::SwapchainKHR &GetVkSwapchain() const {
     return vk_swapchain_;
   }
-  std::vector<SwapChainFrame>& GetSwapChainFrames() { return swap_chain_frames_; }
+  std::vector<SwapChainFrame> &GetSwapChainFrames() { return swap_chain_frames_; }
   vk::Extent2D GetSwapChainExtent() { return swap_chain_extent_; }
 
   void RebuildSwapChain(int width, int height);
 
  private:
-  VulkanContext& context_;
+  VulkanContext &context_;
 
   vk::SwapchainKHR vk_swapchain_;
   std::vector<SwapChainFrame> swap_chain_frames_;
