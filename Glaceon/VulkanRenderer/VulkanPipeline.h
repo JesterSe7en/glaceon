@@ -16,16 +16,16 @@ class VulkanPipeline {
  public:
   explicit VulkanPipeline(VulkanContext &context);
   void Initialize(const GraphicsPipelineConfig &pipeline_config);
+  void Recreate();
+  void Destroy();
 
   [[nodiscard]] const vk::PipelineLayout &GetVkPipelineLayout() const { return vk_pipeline_layout_; }
   [[nodiscard]] const vk::Pipeline &GetVkPipeline() const { return vk_pipeline_; }
   [[nodiscard]] const vk::PipelineCache &GetVkPipelineCache() const { return vk_pipeline_cache_; }
 
-  void Recreate();
-  void Destroy();
-
  private:
   VulkanContext &context_;
+  GraphicsPipelineConfig pipeline_config_;
 
   vk::PipelineLayout vk_pipeline_layout_;
   vk::Pipeline vk_pipeline_;

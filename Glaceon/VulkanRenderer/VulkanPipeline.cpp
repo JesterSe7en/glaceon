@@ -9,6 +9,8 @@ namespace glaceon {
 VulkanPipeline::VulkanPipeline(VulkanContext &context) : context_(context) {}
 
 void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
+  pipeline_config_ = pipeline_config;
+  vk::Pipeline old_pipeline = vk_pipeline_;
   vk::Device device = context_.GetVulkanLogicalDevice();
   assert(device != nullptr);
 
@@ -167,7 +169,7 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   pipeline_create_info.renderPass = render_pass;
 
   // Extra stuff
-  pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;// Optional - to base pipeline on
+  pipeline_create_info.basePipelineHandle = old_pipeline;// Optional - to base pipeline on
 
   // Create pipeline - for now just one pipeline
   if (device.createGraphicsPipelines(vk_pipeline_cache_, 1, &pipeline_create_info, nullptr, &vk_pipeline_)
@@ -178,9 +180,18 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
     GINFO("Successfully created graphics pipeline");
   }
 
-  // Clean up shader modules
+  // Clean up shader modules and old pipeline
+  if (old_pipeline != VK_NULL_HANDLE) {
+    vkDestroyPipeline(device, old_pipeline, nullptr);
+    old_pipeline = VK_NULL_HANDLE;
+  }
   vkDestroyShaderModule(device, vertex_shader, nullptr);
   vkDestroyShaderModule(device, fragment_shader, nullptr);
+}
+
+void VulkanPipeline::Recreate() {
+  // use existing graphics pipeline config
+  Initialize(pipeline_config_);
 }
 
 // This is so we can push constants and descriptor sets aka. Uniforms

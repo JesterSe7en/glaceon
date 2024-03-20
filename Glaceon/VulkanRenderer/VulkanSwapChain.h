@@ -23,13 +23,12 @@ class VulkanSwapChain {
  public:
   explicit VulkanSwapChain(VulkanContext &context);
   void Initialize();
+  void RebuildSwapChain(int width, int height);
   void Destroy();
 
   [[nodiscard]] const vk::SwapchainKHR &GetVkSwapchain() const { return vk_swapchain_; }
   std::vector<SwapChainFrame> &GetSwapChainFrames() { return swap_chain_frames_; }
   vk::Extent2D GetSwapChainExtent() { return swap_chain_extent_; }
-
-  void RebuildSwapChain(int width, int height);
 
  private:
   VulkanContext &context_;

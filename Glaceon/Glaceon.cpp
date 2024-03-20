@@ -182,10 +182,10 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
   // offset is the offset in the push constant block
   // size is the size of the data in the push constant block
   vk::PipelineLayout pipeline_layout = context.GetVulkanPipeline().GetVkPipelineLayout();
-//  glm::mat4 model_matrix =
-//      glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.0f));// Move the triangle down halfway
-//
-//  command_buffer.pushConstants(pipeline_layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &model_matrix);
+  //  glm::mat4 model_matrix =
+  //      glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.0f));// Move the triangle down halfway
+  //
+  //  command_buffer.pushConstants(pipeline_layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &model_matrix);
 
   // take a look at scene class and use the triangle_positions_ vector
 
@@ -193,7 +193,8 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
 
   for (auto position : triangle_positions) {
     glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position);
-    command_buffer.pushConstants(pipeline_layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &model_matrix);
+    command_buffer.pushConstants(pipeline_layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4),
+                                 &model_matrix);
     command_buffer.draw(3, 1, 0, 0);// This draws a triangle - hard coded for now
   }
 
@@ -430,8 +431,8 @@ void GLACEON_API RunGame(Application *app) {
         // destroy pipeline and old sync objects
         context.GetVulkanRenderPass().Destroy();
         context.GetVulkanRenderPass().Initialize();
-        // context.GetVulkanPipeline().Destroy();
         context.GetVulkanSwapChain().RebuildSwapChain(width, height);
+        context.GetVulkanPipeline().Recreate();
         context.GetVulkanCommandPool().ResetCommandPool();
         context.GetVulkanCommandPool().RebuildCommandBuffers();
         context.GetVulkanSync().Destroy();

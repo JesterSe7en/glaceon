@@ -271,6 +271,7 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
   vk::Device device = context_.GetVulkanLogicalDevice();
   vk::SwapchainKHR old_swap_chain = vk_swapchain_;
 
+  // destroy image views, frame buffers
   DestroyFrames();
 
   uint32_t image_count =
