@@ -130,5 +130,17 @@ add_subdirectory(extern/glfw)
 set(SPDLOG_BUILD_SHARED OFF CACHE BOOL "" FORCE)
 add_subdirectory(extern/spdlog)
 
+include(FetchContent)
+
+FetchContent_Declare(
+        glm
+        GIT_REPOSITORY	https://github.com/g-truc/glm.git
+        GIT_TAG 	bf71a834948186f4097caa076cd2663c69a10e1e #refs/tags/1.0.1
+)
+
+FetchContent_MakeAvailable(glm)
+
+target_link_libraries(Glaceon PRIVATE glm::glm)
+
 set(all_targets Glaceon SandboxApp)
 add_custom_target(All DEPENDS ${all_targets})
