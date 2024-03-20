@@ -2,9 +2,9 @@ set(PROJECT_NAME Glaceon)
 
 # Source groups
 set(Header_Files
-        "framework.h"
-        "Glaceon.h"
-        "pch.h"
+        framework.h
+        Glaceon.h
+        pch.h
         Base.h
         Logger.h
         Application.h
@@ -25,13 +25,14 @@ set(Header_Files
         VulkanRenderer/VulkanPipeline.h
         VulkanRenderer/VulkanCommandPool.h
         VulkanRenderer/VulkanSync.h
+        Scene.h
 )
 source_group("Header Files" FILES ${Header_Files})
 
 set(Source_Files
-        "dllmain.cpp"
-        "Glaceon.cpp"
-        "pch.cpp"
+        dllmain.cpp
+        Glaceon.cpp
+        pch.cpp
         Logger.cpp
         Application.cpp
         ${CMAKE_SOURCE_DIR}/extern/imgui/imgui.cpp
@@ -50,6 +51,7 @@ set(Source_Files
         VulkanRenderer/VulkanPipeline.cpp
         VulkanRenderer/VulkanCommandPool.cpp
         VulkanRenderer/VulkanSync.cpp
+        Scene.cpp
 )
 source_group("Source Files" FILES ${Source_Files})
 

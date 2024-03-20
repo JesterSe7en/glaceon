@@ -182,12 +182,21 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
   // offset is the offset in the push constant block
   // size is the size of the data in the push constant block
   vk::PipelineLayout pipeline_layout = context.GetVulkanPipeline().GetVkPipelineLayout();
-  glm::mat4 model_matrix =
-      glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.0f));// Move the triangle down halfway
+//  glm::mat4 model_matrix =
+//      glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.0f));// Move the triangle down halfway
+//
+//  command_buffer.pushConstants(pipeline_layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &model_matrix);
 
-  command_buffer.pushConstants(pipeline_layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &model_matrix);
+  // take a look at scene class and use the triangle_positions_ vector
 
-  command_buffer.draw(3, 1, 0, 0);// This draws a triangle - hard coded for now
+  std::vector<glm::vec3> triangle_positions = currentApp->GetScene().triangle_positions_;
+
+  for (auto position : triangle_positions) {
+    glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position);
+    command_buffer.pushConstants(pipeline_layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &model_matrix);
+    command_buffer.draw(3, 1, 0, 0);// This draws a triangle - hard coded for now
+  }
+
   command_buffer.endRenderPass();
   command_buffer.end();
 }

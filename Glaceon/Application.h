@@ -5,6 +5,7 @@
 
 #include "Base.h"
 #include "Logger.h"
+#include "Scene.h"
 #include "VulkanRenderer/VulkanContext.h"
 
 namespace glaceon {
@@ -12,6 +13,7 @@ namespace glaceon {
 struct GLACEON_API ApplicationInfo {
   std::string name;
 };
+
 
 class GLACEON_API Application {
  public:
@@ -21,9 +23,11 @@ class GLACEON_API Application {
   virtual void OnShutdown() = 0;
 
   VulkanContext &GetVulkanContext() { return context_; }
+  Scene &GetScene() { return scene_; }
 
  private:
   VulkanContext context_;
+  Scene scene_;
 };
 }// namespace glaceon
 
