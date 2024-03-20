@@ -82,6 +82,7 @@ void VulkanSync::Destroy() {
       fence = VK_NULL_HANDLE;
     }
   }
+  in_flight_fences_.clear();
 }
 
 }  // namespace Glaceon
