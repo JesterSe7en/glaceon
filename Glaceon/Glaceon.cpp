@@ -198,6 +198,18 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
   command_buffer.beginRenderPass(&render_pass_info, vk::SubpassContents::eInline);
   vk::Pipeline pipeline = context.GetVulkanPipeline().GetVkPipeline();
   command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
+
+  // command_buffer.pushConstants() this defines push constants for shader code to use
+  // command_buffer.pushConstants(layout, stageflags, offset, size, value);
+  // layout is the pipeline layout
+  // stageflags is the shader stage to push constants (in our case we want to push constants to the vertex shader)
+  // offset is the offset in the push constant block
+  // size is the size of the data in the push constant block
+  vk::PipelineLayout pipeline_layout = context.GetVulkanPipeline().GetVkPipelineLayout();
+  glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.0f));    // Move the triangle down halfway
+
+  command_buffer.pushConstants(pipeline_layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &model_matrix);
+
   command_buffer.draw(3, 1, 0, 0); // This draws a triangle - hard coded for now
   command_buffer.endRenderPass();
   command_buffer.end();

@@ -80,7 +80,7 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   viewport.maxDepth = 1.0f;
 
   vk::Rect2D scissor = {};
-  scissor.offset = vk::Offset2D {0, 0};
+  scissor.offset = vk::Offset2D{0, 0};
   scissor.extent = extent;
 
   vk::PipelineViewportStateCreateInfo viewport_state = {};
@@ -193,8 +193,17 @@ void VulkanPipeline::CreatePipelineLayout() {
   pipeline_layout_info.sType = vk::StructureType::ePipelineLayoutCreateInfo;
   pipeline_layout_info.setLayoutCount = 0;  // this can push arbitrary data (usually large like an image) to pipeline
   pipeline_layout_info.pSetLayouts = nullptr;
-  pipeline_layout_info.pushConstantRangeCount = 0;  // this can only push small data to pipeline like one matrix
-  pipeline_layout_info.pPushConstantRanges = nullptr;
+
+//  pipeline_layout_info.pushConstantRangeCount = 0;  // this can only push small data to pipeline like one matrix
+//  pipeline_layout_info.pPushConstantRanges = nullptr;
+
+  pipeline_layout_info.pushConstantRangeCount = 1;
+  vk::PushConstantRange push_constant_info = {};
+  // pushing one matrix to pipeline as a "global" uniform
+  push_constant_info.stageFlags = vk::ShaderStageFlagBits::eVertex;
+  push_constant_info.offset = 0;
+  push_constant_info.size = sizeof(glm::mat4);
+  pipeline_layout_info.pPushConstantRanges = &push_constant_info;
 
   if (device.createPipelineLayout(&pipeline_layout_info, nullptr, &vk_pipeline_layout_) != vk::Result::eSuccess) {
     GERROR("Failed to create pipeline layout");
