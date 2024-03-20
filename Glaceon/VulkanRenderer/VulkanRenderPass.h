@@ -11,6 +11,7 @@ class VulkanRenderPass {
  public:
   explicit VulkanRenderPass(VulkanContext &context);
   void Initialize();
+  void Rebuild();
   void Destroy();
 
   [[nodiscard]] const vk::RenderPass &GetVkRenderPass() const { return vk_render_pass_; }

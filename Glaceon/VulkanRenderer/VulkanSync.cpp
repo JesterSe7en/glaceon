@@ -58,6 +58,11 @@ void VulkanSync::Initialize() {
   }
 }
 
+void VulkanSync::Rebuild() {
+  Destroy();
+  Initialize();
+}
+
 void VulkanSync::Destroy() {
   vk::Device device = context_.GetVulkanLogicalDevice();
   assert(device != VK_NULL_HANDLE);

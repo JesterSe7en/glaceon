@@ -63,6 +63,7 @@ void VulkanCommandPool::ResetCommandPool() {
 }
 
 void VulkanCommandPool::RebuildCommandBuffers() {
+  ResetCommandPool();
   vk::Device device = context_.GetVulkanLogicalDevice();
   assert(device != VK_NULL_HANDLE);
 

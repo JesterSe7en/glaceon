@@ -18,6 +18,7 @@ class VulkanSync {
   explicit VulkanSync(VulkanContext &context);
 
   void Initialize();
+  void Rebuild();
   void Destroy();
 
   [[nodiscard]] const std::vector<vk::Semaphore> &GetImageAvailableSemaphores() const {

@@ -51,6 +51,11 @@ void VulkanRenderPass::Initialize() {
   }
 }
 
+void VulkanRenderPass::Rebuild() {
+  Destroy();
+  Initialize();
+}
+
 void VulkanRenderPass::Destroy() {
   if (vk_render_pass_ != nullptr) {
     vkDestroyRenderPass(context_.GetVulkanLogicalDevice(), vk_render_pass_, nullptr);

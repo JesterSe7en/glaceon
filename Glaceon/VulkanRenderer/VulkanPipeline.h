@@ -16,7 +16,7 @@ class VulkanPipeline {
  public:
   explicit VulkanPipeline(VulkanContext &context);
   void Initialize(const GraphicsPipelineConfig &pipeline_config);
-  void Recreate();
+  void Rebuild();
   void Destroy();
 
   [[nodiscard]] const vk::PipelineLayout &GetVkPipelineLayout() const { return vk_pipeline_layout_; }

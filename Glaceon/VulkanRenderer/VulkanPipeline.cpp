@@ -189,7 +189,7 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   vkDestroyShaderModule(device, fragment_shader, nullptr);
 }
 
-void VulkanPipeline::Recreate() {
+void VulkanPipeline::Rebuild() {
   // use existing graphics pipeline config
   Initialize(pipeline_config_);
 }
