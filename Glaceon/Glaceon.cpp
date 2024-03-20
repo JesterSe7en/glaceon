@@ -413,34 +413,33 @@ void GLACEON_API RunGame(Application *app) {
   ImGui_ImplVulkan_CreateFontsTexture();
 
   GINFO("ImGui successfully initialized");
-
+  int width, height;
   app->OnStart();
   // ----------------------------- MAIN LOOP ----------------------------- //
   while (!glfwWindowShouldClose(glfw_window)) {
     glfwPollEvents();
     app->OnUpdate();
 
+    glfwGetFramebufferSize(glfw_window, &width, &height);
+
     if (swapChainRebuild) {
-      int width, height;
-      glfwGetFramebufferSize(glfw_window, &width, &height);
 
       if (width > 0 && height > 0) {
         GINFO("Rebuilding swapchain... width: {}, height: {}", width, height);
 
         context.GetVulkanLogicalDevice().waitIdle();
         // destroy pipeline and old sync objects
-        context.GetVulkanRenderPass().Destroy();
-        context.GetVulkanRenderPass().Initialize();
+        context.GetVulkanRenderPass().Rebuild();
         context.GetVulkanSwapChain().RebuildSwapChain(width, height);
-        context.GetVulkanPipeline().Recreate();
-        context.GetVulkanCommandPool().ResetCommandPool();
+        context.GetVulkanPipeline().Rebuild();
         context.GetVulkanCommandPool().RebuildCommandBuffers();
-        context.GetVulkanSync().Destroy();
-        context.GetVulkanSync().Initialize();
+        context.GetVulkanSync().Rebuild();
         context.current_frame_index_ = 0;
-        swapChainRebuild = false;
       }
+      swapChainRebuild = false;
     }
+
+    if (width <= 0 || height <= 0) { continue; }
 
     // ------------------ Render Game Frame ------------------ //
     // Essentially we are doing the same thing as ImGuiRender and ImGuiPresent
