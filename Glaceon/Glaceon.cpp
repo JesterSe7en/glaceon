@@ -461,6 +461,7 @@ void GLACEON_API RunGame(Application *app) {
       swapChainRebuild = false;
     }
 
+    // is window minimized?
     if (width <= 0 || height <= 0) { continue; }
 
     // ------------------ Render Game Frame ------------------ //
@@ -497,14 +498,6 @@ void GLACEON_API RunGame(Application *app) {
     ImDrawData *draw_data = ImGui::GetDrawData();
     ImGui_ImplVulkan_RenderDrawData(
         draw_data, context.GetVulkanCommandPool().GetVkFrameCommandBuffers()[context.current_frame_index_]);
-
-    // TODO: We need to include the imgui UI render along side game frame render as one render pass.  Finally, submit that command buffer to the graphics queue
-
-//    const bool kIsMinimized = (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f);
-//    if (!kIsMinimized) {
-//      ImGuiFrameRender(context, draw_data);
-//      ImGuiFramePresent(context);
-//    }
 #endif
 
     SubmitCommandBuffer(context);
