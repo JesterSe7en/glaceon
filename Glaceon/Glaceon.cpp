@@ -464,16 +464,12 @@ void GLACEON_API RunGame(Application *app) {
     // is window minimized?
     if (width <= 0 || height <= 0) { continue; }
 
-    // ------------------ Render Game Frame ------------------ //
-    // Essentially we are doing the same thing as ImGuiRender and ImGuiPresent
-    // Just that we are rendering the game frames
     SetupRender(context);
     RecordDrawCommands(context.GetVulkanCommandPool().GetVkFrameCommandBuffers()[context.current_frame_index_],
                        context.current_frame_index_);
 
 #if _DEBUG
     // ------------------ Render ImGui Frame ------------------ //
-    // Start the Dear ImGui frame
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 

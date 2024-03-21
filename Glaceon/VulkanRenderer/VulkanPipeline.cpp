@@ -38,8 +38,22 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   vertex_input_info.sType = vk::StructureType::ePipelineVertexInputStateCreateInfo;
   vertex_input_info.flags = vk::PipelineVertexInputStateCreateFlags();
   vertex_input_info.pNext = nullptr;
+
+  // Each vertex atttribute has the following...
+  // ------ Vertex Attribute Descriptions -----
+  // - Binding
+  // - Location
+  // - Offset
+  // - Format - you would still use the VK_FORMAT enums even if the attribute is e.g. position.
+  //            vec2 position's format would be vk::Format::eR32G32Sfloat => 2 - 32 bit signed floats
   vertex_input_info.vertexAttributeDescriptionCount = 0;
   vertex_input_info.pVertexAttributeDescriptions = nullptr;
+
+  // Bindings tell vulkan where position data, color data, etc. is in the buffer
+  // Binding Descriptios have the following parameters...
+  // 1. Binding No.
+  // 2. Stride - # of bytes per vertex
+  // 3. InputRate - tells if the data is per vertex or per instance
   vertex_input_info.vertexBindingDescriptionCount = 0;
   vertex_input_info.pVertexBindingDescriptions = nullptr;
   pipeline_create_info.pVertexInputState = &vertex_input_info;
