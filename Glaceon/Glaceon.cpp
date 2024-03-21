@@ -27,6 +27,49 @@ void KeyboardCallback(GLFWwindow *window, int key, [[maybe_unused]] int scancode
   }
 }
 
+static void ImGuiInitialize(VulkanContext &context, GLFWwindow *glfw_window) {
+  // Setup Dear ImGui context
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO &io = ImGui::GetIO();
+  (void) io;
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;// Enable Keyboard Controls
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
+  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;    // Enable Docking
+  io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;  // Enable Multi-Viewport
+
+  // Setup Dear ImGui style
+  ImGui::StyleColorsDark();
+
+  ImGui_ImplGlfw_InitForVulkan(glfw_window, true);
+
+  // Setup Platform/Renderer backends
+  ImGui_ImplVulkan_InitInfo init_info = {};
+  init_info.Instance = context.GetVulkanInstance();
+  init_info.PhysicalDevice = context.GetVulkanPhysicalDevice();
+  init_info.Device = context.GetVulkanLogicalDevice();
+  init_info.QueueFamily = context.GetQueueIndexes().graphics_family.value();
+  init_info.Queue = context.GetVulkanDevice().GetVkGraphicsQueue();
+  init_info.PipelineCache = VK_NULL_HANDLE;
+  init_info.DescriptorPool = context.GetDescriptorPool();
+  init_info.RenderPass = context.GetVulkanRenderPass().GetVkRenderPass();
+  init_info.Subpass = 0;
+  init_info.MinImageCount = 2;
+  init_info.ImageCount = static_cast<uint32_t>(context.GetVulkanSwapChain().GetSwapChainFrames().size());
+  init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+  init_info.Allocator = nullptr;
+  init_info.CheckVkResultFn = CheckVkResult;
+  bool success = ImGui_ImplVulkan_Init(&init_info);
+  if (!success) {
+    GERROR("Failed to initialize ImGui");
+    return;
+  }
+
+  ImGui_ImplVulkan_CreateFontsTexture();
+
+  GINFO("ImGui successfully initialized");
+}
+
 static void ImGuiFrameRender(VulkanContext &context, ImDrawData *draw_data) {
   std::vector<vk::Semaphore> image_available_semaphores = context.GetVulkanSync().GetImageAvailableSemaphores();
   std::vector<vk::Semaphore> render_complete_semaphores = context.GetVulkanSync().GetRenderFinishedSemaphores();
@@ -373,46 +416,10 @@ void GLACEON_API RunGame(Application *app) {
   int w, h;
   glfwGetFramebufferSize(glfw_window, &w, &h);
 
-  // Setup Dear ImGui context
-  IMGUI_CHECKVERSION();
-  ImGui::CreateContext();
-  ImGuiIO &io = ImGui::GetIO();
-  (void) io;
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;// Enable Keyboard Controls
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad; // Enable Gamepad Controls
-  io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;    // Enable Docking
-  io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;  // Enable Multi-Viewport
+#if _DEBUG
+  ImGuiInitialize(context, glfw_window);
+#endif
 
-  // Setup Dear ImGui style
-  ImGui::StyleColorsDark();
-
-  ImGui_ImplGlfw_InitForVulkan(glfw_window, true);
-
-  // Setup Platform/Renderer backends
-  ImGui_ImplVulkan_InitInfo init_info = {};
-  init_info.Instance = context.GetVulkanInstance();
-  init_info.PhysicalDevice = context.GetVulkanPhysicalDevice();
-  init_info.Device = context.GetVulkanLogicalDevice();
-  init_info.QueueFamily = context.GetQueueIndexes().graphics_family.value();
-  init_info.Queue = context.GetVulkanDevice().GetVkGraphicsQueue();
-  init_info.PipelineCache = VK_NULL_HANDLE;
-  init_info.DescriptorPool = context.GetDescriptorPool();
-  init_info.RenderPass = context.GetVulkanRenderPass().GetVkRenderPass();
-  init_info.Subpass = 0;
-  init_info.MinImageCount = 2;
-  init_info.ImageCount = static_cast<uint32_t>(context.GetVulkanSwapChain().GetSwapChainFrames().size());
-  init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-  init_info.Allocator = nullptr;
-  init_info.CheckVkResultFn = CheckVkResult;
-  bool success = ImGui_ImplVulkan_Init(&init_info);
-  if (!success) {
-    GERROR("Failed to initialize ImGui");
-    return;
-  }
-
-  ImGui_ImplVulkan_CreateFontsTexture();
-
-  GINFO("ImGui successfully initialized");
   int width, height;
   app->OnStart();
   // ----------------------------- MAIN LOOP ----------------------------- //
@@ -423,10 +430,8 @@ void GLACEON_API RunGame(Application *app) {
     glfwGetFramebufferSize(glfw_window, &width, &height);
 
     if (swapChainRebuild) {
-
       if (width > 0 && height > 0) {
         GINFO("Rebuilding swapchain... width: {}, height: {}", width, height);
-
         context.GetVulkanLogicalDevice().waitIdle();
         // destroy pipeline and old sync objects
         context.GetVulkanRenderPass().Rebuild();
@@ -481,9 +486,11 @@ void GLACEON_API RunGame(Application *app) {
 
   context.GetVulkanLogicalDevice().waitIdle();
 
+#if _DEBUG
   ImGui_ImplVulkan_Shutdown();
   ImGui_ImplGlfw_Shutdown();
   ImGui::DestroyContext();
+#endif
 
   context.Destroy();
 

@@ -53,8 +53,8 @@ void VulkanBackend::Initialize() {
   requested_extensions.push_back(vk::EXTDebugUtilsExtensionName);
 
 #else
-  instanceCreateInfo.enabledLayerCount = 0;
-  instanceCreateInfo.ppEnabledLayerNames = nullptr;
+  instance_create_info.enabledLayerCount = 0;
+  instance_create_info.ppEnabledLayerNames = nullptr;
 #endif
 
   requested_extensions.push_back(vk::KHRPortabilityEnumerationExtensionName);
