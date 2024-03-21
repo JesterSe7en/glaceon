@@ -376,7 +376,7 @@ void GLACEON_API RunGame(Application *app) {
   // we are using vulkan, don't load in other apis
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
-  GLFWwindow *glfw_window = glfwCreateWindow(800, 600, "GLFW Test Window", nullptr, nullptr);
+  GLFWwindow *glfw_window = glfwCreateWindow(1920, 1080, "GLFW Test Window", nullptr, nullptr);
 
   if (glfw_window == nullptr) {
     GERROR("Failed to create GLFW window");
@@ -478,8 +478,8 @@ void GLACEON_API RunGame(Application *app) {
     ImGui::NewFrame();
 
     {
-      // bool showDemo = true;
-      // ImGui::ShowDemoWindow(&showDemo);
+      bool show_demo = true;
+      ImGui::ShowDemoWindow(&show_demo);
 
       ImGui::Begin("FPS");
       ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
@@ -493,6 +493,7 @@ void GLACEON_API RunGame(Application *app) {
     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
       ImGui::UpdatePlatformWindows();
       ImGui::RenderPlatformWindowsDefault();
+      // FIXME: moving imgui windows outside glfw window causes validation errors related to render pass (vkCmdDrawIndexed())
     }
 
     ImDrawData *draw_data = ImGui::GetDrawData();
