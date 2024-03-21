@@ -20,24 +20,12 @@ class VulkanDevice {
   void Initialize();
   void Destroy();
 
-  [[nodiscard]] const vk::PhysicalDevice &GetVkPhysicalDevice() const {
-    return vk_physical_device_;
-  }
-  [[nodiscard]] const vk::Device &GetVkDevice() const {
-    return vk_device_;
-  }
-  [[nodiscard]] const vk::Queue &GetVkPresentQueue() const {
-    return vk_present_queue_;
-  }
-  [[nodiscard]] const vk::Queue &GetVkGraphicsQueue() const {
-    return vk_graphics_queue_;
-  }
-  [[nodiscard]] const vk::CommandPool &GetVkCommandPool() const {
-    return vk_command_pool_;
-  }
-  [[nodiscard]] const vk::DescriptorPool &GetVkDescriptorPool() const {
-    return vk_descriptor_pool_;
-  }
+  [[nodiscard]] const vk::PhysicalDevice &GetVkPhysicalDevice() const { return vk_physical_device_; }
+  [[nodiscard]] const vk::Device &GetVkDevice() const { return vk_device_; }
+  [[nodiscard]] const vk::Queue &GetVkPresentQueue() const { return vk_present_queue_; }
+  [[nodiscard]] const vk::Queue &GetVkGraphicsQueue() const { return vk_graphics_queue_; }
+  [[nodiscard]] const vk::CommandPool &GetVkCommandPool() const { return vk_command_pool_; }
+  [[nodiscard]] const vk::DescriptorPool &GetVkDescriptorPool() const { return vk_descriptor_pool_; }
 
   QueueIndexes &GetQueueIndexes() { return queue_indexes_; }
 
@@ -61,6 +49,6 @@ class VulkanDevice {
   static void PrintPhysicalDevice(vk::PhysicalDevice gpu);
 };
 
-}  // namespace Glaceon
+}// namespace glaceon
 
-#endif  // GLACEON_GLACEON_VULKANRENDERER_VULKANDEVICE_H_
+#endif// GLACEON_GLACEON_VULKANRENDERER_VULKANDEVICE_H_

@@ -22,7 +22,7 @@ class Logger {
   static std::shared_ptr<spdlog::logger> p_console_logger_;
 };
 
-}  // namespace Glaceon
+}// namespace glaceon
 
 // Built-in formatter of spdlog uses github.com/fmtlib/fmt library
 // https://hackingcpp.com/cpp/libs/fmt.html
@@ -41,7 +41,6 @@ class Logger {
 #define GINFO(fmt_str, ...) glaceon::Logger::GetConsoleLogger()->info(fmt::format(fmt_str, ##__VA_ARGS__))
 #define GWARN(fmt_str, ...) glaceon::Logger::GetConsoleLogger()->warn(fmt::format(fmt_str, ##__VA_ARGS__))
 #define GERROR(fmt_str, ...) glaceon::Logger::GetConsoleLogger()->error(fmt::format(fmt_str, ##__VA_ARGS__))
-#define GCRITICAL(fmt_str, ...) \
-  Glaceon::Logger::GetConsoleLogger()->critical(fmt::format(fmt_str, ##__VA_ARGS__))
+#define GCRITICAL(fmt_str, ...) Glaceon::Logger::GetConsoleLogger()->critical(fmt::format(fmt_str, ##__VA_ARGS__))
 
-#endif  // GLACEON_GLACEON_LOGGER_H_
+#endif// GLACEON_GLACEON_LOGGER_H_

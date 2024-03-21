@@ -193,9 +193,7 @@ bool VulkanDevice::CheckDeviceRequirements(vk::PhysicalDevice &vk_physical_devic
 
 bool VulkanDevice::IsExtensionAvailable(const char *ext) {
   for (const auto &kExtension : device_extensions_) {
-    if (strcmp(kExtension.extensionName, ext) == 0) {
-      return true;
-    }
+    if (strcmp(kExtension.extensionName, ext) == 0) { return true; }
   }
   return false;
 }
@@ -235,4 +233,4 @@ void VulkanDevice::Destroy() {
   }
 }
 
-}  // namespace Glaceon
+}// namespace glaceon

@@ -15,16 +15,16 @@ struct GLACEON_API ApplicationInfo {
 
 class GLACEON_API Application {
  public:
-  explicit Application(ApplicationInfo* info);
+  explicit Application(ApplicationInfo *info);
   virtual void OnStart() = 0;
   virtual void OnUpdate() = 0;
   virtual void OnShutdown() = 0;
 
-  VulkanContext& GetVulkanContext() { return context_; }
+  VulkanContext &GetVulkanContext() { return context_; }
 
  private:
   VulkanContext context_;
 };
-}  // namespace Glaceon
+}// namespace glaceon
 
-#endif  // GLACEON_GLACEON_APPLICATION_H_
+#endif// GLACEON_GLACEON_APPLICATION_H_

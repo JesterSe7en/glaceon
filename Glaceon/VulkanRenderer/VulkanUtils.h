@@ -12,6 +12,6 @@ class VulkanUtils {
   static vk::ShaderModule CreateShaderModule(const vk::Device &device, const std::string &filename);
 };
 
-}  // namespace Glaceon
+}// namespace glaceon
 
-#endif  // GLACEON_GLACEON_VULKANRENDERER_VULKANUTILS_H_
+#endif// GLACEON_GLACEON_VULKANRENDERER_VULKANUTILS_H_

@@ -11,8 +11,8 @@ void VulkanSync::Initialize() {
   vk::Device device = context_.GetVulkanLogicalDevice();
   assert(device != VK_NULL_HANDLE);
 
-  assert(context_.GetVulkanSwapChain().GetVkSwapchain() != VK_NULL_HANDLE &&
-      !context_.GetVulkanSwapChain().GetSwapChainFrames().empty());
+  assert(context_.GetVulkanSwapChain().GetVkSwapchain() != VK_NULL_HANDLE
+         && !context_.GetVulkanSwapChain().GetSwapChainFrames().empty());
 
   size_t max_frames_in_flight = context_.GetVulkanSwapChain().GetSwapChainFrames().size();
 
@@ -46,7 +46,7 @@ void VulkanSync::Initialize() {
   fence_create_info.sType = vk::StructureType::eFenceCreateInfo;
   fence_create_info.pNext = nullptr;
   fence_create_info.flags =
-      vk::FenceCreateFlags(vk::FenceCreateFlagBits::eSignaled);  // initialize fence in signaled state (ready to be used)
+      vk::FenceCreateFlags(vk::FenceCreateFlagBits::eSignaled);// initialize fence in signaled state (ready to be used)
   for (uint32_t i = 0; i < max_frames_in_flight; i++) {
     vk::Fence fence;
     if (device.createFence(&fence_create_info, nullptr, &fence) != vk::Result::eSuccess) {
@@ -85,4 +85,4 @@ void VulkanSync::Destroy() {
   in_flight_fences_.clear();
 }
 
-}  // namespace Glaceon
+}// namespace glaceon

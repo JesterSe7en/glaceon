@@ -20,6 +20,6 @@ class VulkanRenderPass {
   vk::RenderPass vk_render_pass_;
 };
 
-}  // namespace Glaceon
+}// namespace glaceon
 
-#endif  // GLACEON_GLACEON_VULKANRENDERER_VULKANRENDERPASS_H_
+#endif// GLACEON_GLACEON_VULKANRENDERER_VULKANRENDERPASS_H_

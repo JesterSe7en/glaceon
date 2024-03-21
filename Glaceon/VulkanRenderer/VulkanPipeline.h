@@ -17,17 +17,9 @@ class VulkanPipeline {
   explicit VulkanPipeline(VulkanContext &context);
   void Initialize(const GraphicsPipelineConfig &pipeline_config);
 
-  [[nodiscard]] const vk::PipelineLayout &GetVkPipelineLayout() const {
-    return vk_pipeline_layout_;
-  }
-
-  [[nodiscard]] const vk::Pipeline &GetVkPipeline() const {
-    return vk_pipeline_;
-  }
-
-  [[nodiscard]] const vk::PipelineCache &GetVkPipelineCache() const {
-    return vk_pipeline_cache_;
-  }
+  [[nodiscard]] const vk::PipelineLayout &GetVkPipelineLayout() const { return vk_pipeline_layout_; }
+  [[nodiscard]] const vk::Pipeline &GetVkPipeline() const { return vk_pipeline_; }
+  [[nodiscard]] const vk::PipelineCache &GetVkPipelineCache() const { return vk_pipeline_cache_; }
 
   void Recreate();
   void Destroy();
@@ -43,6 +35,6 @@ class VulkanPipeline {
   void CreatePipelineLayout();
 };
 
-}  // namespace Glaceon
+}// namespace glaceon
 
-#endif  // GLACEON_GLACEON_VULKANRENDERER_VULKANPIPELINE_H_
+#endif// GLACEON_GLACEON_VULKANRENDERER_VULKANPIPELINE_H_

@@ -29,7 +29,7 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   pipeline_create_info.flags = vk::PipelineCreateFlags();
 
   std::vector<vk::PipelineShaderStageCreateInfo>
-      shader_stages;  // these store the configurations for vertex input, fragment, etc.
+      shader_stages;// these store the configurations for vertex input, fragment, etc.
 
   // Vertex Input
   vk::PipelineVertexInputStateCreateInfo vertex_input_info = {};
@@ -141,9 +141,9 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   // Color Blend - alpha transparency, etc.
   // This is doing no blending
   vk::PipelineColorBlendAttachmentState color_blend_attachment = {};
-  color_blend_attachment.colorWriteMask = vk::ColorComponentFlags(
-      vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG | vk::ColorComponentFlagBits::eB
-          | vk::ColorComponentFlagBits::eA);
+  color_blend_attachment.colorWriteMask =
+      vk::ColorComponentFlags(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG
+                              | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA);
   color_blend_attachment.blendEnable = VK_FALSE;
 
   vk::PipelineColorBlendStateCreateInfo color_blending = {};
@@ -167,7 +167,7 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   pipeline_create_info.renderPass = render_pass;
 
   // Extra stuff
-  pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;  // Optional - to base pipeline on
+  pipeline_create_info.basePipelineHandle = VK_NULL_HANDLE;// Optional - to base pipeline on
 
   // Create pipeline - for now just one pipeline
   if (device.createGraphicsPipelines(vk_pipeline_cache_, 1, &pipeline_create_info, nullptr, &vk_pipeline_)
@@ -191,11 +191,11 @@ void VulkanPipeline::CreatePipelineLayout() {
   vk::PipelineLayoutCreateInfo pipeline_layout_info = {};
   // here we are not setting ANY uniform data
   pipeline_layout_info.sType = vk::StructureType::ePipelineLayoutCreateInfo;
-  pipeline_layout_info.setLayoutCount = 0;  // this can push arbitrary data (usually large like an image) to pipeline
+  pipeline_layout_info.setLayoutCount = 0;// this can push arbitrary data (usually large like an image) to pipeline
   pipeline_layout_info.pSetLayouts = nullptr;
 
-//  pipeline_layout_info.pushConstantRangeCount = 0;  // this can only push small data to pipeline like one matrix
-//  pipeline_layout_info.pPushConstantRanges = nullptr;
+  //  pipeline_layout_info.pushConstantRangeCount = 0;  // this can only push small data to pipeline like one matrix
+  //  pipeline_layout_info.pPushConstantRanges = nullptr;
 
   pipeline_layout_info.pushConstantRangeCount = 1;
   vk::PushConstantRange push_constant_info = {};
@@ -231,4 +231,4 @@ void VulkanPipeline::Destroy() {
   }
 }
 
-}  // namespace Glaceon
+}// namespace glaceon

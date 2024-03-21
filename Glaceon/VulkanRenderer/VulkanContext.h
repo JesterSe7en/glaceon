@@ -63,6 +63,6 @@ class VulkanContext {
   std::vector<const char *> instance_extensions_;
 };
 
-}  // namespace Glaceon
+}// namespace glaceon
 
-#endif  // GLACEON_GLACEON_VULKANRENDERER_VULKANCONTEXT_H_
+#endif// GLACEON_GLACEON_VULKANRENDERER_VULKANCONTEXT_H_

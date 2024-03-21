@@ -44,9 +44,8 @@ void VulkanBackend::Initialize() {
   debug_create_info.flags = vk::DebugUtilsMessengerCreateFlagsEXT();
   debug_create_info.messageSeverity =
       vk::DebugUtilsMessageSeverityFlagBitsEXT::eError | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning;
-  debug_create_info.messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral |
-      vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation |
-      vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
+  debug_create_info.messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
+      | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
   debug_create_info.pfnUserCallback = DebugCallback;
   debug_create_info.pUserData = nullptr;
   instance_create_info.pNext = &debug_create_info;
@@ -121,19 +120,15 @@ void VulkanBackend::Destroy() {
 }
 bool VulkanBackend::IsLayerAvailable(const std::vector<vk::LayerProperties> &layers, const char *layer_to_check) {
   for (const auto &kLayer : layers) {
-    if (strcmp(kLayer.layerName, layer_to_check) == 0) {
-      return true;
-    }
+    if (strcmp(kLayer.layerName, layer_to_check) == 0) { return true; }
   }
   return false;
 }
 bool VulkanBackend::IsExtensionAvailable(const std::vector<vk::ExtensionProperties> &all_extensions,
                                          const char *extension_to_check) {
   for (const auto &kExt : all_extensions) {
-    if (strcmp(kExt.extensionName, extension_to_check) == 0) {
-      return true;
-    }
+    if (strcmp(kExt.extensionName, extension_to_check) == 0) { return true; }
   }
   return false;
 }
-}  // namespace Glaceon
+}// namespace glaceon

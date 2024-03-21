@@ -27,6 +27,6 @@ class VulkanBackend {
                                 const VkDebugUtilsMessengerCallbackDataEXT *p_callback_data, void *p_user_data);
 };
 
-}  // namespace Glaceon
+}// namespace glaceon
 
-#endif  // GLACEON_GLACEON_VULKANRENDERER_VULKANBACKEND_H_
+#endif// GLACEON_GLACEON_VULKANRENDERER_VULKANBACKEND_H_

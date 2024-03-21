@@ -10,4 +10,4 @@ void Logger::InitLoggers() {
   // trace, info, warn, error, critical -> lowest to highest level
   p_console_logger_->set_level(spdlog::level::trace);
 }
-}  // namespace Glaceon
+}// namespace glaceon

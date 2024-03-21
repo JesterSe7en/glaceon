@@ -58,4 +58,4 @@ void VulkanRenderPass::Destroy() {
   }
 }
 
-}  // namespace Glaceon
+}// namespace glaceon

@@ -95,4 +95,4 @@ void VulkanCommandPool::RebuildCommandBuffers() {
   }
   GINFO("Successfully rebuilt command buffers");
 }
-}  // namespace Glaceon
+}// namespace glaceon

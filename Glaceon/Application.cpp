@@ -2,4 +2,4 @@
 
 namespace glaceon {
 Application::Application([[maybe_unused]] ApplicationInfo *info) { glaceon::Logger::InitLoggers(); }
-}  // namespace Glaceon
+}// namespace glaceon

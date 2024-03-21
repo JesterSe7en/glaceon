@@ -5,14 +5,12 @@
 
 namespace glaceon {
 VulkanSwapChain::VulkanSwapChain(VulkanContext &context)
-    : context_(context),
-      vk_swapchain_(VK_NULL_HANDLE),
-    // probably want to request from user a specific format, color space, and present mode
-    // then use that to create the swap chain
-    // for now, hardcode it
-    // FIFO present mode is guaranteed to be supported
-      surface_format_(vk::Format::eB8G8R8A8Unorm),
-      color_space_(vk::ColorSpaceKHR::eSrgbNonlinear),
+    : context_(context), vk_swapchain_(VK_NULL_HANDLE),
+      // probably want to request from user a specific format, color space, and present mode
+      // then use that to create the swap chain
+      // for now, hardcode it
+      // FIFO present mode is guaranteed to be supported
+      surface_format_(vk::Format::eB8G8R8A8Unorm), color_space_(vk::ColorSpaceKHR::eSrgbNonlinear),
       present_mode_(vk::PresentModeKHR::eMailbox) {}
 
 // create swap chain, get images, create image views, then create the frame buffers
@@ -32,29 +30,29 @@ void VulkanSwapChain::PopulateSwapChainSupport() {
     return;
   }
 
-    //  typedef struct VkSurfaceCapabilitiesKHR {
-    //    uint32_t                         minImageCount;
-    //    uint32_t                         maxImageCount;
-    //    VkExtent2D                       currentExtent; // basically the current size of the images in the swap chain
-    //    VkExtent2D                       minImageExtent;
-    //    VkExtent2D                       maxImageExtent;
-    //    uint32_t                         maxImageArrayLayers;
+  //  typedef struct VkSurfaceCapabilitiesKHR {
+  //    uint32_t                         minImageCount;
+  //    uint32_t                         maxImageCount;
+  //    VkExtent2D                       currentExtent; // basically the current size of the images in the swap chain
+  //    VkExtent2D                       minImageExtent;
+  //    VkExtent2D                       maxImageExtent;
+  //    uint32_t                         maxImageArrayLayers;
 
-    //    VkSurfaceTransformFlagsKHR       supportedTransforms;
-    // bitfield of VkSurfaceTransformFlagBitsKHR:
-    // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkSurfaceTransformFlagBitsKHR.html
+  //    VkSurfaceTransformFlagsKHR       supportedTransforms;
+  // bitfield of VkSurfaceTransformFlagBitsKHR:
+  // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkSurfaceTransformFlagBitsKHR.html
 
-    //    VkSurfaceTransformFlagBitsKHR    currentTransform;
+  //    VkSurfaceTransformFlagBitsKHR    currentTransform;
 
-    //    VkCompositeAlphaFlagsKHR         supportedCompositeAlpha;
-    // bitfield of VkCompositeAlphaFlagBitsKHR:
-    // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkCompositeAlphaFlagBitsKHR.html
+  //    VkCompositeAlphaFlagsKHR         supportedCompositeAlpha;
+  // bitfield of VkCompositeAlphaFlagBitsKHR:
+  // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkCompositeAlphaFlagBitsKHR.html
 
-    //    VkImageUsageFlags                supportedUsageFlags;
-    // bitfield of VkImageUsageFlagBits:
-    // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkImageUsageFlagBits.html
+  //    VkImageUsageFlags                supportedUsageFlags;
+  // bitfield of VkImageUsageFlagBits:
+  // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkImageUsageFlagBits.html
 
-    //  } VkSurfaceCapabilitiesKHR;
+  //  } VkSurfaceCapabilitiesKHR;
 
 #if _DEBUG
   GTRACE("Swap chain capabilities:");
@@ -176,8 +174,8 @@ void VulkanSwapChain::CreateSwapChain() {
   swapchain_create_info.imageArrayLayers = 1;
   swapchain_create_info.imageUsage = vk::ImageUsageFlags(vk::ImageUsageFlagBits::eColorAttachment);
 
-  assert(
-      context_.GetQueueIndexes().graphics_family.has_value() && context_.GetQueueIndexes().present_family.has_value());
+  assert(context_.GetQueueIndexes().graphics_family.has_value()
+         && context_.GetQueueIndexes().present_family.has_value());
   swap_chain_extent_ = swap_chain_support_.capabilities.currentExtent;
 
   QueueIndexes indexes = context_.GetQueueIndexes();
@@ -198,9 +196,9 @@ void VulkanSwapChain::CreateSwapChain() {
 
   swapchain_create_info.preTransform = swap_chain_support_.capabilities.currentTransform;
   swapchain_create_info.presentMode = present_mode_;
-  swapchain_create_info.clipped = VK_TRUE;  // if a window is rendered above the rendering window, it will be clipped
+  swapchain_create_info.clipped = VK_TRUE;// if a window is rendered above the rendering window, it will be clipped
   swapchain_create_info.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
-  swapchain_create_info.oldSwapchain = nullptr;  // used during re-initialization from old to speed up creation
+  swapchain_create_info.oldSwapchain = nullptr;// used during re-initialization from old to speed up creation
 
   if (device.createSwapchainKHR(&swapchain_create_info, nullptr, &vk_swapchain_) != vk::Result::eSuccess) {
     GERROR("Failed to create swap chain");
@@ -229,10 +227,10 @@ void VulkanSwapChain::CreateImageViews() {
   vk::ImageViewCreateInfo image_view_create_info = {};
   image_view_create_info.sType = vk::StructureType::eImageViewCreateInfo;
   image_view_create_info.format = surface_format_;
-  image_view_create_info.viewType = vk::ImageViewType::e2D;  // VK_IMAGE_VIEW_TYPE_2D;
-  image_view_create_info.components.r = vk::ComponentSwizzle::eIdentity;  // VK_COMPONENT_SWIZZLE_IDENTITY;
-  image_view_create_info.components.g = vk::ComponentSwizzle::eIdentity;  // VK_COMPONENT_SWIZZLE_IDENTITY;
-  image_view_create_info.components.b = vk::ComponentSwizzle::eIdentity;  // VK_COMPONENT_SWIZZLE_IDENTITY;
+  image_view_create_info.viewType = vk::ImageViewType::e2D;             // VK_IMAGE_VIEW_TYPE_2D;
+  image_view_create_info.components.r = vk::ComponentSwizzle::eIdentity;// VK_COMPONENT_SWIZZLE_IDENTITY;
+  image_view_create_info.components.g = vk::ComponentSwizzle::eIdentity;// VK_COMPONENT_SWIZZLE_IDENTITY;
+  image_view_create_info.components.b = vk::ComponentSwizzle::eIdentity;// VK_COMPONENT_SWIZZLE_IDENTITY;
   image_view_create_info.components.a = vk::ComponentSwizzle::eIdentity;
   image_view_create_info.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
   image_view_create_info.subresourceRange.baseMipLevel = 0;
@@ -310,8 +308,8 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
     swapchain_create_info.imageExtent.height = height = cap.currentExtent.height;
   }
 
-  assert(
-      context_.GetQueueIndexes().graphics_family.has_value() && context_.GetQueueIndexes().present_family.has_value());
+  assert(context_.GetQueueIndexes().graphics_family.has_value()
+         && context_.GetQueueIndexes().present_family.has_value());
 
   QueueIndexes indexes = context_.GetQueueIndexes();
   uint32_t queue_family_indices[] = {indexes.graphics_family.value(), indexes.present_family.value()};
@@ -331,7 +329,7 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
 
   swapchain_create_info.preTransform = swap_chain_support_.capabilities.currentTransform;
   swapchain_create_info.presentMode = present_mode_;
-  swapchain_create_info.clipped = VK_TRUE;  // if a window is rendered above the rendering window, it will be clipped
+  swapchain_create_info.clipped = VK_TRUE;// if a window is rendered above the rendering window, it will be clipped
   swapchain_create_info.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
   // used during re-initialization from old to speed up creation
   swapchain_create_info.oldSwapchain = old_swap_chain == VK_NULL_HANDLE ? VK_NULL_HANDLE : old_swap_chain;
@@ -411,4 +409,4 @@ void VulkanSwapChain::Destroy() {
     vk_swapchain_ = VK_NULL_HANDLE;
   }
 }
-}  // namespace Glaceon
+}// namespace glaceon

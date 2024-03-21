@@ -25,9 +25,7 @@ class VulkanSwapChain {
   void Initialize();
   void Destroy();
 
-  [[nodiscard]] const vk::SwapchainKHR &GetVkSwapchain() const {
-    return vk_swapchain_;
-  }
+  [[nodiscard]] const vk::SwapchainKHR &GetVkSwapchain() const { return vk_swapchain_; }
   std::vector<SwapChainFrame> &GetSwapChainFrames() { return swap_chain_frames_; }
   vk::Extent2D GetSwapChainExtent() { return swap_chain_extent_; }
 
@@ -52,6 +50,6 @@ class VulkanSwapChain {
   void DestroyFrames();
 };
 
-}  // namespace Glaceon
+}// namespace glaceon
 
-#endif  // GLACEON_GLACEON_VULKANRENDERER_VULKANSWAPCHAIN_H_
+#endif// GLACEON_GLACEON_VULKANRENDERER_VULKANSWAPCHAIN_H_
