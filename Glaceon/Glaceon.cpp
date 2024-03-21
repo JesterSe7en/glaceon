@@ -241,16 +241,17 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
                                  &model_matrix);
     command_buffer.draw(3, 1, 0, 0);// This draws a triangle - hard coded for now
   }
-
-  command_buffer.endRenderPass();
-  command_buffer.end();
 }
 
-static void GameFrameRender(VulkanContext &context) {
+/**
+ * @brief Sets up the necessary Vulkan rendering objects and synchronization objects; gets frame index, resets fences/semaphores, resets command buffer
+ *
+ * @param context The Vulkan context containing necessary objects for rendering.
+ */
+static void SetupRender(VulkanContext &context) {
   std::vector<vk::Fence> in_flight_fences = context.GetVulkanSync().GetInFlightFences();
   vk::Device device = context.GetVulkanLogicalDevice();
   vk::SwapchainKHR swap_chain = context.GetVulkanSwapChain().GetVkSwapchain();
-  vk::Queue graphics_queue = context.GetVulkanDevice().GetVkGraphicsQueue();
   std::vector<vk::Semaphore> image_available_semaphores = context.GetVulkanSync().GetImageAvailableSemaphores();
   std::vector<vk::Semaphore> render_complete_semaphores = context.GetVulkanSync().GetRenderFinishedSemaphores();
 
@@ -275,29 +276,9 @@ static void GameFrameRender(VulkanContext &context) {
   std::vector<vk::CommandBuffer> frame_command_buffers = context.GetVulkanCommandPool().GetVkFrameCommandBuffers();
   vk::CommandBuffer command_buffer = frame_command_buffers[context.current_frame_index_];
   command_buffer.reset();
-  RecordDrawCommands(command_buffer, context.current_frame_index_);
-
-  // submit the command buffer
-  auto wait_stage = vk::PipelineStageFlags(vk::PipelineStageFlagBits::eColorAttachmentOutput);
-  vk::SubmitInfo submit_info = {};
-  submit_info.sType = vk::StructureType::eSubmitInfo;
-  submit_info.waitSemaphoreCount = 1;
-  submit_info.pWaitSemaphores = &image_available_semaphores[context.semaphore_index_];
-  submit_info.pWaitDstStageMask = &wait_stage;
-  submit_info.commandBufferCount = 1;
-  submit_info.pCommandBuffers = &command_buffer;
-  submit_info.signalSemaphoreCount = 1;
-  submit_info.pSignalSemaphores = &render_complete_semaphores[context.semaphore_index_];
-
-  // fence is provided here so that once we submit the command buffer, we can
-  // safely reset the fence
-  if (graphics_queue.submit(1, &submit_info, in_flight_fences[context.current_frame_index_]) != vk::Result::eSuccess) {
-    GERROR("Failed to submit to queue");
-    return;
-  }
 }
 
-static void GameFramePresent(VulkanContext &context) {
+static void FramePresent(VulkanContext &context) {
   std::vector<vk::Semaphore> render_complete_semaphores = context.GetVulkanSync().GetRenderFinishedSemaphores();
   vk::SwapchainKHR swap_chain = context.GetVulkanSwapChain().GetVkSwapchain();
   vk::Queue present_queue = context.GetVulkanDevice().GetVkPresentQueue();
@@ -326,6 +307,40 @@ static void GameFramePresent(VulkanContext &context) {
       % context.GetVulkanSwapChain()
             .GetSwapChainFrames()
             .size();// mod semaphore index to wrap indexing back to beginning
+}
+
+void SubmitCommandBuffer(VulkanContext &context) {
+  std::vector<vk::Fence> in_flight_fences = context.GetVulkanSync().GetInFlightFences();
+  vk::Device device = context.GetVulkanLogicalDevice();
+  vk::Queue graphics_queue = context.GetVulkanDevice().GetVkGraphicsQueue();
+  std::vector<vk::Semaphore> image_available_semaphores = context.GetVulkanSync().GetImageAvailableSemaphores();
+  std::vector<vk::Semaphore> render_complete_semaphores = context.GetVulkanSync().GetRenderFinishedSemaphores();
+
+  // current frame command buffer
+  vk::CommandBuffer command_buffer =
+      context.GetVulkanCommandPool().GetVkFrameCommandBuffers()[context.current_frame_index_];
+  command_buffer.endRenderPass();
+  command_buffer.end();
+
+  // submit the command buffer
+  auto wait_stage = vk::PipelineStageFlags(vk::PipelineStageFlagBits::eColorAttachmentOutput);
+  vk::SubmitInfo submit_info = {};
+  submit_info.sType = vk::StructureType::eSubmitInfo;
+  submit_info.waitSemaphoreCount = 1;
+  submit_info.pWaitSemaphores = &image_available_semaphores[context.semaphore_index_];
+  submit_info.pWaitDstStageMask = &wait_stage;
+  submit_info.commandBufferCount = 1;
+  submit_info.pCommandBuffers =
+      &context.GetVulkanCommandPool().GetVkFrameCommandBuffers()[context.current_frame_index_];
+  submit_info.signalSemaphoreCount = 1;
+  submit_info.pSignalSemaphores = &render_complete_semaphores[context.semaphore_index_];
+
+  // fence is provided here so that once we submit the command buffer, we can
+  // safely reset the fence
+  if (graphics_queue.submit(1, &submit_info, in_flight_fences[context.current_frame_index_]) != vk::Result::eSuccess) {
+    GERROR("Failed to submit to queue");
+    return;
+  }
 }
 
 // void framebufferResizeCallback(GLFWwindow *window, int width, int height) {
@@ -451,8 +466,9 @@ void GLACEON_API RunGame(Application *app) {
     // ------------------ Render Game Frame ------------------ //
     // Essentially we are doing the same thing as ImGuiRender and ImGuiPresent
     // Just that we are rendering the game frames
-    GameFrameRender(context);
-    GameFramePresent(context);
+    SetupRender(context);
+    RecordDrawCommands(context.GetVulkanCommandPool().GetVkFrameCommandBuffers()[context.current_frame_index_],
+                       context.current_frame_index_);
 
 #if _DEBUG
     // ------------------ Render ImGui Frame ------------------ //
@@ -490,6 +506,9 @@ void GLACEON_API RunGame(Application *app) {
 //      ImGuiFramePresent(context);
 //    }
 #endif
+
+    SubmitCommandBuffer(context);
+    FramePresent(context);
   }
 
   context.GetVulkanLogicalDevice().waitIdle();
