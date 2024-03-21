@@ -50,7 +50,7 @@ static void ImGuiInitialize(VulkanContext &context, GLFWwindow *glfw_window) {
   init_info.Device = context.GetVulkanLogicalDevice();
   init_info.QueueFamily = context.GetQueueIndexes().graphics_family.value();
   init_info.Queue = context.GetVulkanDevice().GetVkGraphicsQueue();
-  init_info.PipelineCache = VK_NULL_HANDLE;
+  init_info.PipelineCache = context.GetVulkanPipeline().GetVkPipelineCache();
   init_info.DescriptorPool = context.GetDescriptorPool();
   init_info.RenderPass = context.GetVulkanRenderPass().GetVkRenderPass();
   init_info.Subpass = 0;
@@ -109,18 +109,19 @@ static void ImGuiFrameRender(VulkanContext &context, ImDrawData *draw_data) {
     }
   }
   {
-    device.resetCommandPool(command_pool);
+    //    device.resetCommandPool(command_pool);
+    command_buffer.reset();
     vk::CommandBufferBeginInfo info = {};
     info.sType = vk::StructureType::eCommandBufferBeginInfo;
     info.flags = vk::CommandBufferUsageFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
-    if (command_buffer.begin(&info) == vk::Result::eSuccess) {
+    if (command_buffer.begin(&info) != vk::Result::eSuccess) {
       GERROR("Failed to begin command buffer");
       return;
     }
   }
   {
     vk::RenderPassBeginInfo render_pass_begin_info = {};
-    render_pass_begin_info.sType = vk::StructureType::eCommandBufferBeginInfo;
+    render_pass_begin_info.sType = vk::StructureType::eRenderPassBeginInfo;
     render_pass_begin_info.renderPass = context.GetVulkanRenderPass().GetVkRenderPass();
     render_pass_begin_info.framebuffer =
         context.GetVulkanSwapChain().GetSwapChainFrames()[context.current_frame_index_].frame_buffer;
@@ -130,7 +131,7 @@ static void ImGuiFrameRender(VulkanContext &context, ImDrawData *draw_data) {
     clear_value.color.float32[0] = 0.0f;
     clear_value.color.float32[1] = 0.0f;
     clear_value.color.float32[2] = 0.0f;
-    clear_value.color.float32[3] = 0.0f;
+    clear_value.color.float32[3] = 1.0f;
     render_pass_begin_info.pClearValues = &clear_value;
     command_buffer.beginRenderPass(&render_pass_begin_info, vk::SubpassContents::eInline);
   }
@@ -153,8 +154,8 @@ static void ImGuiFrameRender(VulkanContext &context, ImDrawData *draw_data) {
     info.pSignalSemaphores = &render_complete_semaphores[semaphore_index];
 
     command_buffer.end();
-    vk::Queue queue = context.GetVulkanDevice().GetVkPresentQueue();
-    if (queue.submit(1, &info, fences[context.current_frame_index_]) != vk::Result::eSuccess) {
+    vk::Queue graphics_queue = context.GetVulkanDevice().GetVkGraphicsQueue();
+    if (graphics_queue.submit(1, &info, fences[context.current_frame_index_]) != vk::Result::eSuccess) {
       GERROR("Failed to submit draw command buffer");
       return;
     }
@@ -210,7 +211,7 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
   clear_value.color.float32[0] = 0.0f;
   clear_value.color.float32[1] = 0.0f;
   clear_value.color.float32[2] = 0.0f;
-  clear_value.color.float32[3] = 0.0f;
+  clear_value.color.float32[3] = 1.0f;
   render_pass_info.clearValueCount = 1;
   render_pass_info.pClearValues = &clear_value;
 
@@ -421,6 +422,8 @@ void GLACEON_API RunGame(Application *app) {
 #endif
 
   int width, height;
+  ImGuiIO &io = ImGui::GetIO();
+
   app->OnStart();
   // ----------------------------- MAIN LOOP ----------------------------- //
   while (!glfwWindowShouldClose(glfw_window)) {
@@ -433,7 +436,6 @@ void GLACEON_API RunGame(Application *app) {
       if (width > 0 && height > 0) {
         GINFO("Rebuilding swapchain... width: {}, height: {}", width, height);
         context.GetVulkanLogicalDevice().waitIdle();
-        // destroy pipeline and old sync objects
         context.GetVulkanRenderPass().Rebuild();
         context.GetVulkanSwapChain().RebuildSwapChain(width, height);
         context.GetVulkanPipeline().Rebuild();
@@ -452,36 +454,42 @@ void GLACEON_API RunGame(Application *app) {
     GameFrameRender(context);
     GameFramePresent(context);
 
-    // #if _DEBUG
-    //     // ------------------ Render ImGui Frame ------------------ //
-    //     // Start the Dear ImGui frame
-    //     ImGui_ImplGlfw_NewFrame();
-    //     ImGui::NewFrame();
-    //
-    //     {
-    //       // bool showDemo = true;
-    //       // ImGui::ShowDemoWindow(&showDemo);
-    //
-    //       ImGui::Begin("FPS");
-    //       ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f
-    //       / io.Framerate, io.Framerate); ImGui::End();
-    //     }
-    //
-    //     // Rendering
-    //     ImGui::Render();
-    //     if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-    //       // for multi-port support
-    //       ImGui::UpdatePlatformWindows();
-    //       ImGui::RenderPlatformWindowsDefault();
-    //     }
-    //
-    //     ImDrawData *draw_data = ImGui::GetDrawData();
-    //     const bool is_minimized = (draw_data->DisplaySize.x <= 0.0f ||
-    //     draw_data->DisplaySize.y <= 0.0f); if (!is_minimized) {
-    //       ImGuiFrameRender(context, draw_data);
-    //       ImGuiFramePresent(context);
-    //     }
-    // #endif
+#if _DEBUG
+    // ------------------ Render ImGui Frame ------------------ //
+    // Start the Dear ImGui frame
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    {
+      // bool showDemo = true;
+      // ImGui::ShowDemoWindow(&showDemo);
+
+      ImGui::Begin("FPS");
+      ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+      ImGui::End();
+    }
+
+    // Rendering
+    ImGui::Render();
+
+    // needed for multi-port support
+    if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
+      ImGui::UpdatePlatformWindows();
+      ImGui::RenderPlatformWindowsDefault();
+    }
+
+    ImDrawData *draw_data = ImGui::GetDrawData();
+    ImGui_ImplVulkan_RenderDrawData(
+        draw_data, context.GetVulkanCommandPool().GetVkFrameCommandBuffers()[context.current_frame_index_]);
+
+    // TODO: We need to include the imgui UI render along side game frame render as one render pass.  Finally, submit that command buffer to the graphics queue
+
+//    const bool kIsMinimized = (draw_data->DisplaySize.x <= 0.0f || draw_data->DisplaySize.y <= 0.0f);
+//    if (!kIsMinimized) {
+//      ImGuiFrameRender(context, draw_data);
+//      ImGuiFramePresent(context);
+//    }
+#endif
   }
 
   context.GetVulkanLogicalDevice().waitIdle();
