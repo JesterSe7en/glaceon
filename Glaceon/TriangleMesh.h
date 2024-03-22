@@ -5,12 +5,13 @@
 
 namespace glaceon {
 
+// This defined one triangle
 class TriangleMesh {
  public:
   TriangleMesh(vk::Device logical_device, vk::PhysicalDevice physical_device);
   ~TriangleMesh();
 
-  VulkanUtils::Buffer GetBuffer() const { return buffer_; }
+  [[nodiscard]] VulkanUtils::Buffer GetBuffer() const { return buffer_; }
 
  private:
   vk::Device vk_device_;

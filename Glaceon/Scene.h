@@ -3,6 +3,7 @@
 
 namespace glaceon {
 
+// This defines all the triangles(TriangleMesh) in the scene
 class Scene {
  public:
   Scene();
