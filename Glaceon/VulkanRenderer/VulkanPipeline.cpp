@@ -45,7 +45,7 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   // - Location
   // - Offset
   // - Format - you would still use the VK_FORMAT enums even if the attribute is e.g. position.
-  //            vec2 position's format would be vk::Format::eR32G32Sfloat => 2 - 32 bit signed floats
+  //            vec2 position's format would be vk::Format::eR32G32Sfloat => 2 - 32-bit signed floats
   std::vector<vk::VertexInputAttributeDescription> attribute_descriptions = GetPosColorAttributeDescriptions();
   vertex_input_info.vertexAttributeDescriptionCount = attribute_descriptions.size();
   vertex_input_info.pVertexAttributeDescriptions = attribute_descriptions.data();
@@ -293,5 +293,4 @@ std::vector<vk::VertexInputAttributeDescription> VulkanPipeline::GetPosColorAttr
 
   return attribute_descriptions;
 }
-
 }// namespace glaceon

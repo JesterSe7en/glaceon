@@ -70,6 +70,16 @@ static void ImGuiInitialize(VulkanContext &context, GLFWwindow *glfw_window) {
   GINFO("ImGui successfully initialized");
 }
 
+void MakeAssets(VulkanContext &context) {
+  triangle_mesh = new TriangleMesh(context.GetVulkanLogicalDevice(), context.GetVulkanPhysicalDevice());
+}
+
+void PrepareScene(vk::CommandBuffer command_buffer) {
+  vk::Buffer vertex_buffers[] = {triangle_mesh->GetBuffer().buffer};
+  vk::DeviceSize offsets[] = {0};
+  command_buffer.bindVertexBuffers(0, 1, vertex_buffers, offsets);
+}
+
 static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_index) {
   VulkanContext &context = currentApp->GetVulkanContext();
 
@@ -98,6 +108,9 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
   vk::Pipeline pipeline = context.GetVulkanPipeline().GetVkPipeline();
   command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
 
+  // Gets the vertex buffer data from TriangleMesh and pushes it as uniform data in anticipation for the vertex shader to use.
+  PrepareScene(command_buffer);
+
   // command_buffer.pushConstants() this defines push constants for shader code to use
   // command_buffer.pushConstants(layout, stageflags, offset, size, value);
   // layout is the pipeline layout
@@ -112,6 +125,7 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
 
   // take a look at scene class and use the triangle_positions_ vector
 
+  // we are basically pushing a constant to the vertex shader and rendering the triangle at multiple positions.
   std::vector<glm::vec3> triangle_positions = currentApp->GetScene().triangle_positions_;
 
   for (auto position : triangle_positions) {
@@ -255,7 +269,7 @@ void GLACEON_API RunGame(Application *app) {
   // we are using vulkan, don't load in other apis
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
   glfwWindowHint(GLFW_DOUBLEBUFFER, GLFW_TRUE);
-  GLFWwindow *glfw_window = glfwCreateWindow(1920, 1080, "GLFW Test Window", nullptr, nullptr);
+  GLFWwindow *glfw_window = glfwCreateWindow(800, 600, "GLFW Test Window", nullptr, nullptr);
 
   if (glfw_window == nullptr) {
     GERROR("Failed to create GLFW window");
@@ -318,6 +332,9 @@ void GLACEON_API RunGame(Application *app) {
   int width, height;
   ImGuiIO &io = ImGui::GetIO();
 
+  // create our triangle mesh
+  MakeAssets(context);
+
   app->OnStart();
   // ----------------------------- MAIN LOOP ----------------------------- //
   while (!glfwWindowShouldClose(glfw_window)) {
@@ -353,8 +370,8 @@ void GLACEON_API RunGame(Application *app) {
     ImGui::NewFrame();
 
     {
-      bool show_demo = true;
-      ImGui::ShowDemoWindow(&show_demo);
+      //      bool show_demo = true;
+      //      ImGui::ShowDemoWindow(&show_demo);
 
       ImGui::Begin("FPS");
       ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);

@@ -3,17 +3,22 @@
 // Vulkan NDC : x: -1(left), 1(right)
 //              y: -1(top), 1(bottom)
 
-vec2 positions[3] = vec2[](
-    vec2(0.0, -0.05),
-    vec2(0.05, 0.05),
-    vec2(-0.05, 0.05)
-);
+//vec2 positions[3] = vec2[](
+//    vec2(0.0, -0.05),
+//    vec2(0.05, 0.05),
+//    vec2(-0.05, 0.05)
+//);
+//
+//vec3 colors[3] = vec3[](
+//    vec3(1.0, 0.0, 0.0),
+//    vec3(0.0, 1.0, 0.0),
+//    vec3(0.0, 0.0, 1.0)
+//);
 
-vec3 colors[3] = vec3[](
-    vec3(1.0, 0.0, 0.0),
-    vec3(0.0, 1.0, 0.0),
-    vec3(0.0, 0.0, 1.0)
-);
+// since we have attribute description now set in the pipeline (vec2(x,y) - position, vec3(rgb) - color layout)
+// see VulkanPipeline, "GetPosColorBindingDescription()"
+layout (location = 0) in vec2 vertex_position;
+layout (location = 1) in vec3 vertex_color;
 
 
 // https://github.com/KhronosGroup/GLSL/blob/main/extensions/khr/GL_KHR_vulkan_glsl.txt
@@ -27,6 +32,10 @@ layout (location = 0) out vec3 fragColor;
 
 void main() {
     //    gl_Position = vec4(positions[gl_VertexIndex], 0.0, 1.0);
-    gl_Position = ObjectData.model * vec4(positions[gl_VertexIndex], 0.0, 1.0);
-    fragColor = colors[gl_VertexIndex];
+    //    gl_Position = ObjectData.model * vec4(positions[gl_VertexIndex], 0.0, 1.0);
+    //    fragColor = colors[gl_VertexIndex];
+
+    // instead of using the hardcoded values, we now use passed in data from the graphics pipeline.
+    gl_Position = ObjectData.model * vec4(vertex_position, 0.0, 1.0);
+    fragColor = vertex_color;
 }

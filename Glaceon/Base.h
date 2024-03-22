@@ -18,3 +18,5 @@
 #endif
 
 #endif// GLACEON_GLACEON_BASE_H_
+
+#include "TriangleMesh.h"

@@ -58,6 +58,8 @@ source_group("Source Files" FILES ${Source_Files})
 set(ALL_FILES
         ${Header_Files}
         ${Source_Files}
+        TriangleMesh.cpp
+        TriangleMesh.h
 )
 
 # Target

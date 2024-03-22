@@ -63,4 +63,83 @@ vk::ShaderModule VulkanUtils::CreateShaderModule(vk::Device const &device, const
   return CreateShaderModule(device, code);
 }
 
+glaceon::VulkanUtils::Buffer VulkanUtils::CreateBuffer(VulkanUtils::BufferInputParams params) {
+  Buffer buffer;
+  vk::Device device = params.device;
+  // Provided by VK_VERSION_1_0
+  //  typedef struct VkBufferCreateInfo {
+  //    VkStructureType        sType;
+  //    const void*            pNext;
+  //    VkBufferCreateFlags    flags;
+  //    VkDeviceSize           size;
+  //    VkBufferUsageFlags     usage;
+  //    VkSharingMode          sharingMode;
+  //    uint32_t               queueFamilyIndexCount;
+  //    const uint32_t*        pQueueFamilyIndices;
+  //  } VkBufferCreateInfo;
+  vk::BufferCreateInfo buffer_create_info = {};
+  buffer_create_info.sType = vk::StructureType::eBufferCreateInfo;
+  buffer_create_info.pNext = nullptr;
+  buffer_create_info.flags = vk::BufferCreateFlags();
+  buffer_create_info.size = params.size;
+  buffer_create_info.usage = params.buffer_usage;
+  buffer_create_info.sharingMode = vk::SharingMode::eExclusive;
+
+  buffer.buffer = device.createBuffer(buffer_create_info);
+
+  //check memory requirements of buffer
+  int memory_index = FindMemoryIndex(params, buffer.buffer);
+  if (memory_index < 0) {
+    GERROR("Failed to find memory index");
+    return {};
+  }
+
+  // Provided by VK_VERSION_1_0
+  //  typedef struct VkMemoryAllocateInfo {
+  //    VkStructureType    sType;
+  //    const void*        pNext;
+  //    VkDeviceSize       allocationSize;
+  //    uint32_t           memoryTypeIndex;
+  //  } VkMemoryAllocateInfo;
+  vk::MemoryAllocateInfo memory_allocate_info = {};
+  memory_allocate_info.sType = vk::StructureType::eMemoryAllocateInfo;
+  memory_allocate_info.pNext = nullptr;
+  memory_allocate_info.allocationSize = params.size;
+  memory_allocate_info.memoryTypeIndex = memory_index;
+
+  buffer.buffer_memory = device.allocateMemory(memory_allocate_info);
+  device.bindBufferMemory(buffer.buffer, buffer.buffer_memory, 0);
+  return buffer;
+}
+
+int VulkanUtils::FindMemoryIndex(VulkanUtils::BufferInputParams params, vk::Buffer buffer) {
+  vk::Device device = params.device;
+  vk::PhysicalDevice physical_device = params.physical_device;
+
+  // requirements from the buffer, these need to be available from the GPU
+  vk::MemoryRequirements memory_requirements = device.getBufferMemoryRequirements(buffer);
+
+  // these are the types of memory that are available on the GPU, check memory type - stored as a bitfield
+  vk::PhysicalDeviceMemoryProperties memory_properties = physical_device.getMemoryProperties();
+
+  for (int i = 0; i < memory_properties.memoryTypeCount; i++) {
+    if ((memory_requirements.memoryTypeBits & (1 << i))
+        && (memory_properties.memoryTypes[i].propertyFlags
+            & (vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent))) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+void VulkanUtils::DestroyBuffer(VulkanUtils::BufferInputParams params, VulkanUtils::Buffer &buffer) {
+  vk::Device device = params.device;
+  assert(device != VK_NULL_HANDLE);
+
+  device.destroy(buffer.buffer, nullptr);
+  device.freeMemory(buffer.buffer_memory, nullptr);
+  buffer.buffer = VK_NULL_HANDLE;
+  buffer.buffer_memory = VK_NULL_HANDLE;
+}
+
 }// namespace glaceon
