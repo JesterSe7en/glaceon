@@ -39,23 +39,25 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   vertex_input_info.flags = vk::PipelineVertexInputStateCreateFlags();
   vertex_input_info.pNext = nullptr;
 
-  // Each vertex atttribute has the following...
+  // Each vertex attribute has the following...
   // ------ Vertex Attribute Descriptions -----
   // - Binding
   // - Location
   // - Offset
   // - Format - you would still use the VK_FORMAT enums even if the attribute is e.g. position.
   //            vec2 position's format would be vk::Format::eR32G32Sfloat => 2 - 32 bit signed floats
-  vertex_input_info.vertexAttributeDescriptionCount = 0;
-  vertex_input_info.pVertexAttributeDescriptions = nullptr;
+  std::vector<vk::VertexInputAttributeDescription> attribute_descriptions = GetPosColorAttributeDescriptions();
+  vertex_input_info.vertexAttributeDescriptionCount = attribute_descriptions.size();
+  vertex_input_info.pVertexAttributeDescriptions = attribute_descriptions.data();
 
   // Bindings tell vulkan where position data, color data, etc. is in the buffer
-  // Binding Descriptios have the following parameters...
+  // Binding Descriptions have the following parameters...
   // 1. Binding No.
   // 2. Stride - # of bytes per vertex
   // 3. InputRate - tells if the data is per vertex or per instance
-  vertex_input_info.vertexBindingDescriptionCount = 0;
-  vertex_input_info.pVertexBindingDescriptions = nullptr;
+  vk::VertexInputBindingDescription binding_description = GetPosColorBindingDescription();
+  vertex_input_info.vertexBindingDescriptionCount = 1;
+  vertex_input_info.pVertexBindingDescriptions = &binding_description;
   pipeline_create_info.pVertexInputState = &vertex_input_info;
 
   // Input Assembly - What sorts of shapes are we creating?
@@ -254,6 +256,42 @@ void VulkanPipeline::Destroy() {
     device.destroy(vk_pipeline_, nullptr);
     vk_pipeline_ = VK_NULL_HANDLE;
   }
+}
+
+vk::VertexInputBindingDescription VulkanPipeline::GetPosColorBindingDescription() {
+  // Provided by VK_VERSION_1_0
+  //  typedef struct VkVertexInputBindingDescription {
+  //    uint32_t             binding;
+  //    uint32_t             stride;
+  //    VkVertexInputRate    inputRate;
+  //  } VkVertexInputBindingDescription;
+
+  // Returns a binding description with POSITION and COLOR
+  vk::VertexInputBindingDescription pos_color_binding = {};
+  pos_color_binding.binding = 0;
+  pos_color_binding.stride = sizeof(glm::vec2) + sizeof(glm::vec3);// Position = vec3, Color = vec3
+  pos_color_binding.inputRate = vk::VertexInputRate::eVertex;
+  return pos_color_binding;
+}
+
+std::vector<vk::VertexInputAttributeDescription> VulkanPipeline::GetPosColorAttributeDescriptions() {
+  // Provided by VK_VERSION_1_0
+  //  typedef struct VkVertexInputAttributeDescription {
+  //    uint32_t    location;   // corresponds in shader code as e.g. layout(location = 0)
+  //    uint32_t    binding;
+  //    VkFormat    format;
+  //    uint32_t    offset;
+  //  } VkVertexInputAttributeDescription;
+
+  // Returns attribute descriptions for POSITION and COLOR
+  std::vector<vk::VertexInputAttributeDescription> attribute_descriptions = {};
+  // Position
+  attribute_descriptions.emplace_back(0, 0, vk::Format::eR32G32Sfloat, 0);
+  // Color
+  // offset is +vec2 since position is of vec2 size
+  attribute_descriptions.emplace_back(1, 0, vk::Format::eR32G32B32Sfloat, sizeof(glm::vec2));
+
+  return attribute_descriptions;
 }
 
 }// namespace glaceon
