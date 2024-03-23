@@ -19,4 +19,13 @@
 
 #endif// GLACEON_GLACEON_BASE_H_
 
+// res < 0 as some vulkan functions return just a status and not an error
+#define VK_CHECK(res)                                                                                                  \
+  {                                                                                                                    \
+    if (static_cast<int>(res) < 0) {                                                                                   \
+      GERROR("Vulkan error: {}", vk::to_string(res));                                                                  \
+      abort();                                                                                                         \
+    }                                                                                                                  \
+  }
+
 #include "TriangleMesh.h"
