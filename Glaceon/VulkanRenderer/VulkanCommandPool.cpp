@@ -52,14 +52,18 @@ void VulkanCommandPool::Initialize() {
 
 void VulkanCommandPool::Destroy() {
   if (vk_command_pool_ != VK_NULL_HANDLE) {
-    vkDestroyCommandPool(context_.GetVulkanLogicalDevice(), vk_command_pool_, nullptr);
+    vk::Device device = context_.GetVulkanLogicalDevice();
+    assert(device != VK_NULL_HANDLE);
+
+    device.destroy(vk_command_pool_);
     vk_command_pool_ = VK_NULL_HANDLE;
   }
 }
 void VulkanCommandPool::ResetCommandPool() {
-  if (vkResetCommandPool(context_.GetVulkanLogicalDevice(), vk_command_pool_, 0) != VK_SUCCESS) {
-    GERROR("Failed to reset command pool");
-  }
+  vk::Device device = context_.GetVulkanLogicalDevice();
+  assert(device != VK_NULL_HANDLE);
+
+  device.resetCommandPool(vk_command_pool_);
 }
 
 void VulkanCommandPool::RebuildCommandBuffers() {
