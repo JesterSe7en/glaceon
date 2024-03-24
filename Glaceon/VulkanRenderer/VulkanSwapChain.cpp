@@ -1,6 +1,7 @@
 #include "VulkanSwapChain.h"
 
 #include "../Logger.h"
+#include "../Base.h"
 #include "VulkanContext.h"
 
 namespace glaceon {
@@ -137,7 +138,7 @@ void VulkanSwapChain::PopulateSwapChainSupport() {
 void VulkanSwapChain::CreateSwapChain() {
   vk::SurfaceKHR surface = context_.GetSurface();
   vk::Device device = context_.GetVulkanLogicalDevice();
-  assert(surface != VK_NULL_HANDLE && device != VK_NULL_HANDLE);
+  VK_ASSERT(surface != VK_NULL_HANDLE && device != VK_NULL_HANDLE, "Failed to get Vulkan logical device or surface");
 
   uint32_t image_count =
       std::min(swap_chain_support_.capabilities.maxImageCount, swap_chain_support_.capabilities.minImageCount + 1);
@@ -174,8 +175,8 @@ void VulkanSwapChain::CreateSwapChain() {
   swapchain_create_info.imageArrayLayers = 1;
   swapchain_create_info.imageUsage = vk::ImageUsageFlags(vk::ImageUsageFlagBits::eColorAttachment);
 
-  assert(context_.GetQueueIndexes().graphics_family.has_value()
-         && context_.GetQueueIndexes().present_family.has_value());
+  VK_ASSERT(context_.GetQueueIndexes().graphics_family.has_value()
+         && context_.GetQueueIndexes().present_family.has_value(), "Failed to get graphics and present queue families");
   swap_chain_extent_ = swap_chain_support_.capabilities.currentExtent;
 
   QueueIndexes indexes = context_.GetQueueIndexes();
@@ -212,7 +213,7 @@ void VulkanSwapChain::CreateImageViews() {
   // during initialization aka vkCreateSwapchainKHR
 
   vk::Device device = context_.GetVulkanLogicalDevice();
-  assert(device != VK_NULL_HANDLE);
+  VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
 
   uint32_t image_count = 0;
   // get the number of images in the swap chain
@@ -309,8 +310,8 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
     swapchain_create_info.imageExtent.height = height = cap.currentExtent.height;
   }
 
-  assert(context_.GetQueueIndexes().graphics_family.has_value()
-         && context_.GetQueueIndexes().present_family.has_value());
+  VK_ASSERT(context_.GetQueueIndexes().graphics_family.has_value()
+         && context_.GetQueueIndexes().present_family.has_value(), "Swap chain requires both graphics and present queues");
 
   QueueIndexes indexes = context_.GetQueueIndexes();
   uint32_t queue_family_indices[] = {indexes.graphics_family.value(), indexes.present_family.value()};
@@ -356,7 +357,7 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
 
 void VulkanSwapChain::DestroyFrames() {
   vk::Device device = context_.GetVulkanLogicalDevice();
-  assert(device != VK_NULL_HANDLE);
+  VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get logical device");
 
   for (auto &swap_chain_frame : swap_chain_frames_) {
     // destroy image views
@@ -376,7 +377,7 @@ void VulkanSwapChain::DestroyFrames() {
 
 void VulkanSwapChain::CreateFrameBuffers() {
   vk::Device device = context_.GetVulkanLogicalDevice();
-  assert(device != VK_NULL_HANDLE);
+  VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get logical device");
 
   vk::FramebufferCreateInfo framebuffer_create_info = {};
   framebuffer_create_info.sType = vk::StructureType::eFramebufferCreateInfo;
@@ -402,7 +403,7 @@ void VulkanSwapChain::Destroy() {
   DestroyFrames();
 
   vk::Device device = context_.GetVulkanLogicalDevice();
-  assert(device != VK_NULL_HANDLE);
+  VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get logical device");
 
   if (vk_swapchain_ != VK_NULL_HANDLE) {
     // destroy swap chain

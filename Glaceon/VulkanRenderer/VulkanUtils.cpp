@@ -1,5 +1,6 @@
 #include "VulkanUtils.h"
 #include "../Logger.h"
+#include "../Base.h"
 
 namespace glaceon {
 std::vector<char> VulkanUtils::ReadFile(const std::string &filename) {
@@ -134,7 +135,7 @@ int VulkanUtils::FindMemoryIndex(VulkanUtils::BufferInputParams params, vk::Buff
 
 void VulkanUtils::DestroyBuffer(VulkanUtils::BufferInputParams params, VulkanUtils::Buffer &buffer) {
   vk::Device device = params.device;
-  assert(device != VK_NULL_HANDLE);
+  VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
 
   device.destroy(buffer.buffer, nullptr);
   device.freeMemory(buffer.buffer_memory, nullptr);

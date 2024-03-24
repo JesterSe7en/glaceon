@@ -1,5 +1,6 @@
 #include "VulkanDevice.h"
 
+#include "../Base.h"
 #include "../Logger.h"
 #include "VulkanContext.h"
 
@@ -23,7 +24,7 @@ void VulkanDevice::Initialize() {
   std::vector<vk::PhysicalDevice> gpus;
   if (instance.enumeratePhysicalDevices(&gpu_count, nullptr) != vk::Result::eSuccess) {
     GERROR("Failed to poll number of physical devices");
-    assert(gpu_count > 0);
+    VK_ASSERT(gpu_count == 0, "Failed to poll number of physical devices");
     return;
   }
   gpus.resize(gpu_count);
@@ -139,7 +140,7 @@ bool VulkanDevice::CheckDeviceRequirements(vk::PhysicalDevice &vk_physical_devic
 #endif
 
   vk::SurfaceKHR surface = context_.GetSurface();
-  assert(surface != VK_NULL_HANDLE);
+  VK_ASSERT(surface != VK_NULL_HANDLE, "Failed to get Vulkan surface");
 
   // first queue family that supports presentation
   for (uint32_t i = 0; i < queue_family_count; i++) {

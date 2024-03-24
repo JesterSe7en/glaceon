@@ -1,5 +1,6 @@
 #include "VulkanCommandPool.h"
 
+#include "../Base.h"
 #include "../Logger.h"
 #include "VulkanContext.h"
 
@@ -8,8 +9,8 @@ VulkanCommandPool::VulkanCommandPool(VulkanContext &context) : context_(context)
 
 void VulkanCommandPool::Initialize() {
   vk::Device device = context_.GetVulkanLogicalDevice();
-  assert(device != VK_NULL_HANDLE);
-  assert(context_.GetQueueIndexes().graphics_family.has_value());
+  VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
+  VK_ASSERT(context_.GetQueueIndexes().graphics_family.has_value(), "Failed to get graphics queue family index");
 
   // create command pool
   vk::CommandPoolCreateInfo command_pool_create_info = {};
@@ -53,7 +54,7 @@ void VulkanCommandPool::Initialize() {
 void VulkanCommandPool::Destroy() {
   if (vk_command_pool_ != VK_NULL_HANDLE) {
     vk::Device device = context_.GetVulkanLogicalDevice();
-    assert(device != VK_NULL_HANDLE);
+    VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
 
     device.destroy(vk_command_pool_);
     vk_command_pool_ = VK_NULL_HANDLE;
@@ -61,7 +62,7 @@ void VulkanCommandPool::Destroy() {
 }
 void VulkanCommandPool::ResetCommandPool() {
   vk::Device device = context_.GetVulkanLogicalDevice();
-  assert(device != VK_NULL_HANDLE);
+  VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
 
   device.resetCommandPool(vk_command_pool_);
 }
@@ -69,7 +70,7 @@ void VulkanCommandPool::ResetCommandPool() {
 void VulkanCommandPool::RebuildCommandBuffers() {
   ResetCommandPool();
   vk::Device device = context_.GetVulkanLogicalDevice();
-  assert(device != VK_NULL_HANDLE);
+  VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
 
   // destroy all old command buffers
   device.freeCommandBuffers(vk_command_pool_, 1, &vk_main_command_buffer_);

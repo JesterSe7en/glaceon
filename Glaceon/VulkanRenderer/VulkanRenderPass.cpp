@@ -1,6 +1,7 @@
 #include "VulkanRenderPass.h"
 
 #include "../Logger.h"
+#include "../Base.h"
 #include "VulkanContext.h"
 
 namespace glaceon {
@@ -42,7 +43,7 @@ void VulkanRenderPass::Initialize() {
   render_pass_create_info.pSubpasses = &subpass_description;
 
   vk::Device device = context_.GetVulkanLogicalDevice();
-  assert(device != nullptr);
+  VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
 
   if (device.createRenderPass(&render_pass_create_info, nullptr, &vk_render_pass_) != vk::Result::eSuccess) {
     GERROR("Failed to create render pass");
@@ -58,7 +59,10 @@ void VulkanRenderPass::Rebuild() {
 
 void VulkanRenderPass::Destroy() {
   if (vk_render_pass_ != nullptr) {
-    vkDestroyRenderPass(context_.GetVulkanLogicalDevice(), vk_render_pass_, nullptr);
+    vk::Device device = context_.GetVulkanLogicalDevice();
+    VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
+
+    device.destroy(vk_render_pass_, nullptr);
     vk_render_pass_ = VK_NULL_HANDLE;
   }
 }

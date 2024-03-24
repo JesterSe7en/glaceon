@@ -1,6 +1,7 @@
 #include "VulkanSync.h"
 
 #include "../Logger.h"
+#include "../Base.h"
 #include "VulkanContext.h"
 
 namespace glaceon {
@@ -9,10 +10,10 @@ VulkanSync::VulkanSync(VulkanContext &context) : context_(context) {}
 
 void VulkanSync::Initialize() {
   vk::Device device = context_.GetVulkanLogicalDevice();
-  assert(device != VK_NULL_HANDLE);
+  VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
 
-  assert(context_.GetVulkanSwapChain().GetVkSwapchain() != VK_NULL_HANDLE
-         && !context_.GetVulkanSwapChain().GetSwapChainFrames().empty());
+  VK_ASSERT(context_.GetVulkanSwapChain().GetVkSwapchain() != VK_NULL_HANDLE
+         && !context_.GetVulkanSwapChain().GetSwapChainFrames().empty(), "Failed to get Vulkan swap chain");
 
   size_t max_frames_in_flight = context_.GetVulkanSwapChain().GetSwapChainFrames().size();
 
@@ -65,7 +66,7 @@ void VulkanSync::Rebuild() {
 
 void VulkanSync::Destroy() {
   vk::Device device = context_.GetVulkanLogicalDevice();
-  assert(device != VK_NULL_HANDLE);
+  VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
 
   for (vk::Semaphore semaphore : image_available_semaphores_) {
     if (semaphore != VK_NULL_HANDLE) {

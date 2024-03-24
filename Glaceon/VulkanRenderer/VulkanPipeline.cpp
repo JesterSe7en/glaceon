@@ -1,5 +1,6 @@
 #include "VulkanPipeline.h"
 
+#include "../Base.h"
 #include "../Logger.h"
 #include "VulkanContext.h"
 #include "VulkanUtils.h"
@@ -12,7 +13,7 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   pipeline_config_ = pipeline_config;
   vk::Pipeline old_pipeline = vk_pipeline_;
   vk::Device device = context_.GetVulkanLogicalDevice();
-  assert(device != nullptr);
+  VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get logical device");
 
   vk::PipelineCacheCreateInfo pipeline_cache_info;
   pipeline_cache_info.sType = vk::StructureType::ePipelineCacheCreateInfo;
@@ -181,7 +182,7 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
 
   // Render Pass
   vk::RenderPass render_pass = context_.GetVulkanRenderPass().GetVkRenderPass();
-  assert(render_pass != nullptr);
+  VK_ASSERT(render_pass != VK_NULL_HANDLE, "Failed to get Vulkan render pass");
   pipeline_create_info.renderPass = render_pass;
 
   // Extra stuff
@@ -213,7 +214,7 @@ void VulkanPipeline::Rebuild() {
 // This is so we can push constants and descriptor sets aka. Uniforms
 void VulkanPipeline::CreatePipelineLayout() {
   vk::Device device = context_.GetVulkanLogicalDevice();
-  assert(device != nullptr);
+  VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
 
   vk::PipelineLayoutCreateInfo pipeline_layout_info = {};
   // here we are not setting ANY uniform data
