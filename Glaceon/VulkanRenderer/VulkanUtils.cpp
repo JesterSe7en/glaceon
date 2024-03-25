@@ -89,7 +89,7 @@ glaceon::VulkanUtils::Buffer VulkanUtils::CreateBuffer(VulkanUtils::BufferInputP
   buffer.buffer = device.createBuffer(buffer_create_info);
 
   //check memory requirements of buffer
-  int memory_index = FindMemoryIndex(params, buffer.buffer);
+  uint32_t memory_index = FindMemoryIndex(params, buffer.buffer);
   if (memory_index < 0) {
     GERROR("Failed to find memory index");
     return {};
@@ -113,7 +113,7 @@ glaceon::VulkanUtils::Buffer VulkanUtils::CreateBuffer(VulkanUtils::BufferInputP
   return buffer;
 }
 
-int VulkanUtils::FindMemoryIndex(VulkanUtils::BufferInputParams params, vk::Buffer buffer) {
+uint32_t VulkanUtils::FindMemoryIndex(VulkanUtils::BufferInputParams params, vk::Buffer buffer) {
   vk::Device device = params.device;
   vk::PhysicalDevice physical_device = params.physical_device;
 
@@ -123,7 +123,7 @@ int VulkanUtils::FindMemoryIndex(VulkanUtils::BufferInputParams params, vk::Buff
   // these are the types of memory that are available on the GPU, check memory type - stored as a bitfield
   vk::PhysicalDeviceMemoryProperties memory_properties = physical_device.getMemoryProperties();
 
-  for (int i = 0; i < memory_properties.memoryTypeCount; i++) {
+  for (uint32_t i = 0; i < memory_properties.memoryTypeCount; i++) {
     if ((memory_requirements.memoryTypeBits & (1 << i))
         && (memory_properties.memoryTypes[i].propertyFlags
             & (vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent))) {

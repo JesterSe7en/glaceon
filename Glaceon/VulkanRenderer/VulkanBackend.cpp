@@ -36,7 +36,7 @@ void VulkanBackend::Initialize() {
     }
   }
 
-  instance_create_info.enabledLayerCount = validation_layers.size();
+  instance_create_info.enabledLayerCount = static_cast<uint32_t>(validation_layers.size());
   instance_create_info.ppEnabledLayerNames = validation_layers.data();
 
   vk::DebugUtilsMessengerCreateInfoEXT debug_create_info;
@@ -79,7 +79,7 @@ void VulkanBackend::Initialize() {
                                 instance_extensions.end());
     }
   }
-  instance_create_info.enabledExtensionCount = instance_extensions.size();
+  instance_create_info.enabledExtensionCount = static_cast<uint32_t>(instance_extensions.size());
   instance_create_info.ppEnabledExtensionNames = instance_extensions.data();
 
   if (vk::createInstance(&instance_create_info, nullptr, &instance_) != vk::Result::eSuccess) {

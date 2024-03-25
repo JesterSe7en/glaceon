@@ -48,7 +48,7 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   // - Format - you would still use the VK_FORMAT enums even if the attribute is e.g. position.
   //            vec2 position's format would be vk::Format::eR32G32Sfloat => 2 - 32-bit signed floats
   std::vector<vk::VertexInputAttributeDescription> attribute_descriptions = GetPosColorAttributeDescriptions();
-  vertex_input_info.vertexAttributeDescriptionCount = attribute_descriptions.size();
+  vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribute_descriptions.size());
   vertex_input_info.pVertexAttributeDescriptions = attribute_descriptions.data();
 
   // Bindings tell vulkan where position data, color data, etc. is in the buffer
@@ -147,7 +147,7 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   shader_stages.push_back(fragment_shader_stage);
 
   // Adding shader modules to pipeline
-  pipeline_create_info.stageCount = shader_stages.size();
+  pipeline_create_info.stageCount = static_cast<uint32_t>(shader_stages.size());
   pipeline_create_info.pStages = shader_stages.data();
 
   // Multisampling

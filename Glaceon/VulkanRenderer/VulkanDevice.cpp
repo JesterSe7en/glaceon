@@ -66,9 +66,9 @@ void VulkanDevice::Initialize() {
 
   vk::DeviceCreateInfo create_info = {};
   create_info.sType = vk::StructureType::eDeviceCreateInfo;
-  create_info.queueCreateInfoCount = queue_create_info.size();
+  create_info.queueCreateInfoCount = static_cast<uint32_t>(queue_create_info.size());
   create_info.pQueueCreateInfos = queue_create_info.data();
-  create_info.enabledExtensionCount = context_.GetDeviceExtensions().size();
+  create_info.enabledExtensionCount = static_cast<uint32_t>( context_.GetDeviceExtensions().size());
   create_info.ppEnabledExtensionNames = context_.GetDeviceExtensions().data();
 
   if (vk_physical_device_.createDevice(&create_info, nullptr, &vk_device_) != vk::Result::eSuccess) {
@@ -125,7 +125,7 @@ bool VulkanDevice::CheckDeviceRequirements(vk::PhysicalDevice &vk_physical_devic
 
   uint32_t queue_family_count;
   queue_family_ = vk_physical_device.getQueueFamilyProperties();
-  queue_family_count = queue_family_.size();
+  queue_family_count = static_cast<uint32_t>(queue_family_.size());
 
 #if _DEBUG
   for (uint32_t i = 0; i < queue_family_count; i++) {
