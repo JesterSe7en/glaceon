@@ -60,6 +60,12 @@ set(ALL_FILES
         ${Source_Files}
         TriangleMesh.cpp
         TriangleMesh.h
+        SquareMesh.cpp
+        SquareMesh.h
+        StarMesh.cpp
+        StarMesh.h
+        VertexBufferCollection.cpp
+        VertexBufferCollection.h
 )
 
 # Target

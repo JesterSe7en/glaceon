@@ -9,6 +9,8 @@ class Scene {
   Scene();
 
   std::vector<glm::vec3> triangle_positions_;
+  std::vector<glm::vec3> square_positions_;
+  std::vector<glm::vec3> star_positions_;
 };
 
 }// namespace glaceon

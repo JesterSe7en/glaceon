@@ -20,11 +20,12 @@
 #endif// GLACEON_GLACEON_BASE_H_
 
 // res < 0 as some vulkan functions return just a status and not an error
-#define VK_CHECK()                                                                                                     \
+#define VK_CHECK(f, msg)                                                                                               \
   do {                                                                                                                 \
-    vk::Result res = (f);                                                                                              \
-    if (res < 0) {                                                                                                     \
-      GERROR("Vulkan error: {}", vk::to_string(res))                                                                   \
+    vk::Result r = (f);                                                                                              \
+    if (static_cast<int>(r) < 0) {                                                                                                     \
+      GERROR("Vulkan error: {}", msg);                                                                                 \
+      GERROR("Vulkan Validation error: {}", vk::to_string(f));                                                         \
       exit(EXIT_FAILURE);                                                                                              \
     }                                                                                                                  \
   } while (0)
@@ -42,3 +43,7 @@
 #endif
 
 #include "TriangleMesh.h"
+#include "SquareMesh.h"
+#include "StarMesh.h"
+
+

@@ -71,11 +71,32 @@ static void ImGuiInitialize(VulkanContext &context, GLFWwindow *glfw_window) {
 }
 
 void MakeAssets(VulkanContext &context) {
-  triangle_mesh = new TriangleMesh(context.GetVulkanLogicalDevice(), context.GetVulkanPhysicalDevice());
+  vertex_buffer_collection = new VertexBufferCollection();
+  std::vector<float> triangle_vertices = {0.0f, -0.05f, 0.0f,   0.0f,  1.0f, 0.05f, 0.05f, 0.0f,
+                                 0.0f, 1.0f,   -0.05f, 0.05f, 0.0f, 0.0f,  1.0f};
+  vertex_buffer_collection->Add(MeshType::TRIANGLE, triangle_vertices);
+
+  std::vector<float> square_vertices = {{-0.05f, 0.05f,  1.0f, 0.0f, 0.0f, -0.05f, -0.05f, 1.0f, 0.0f, 0.0f,
+                                  0.05f,  -0.05f, 1.0f, 0.0f, 0.0f, 0.05f,  -0.05f, 1.0f, 0.0f, 0.0f,
+                                  0.05f,  0.05f,  1.0f, 0.0f, 0.0f, -0.05f, 0.05f,  1.0f, 0.0f, 0.0f}};
+  vertex_buffer_collection->Add(MeshType::SQUARE, square_vertices);
+
+  std::vector<float> star_vertices = {
+      {-0.05f, -0.025f, 0.0f, 0.0f, 1.0f, -0.02f, -0.025f, 0.0f, 0.0f, 1.0f, -0.03f, 0.0f,    0.0f, 0.0f, 1.0f,
+       -0.02f, -0.025f, 0.0f, 0.0f, 1.0f, 0.0f,   -0.05f,  0.0f, 0.0f, 1.0f, 0.02f,  -0.025f, 0.0f, 0.0f, 1.0f,
+       -0.03f, 0.0f,    0.0f, 0.0f, 1.0f, -0.02f, -0.025f, 0.0f, 0.0f, 1.0f, 0.02f,  -0.025f, 0.0f, 0.0f, 1.0f,
+       0.02f,  -0.025f, 0.0f, 0.0f, 1.0f, 0.05f,  -0.025f, 0.0f, 0.0f, 1.0f, 0.03f,  0.0f,    0.0f, 0.0f, 1.0f,
+       -0.03f, 0.0f,    0.0f, 0.0f, 1.0f, 0.02f,  -0.025f, 0.0f, 0.0f, 1.0f, 0.03f,  0.0f,    0.0f, 0.0f, 1.0f,
+       0.03f,  0.0f,    0.0f, 0.0f, 1.0f, 0.04f,  0.05f,   0.0f, 0.0f, 1.0f, 0.0f,   0.01f,   0.0f, 0.0f, 1.0f,
+       -0.03f, 0.0f,    0.0f, 0.0f, 1.0f, 0.03f,  0.0f,    0.0f, 0.0f, 1.0f, 0.0f,   0.01f,   0.0f, 0.0f, 1.0f,
+       -0.03f, 0.0f,    0.0f, 0.0f, 1.0f, 0.0f,   0.01f,   0.0f, 0.0f, 1.0f, -0.04f, 0.05f,   0.0f, 0.0f, 1.0f}};
+  vertex_buffer_collection->Add(MeshType::STAR, star_vertices);
+
+  vertex_buffer_collection->Finalize(context.GetVulkanLogicalDevice(), context.GetVulkanPhysicalDevice());
 }
 
 void PrepareScene(vk::CommandBuffer command_buffer) {
-  vk::Buffer vertex_buffers[] = {triangle_mesh->GetBuffer().buffer};
+  vk::Buffer vertex_buffers[] = {vertex_buffer_collection->vertex_buffer_.buffer};
   vk::DeviceSize offsets[] = {0};
   command_buffer.bindVertexBuffers(0, 1, vertex_buffers, offsets);
 }
@@ -126,13 +147,41 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
   // take a look at scene class and use the triangle_positions_ vector
 
   // we are basically pushing a constant to the vertex shader and rendering the triangle at multiple positions.
+
+
+  // ------ Draw triangles ------
+  int first_vertex = vertex_buffer_collection->offsets_.find(MeshType::TRIANGLE)->second;
+  int vertex_count = vertex_buffer_collection->sizes_.find(MeshType::TRIANGLE)->second;
   std::vector<glm::vec3> triangle_positions = currentApp->GetScene().triangle_positions_;
 
   for (auto position : triangle_positions) {
     glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position);
     command_buffer.pushConstants(pipeline_layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4),
                                  &model_matrix);
-    command_buffer.draw(3, 1, 0, 0);// This draws a triangle - hard coded for now
+    command_buffer.draw(vertex_count, 1, first_vertex, 0);// This draws a triangle - hard coded for now
+  }
+
+
+  // ------ Draw squares ------
+  first_vertex = vertex_buffer_collection->offsets_.find(MeshType::SQUARE)->second;
+  vertex_count = vertex_buffer_collection->sizes_.find(MeshType::SQUARE)->second;
+  std::vector<glm::vec3> square_positions = currentApp->GetScene().square_positions_;
+  for (auto position : square_positions) {
+    glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position);
+    command_buffer.pushConstants(pipeline_layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4),
+                                 &model_matrix);
+    command_buffer.draw(vertex_count, 1, first_vertex, 0);// This draws a triangle - hard coded for now
+  }
+
+  // ------ Draw stars -------
+  first_vertex = vertex_buffer_collection->offsets_.find(MeshType::STAR)->second;
+  vertex_count = vertex_buffer_collection->sizes_.find(MeshType::STAR)->second;
+  std::vector<glm::vec3> star_positions = currentApp->GetScene().star_positions_;
+  for (auto position : star_positions) {
+    glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position);
+    command_buffer.pushConstants(pipeline_layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4),
+                                 &model_matrix);
+    command_buffer.draw(vertex_count, 1, first_vertex, 0);// This draws a triangle - hard coded for now
   }
 }
 
@@ -158,7 +207,7 @@ static void SetupRender(VulkanContext &context) {
                                  VK_NULL_HANDLE, &context.current_frame_index_);
 
   // reset the fence - "close the fence behind us"
-  (void) device.resetFences(1, &in_flight_fences[context.current_frame_index_]);
+   VK_CHECK(device.resetFences(1, &in_flight_fences[context.current_frame_index_]), "Failed to reset fences");
 
   if (res == vk::Result::eErrorOutOfDateKHR || res == vk::Result::eSuboptimalKHR) {
     swapChainRebuild = true;
@@ -230,10 +279,7 @@ void SubmitCommandBuffer(VulkanContext &context) {
 
   // fence is provided here so that once we submit the command buffer, we can
   // safely reset the fence
-  if (graphics_queue.submit(1, &submit_info, in_flight_fences[context.current_frame_index_]) != vk::Result::eSuccess) {
-    GERROR("Failed to submit to queue");
-    return;
-  }
+  VK_CHECK(graphics_queue.submit(1, &submit_info, in_flight_fences[context.current_frame_index_]), "Failed to submit to queue");
 }
 
 // void framebufferResizeCallback(GLFWwindow *window, int width, int height) {
@@ -332,7 +378,7 @@ void GLACEON_API RunGame(Application *app) {
   int width, height;
   ImGuiIO &io = ImGui::GetIO();
 
-  // create our triangle mesh
+  // create our giant vertex buffer from "assets"
   MakeAssets(context);
 
   app->OnStart();

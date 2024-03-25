@@ -40,4 +40,10 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+enum MeshType {
+  TRIANGLE = 0,
+  SQUARE = 1,
+  STAR = 2
+};
+
 #endif//PCH_H
