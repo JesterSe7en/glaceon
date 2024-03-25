@@ -73,12 +73,12 @@ static void ImGuiInitialize(VulkanContext &context, GLFWwindow *glfw_window) {
 void MakeAssets(VulkanContext &context) {
   vertex_buffer_collection = new VertexBufferCollection();
   std::vector<float> triangle_vertices = {0.0f, -0.05f, 0.0f,   0.0f,  1.0f, 0.05f, 0.05f, 0.0f,
-                                 0.0f, 1.0f,   -0.05f, 0.05f, 0.0f, 0.0f,  1.0f};
+                                          0.0f, 1.0f,   -0.05f, 0.05f, 0.0f, 0.0f,  1.0f};
   vertex_buffer_collection->Add(MeshType::TRIANGLE, triangle_vertices);
 
   std::vector<float> square_vertices = {{-0.05f, 0.05f,  1.0f, 0.0f, 0.0f, -0.05f, -0.05f, 1.0f, 0.0f, 0.0f,
-                                  0.05f,  -0.05f, 1.0f, 0.0f, 0.0f, 0.05f,  -0.05f, 1.0f, 0.0f, 0.0f,
-                                  0.05f,  0.05f,  1.0f, 0.0f, 0.0f, -0.05f, 0.05f,  1.0f, 0.0f, 0.0f}};
+                                         0.05f,  -0.05f, 1.0f, 0.0f, 0.0f, 0.05f,  -0.05f, 1.0f, 0.0f, 0.0f,
+                                         0.05f,  0.05f,  1.0f, 0.0f, 0.0f, -0.05f, 0.05f,  1.0f, 0.0f, 0.0f}};
   vertex_buffer_collection->Add(MeshType::SQUARE, square_vertices);
 
   std::vector<float> star_vertices = {
@@ -92,7 +92,9 @@ void MakeAssets(VulkanContext &context) {
        -0.03f, 0.0f,    0.0f, 0.0f, 1.0f, 0.0f,   0.01f,   0.0f, 0.0f, 1.0f, -0.04f, 0.05f,   0.0f, 0.0f, 1.0f}};
   vertex_buffer_collection->Add(MeshType::STAR, star_vertices);
 
-  vertex_buffer_collection->Finalize(context.GetVulkanLogicalDevice(), context.GetVulkanPhysicalDevice());
+  vertex_buffer_collection->Finalize(context.GetVulkanLogicalDevice(), context.GetVulkanPhysicalDevice(),
+                                     context.GetVulkanDevice().GetVkGraphicsQueue(),
+                                     context.GetVulkanCommandPool().GetVkMainCommandBuffer());
 }
 
 void PrepareScene(vk::CommandBuffer command_buffer) {
@@ -148,7 +150,6 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
 
   // we are basically pushing a constant to the vertex shader and rendering the triangle at multiple positions.
 
-
   // ------ Draw triangles ------
   int first_vertex = vertex_buffer_collection->offsets_.find(MeshType::TRIANGLE)->second;
   int vertex_count = vertex_buffer_collection->sizes_.find(MeshType::TRIANGLE)->second;
@@ -160,7 +161,6 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
                                  &model_matrix);
     command_buffer.draw(vertex_count, 1, first_vertex, 0);// This draws a triangle - hard coded for now
   }
-
 
   // ------ Draw squares ------
   first_vertex = vertex_buffer_collection->offsets_.find(MeshType::SQUARE)->second;
@@ -207,7 +207,7 @@ static void SetupRender(VulkanContext &context) {
                                  VK_NULL_HANDLE, &context.current_frame_index_);
 
   // reset the fence - "close the fence behind us"
-   VK_CHECK(device.resetFences(1, &in_flight_fences[context.current_frame_index_]), "Failed to reset fences");
+  VK_CHECK(device.resetFences(1, &in_flight_fences[context.current_frame_index_]), "Failed to reset fences");
 
   if (res == vk::Result::eErrorOutOfDateKHR || res == vk::Result::eSuboptimalKHR) {
     swapChainRebuild = true;
@@ -279,7 +279,8 @@ void SubmitCommandBuffer(VulkanContext &context) {
 
   // fence is provided here so that once we submit the command buffer, we can
   // safely reset the fence
-  VK_CHECK(graphics_queue.submit(1, &submit_info, in_flight_fences[context.current_frame_index_]), "Failed to submit to queue");
+  VK_CHECK(graphics_queue.submit(1, &submit_info, in_flight_fences[context.current_frame_index_]),
+           "Failed to submit to queue");
 }
 
 // void framebufferResizeCallback(GLFWwindow *window, int width, int height) {

@@ -127,12 +127,42 @@ int VulkanUtils::FindMemoryIndex(VulkanUtils::BufferInputParams &params, vk::Buf
 
   for (uint32_t i = 0; i < memory_properties.memoryTypeCount; i++) {
     if ((memory_requirements.memoryTypeBits & (1 << i))
-        && (memory_properties.memoryTypes[i].propertyFlags
-            & (vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent))) {
+        && (memory_properties.memoryTypes[i].propertyFlags & params.memory_property_flags)) {
       return static_cast<int>(i);
     }
   }
   return -1;
+}
+
+void VulkanUtils::CopyBuffer(VulkanUtils::Buffer &src, VulkanUtils::Buffer &dst, vk::DeviceSize size, vk::Queue queue,
+                             vk::CommandBuffer command_buffer) {
+  // command buffer should be the main one
+
+  command_buffer.reset();
+
+  vk::CommandBufferBeginInfo command_buffer_begin_info = {};
+  command_buffer_begin_info.sType = vk::StructureType::eCommandBufferBeginInfo;
+  command_buffer_begin_info.flags = vk::CommandBufferUsageFlags(vk::CommandBufferUsageFlagBits::eOneTimeSubmit);
+  command_buffer_begin_info.pNext = nullptr;
+  command_buffer.begin(command_buffer_begin_info);
+
+  // create copyregion with vk::BuFferCopy
+  vk::BufferCopy copy_region = {};
+  copy_region.srcOffset = 0;
+  copy_region.dstOffset = 0;
+  copy_region.size = size;
+  command_buffer.copyBuffer(src.buffer, dst.buffer, 1, &copy_region);
+
+  command_buffer.end();
+
+  vk::SubmitInfo submit_info = {};
+  submit_info.sType = vk::StructureType::eSubmitInfo;
+  submit_info.pNext = nullptr;
+  submit_info.commandBufferCount = 1;
+  submit_info.pCommandBuffers = &command_buffer;
+
+  VK_CHECK(queue.submit(1, &submit_info, nullptr), "Failed to submit command buffer - copy buffer");
+  queue.waitIdle();
 }
 
 void VulkanUtils::DestroyBuffer(VulkanUtils::BufferInputParams params, VulkanUtils::Buffer &buffer) {
@@ -144,5 +174,6 @@ void VulkanUtils::DestroyBuffer(VulkanUtils::BufferInputParams params, VulkanUti
   buffer.buffer = VK_NULL_HANDLE;
   buffer.buffer_memory = VK_NULL_HANDLE;
 }
+
 
 }// namespace glaceon

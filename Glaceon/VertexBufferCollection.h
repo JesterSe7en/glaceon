@@ -20,7 +20,7 @@ class VertexBufferCollection {
   void Add(MeshType type, const std::vector<float>& verticies);
 
   // Finalizes the collection of vertex buffers, actually allocates the memory
-  void Finalize(vk::Device logical_device, vk::PhysicalDevice physical_device);
+  void Finalize(vk::Device logical_device, vk::PhysicalDevice physical_device, vk::Queue queue, vk::CommandBuffer command_buffer);
   VulkanUtils::Buffer vertex_buffer_;
 
   std::unordered_map<MeshType, int>offsets_;
