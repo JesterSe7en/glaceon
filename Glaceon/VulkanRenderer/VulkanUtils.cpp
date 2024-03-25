@@ -1,6 +1,6 @@
 #include "VulkanUtils.h"
-#include "../Logger.h"
 #include "../Base.h"
+#include "../Logger.h"
 
 namespace glaceon {
 std::vector<char> VulkanUtils::ReadFile(const std::string &filename) {
@@ -89,7 +89,7 @@ glaceon::VulkanUtils::Buffer VulkanUtils::CreateBuffer(VulkanUtils::BufferInputP
   buffer.buffer = device.createBuffer(buffer_create_info);
 
   //check memory requirements of buffer
-  uint32_t memory_index = FindMemoryIndex(params, buffer.buffer);
+  int memory_index = FindMemoryIndex(params, buffer.buffer);
   if (memory_index < 0) {
     GERROR("Failed to find memory index");
     return {};
@@ -113,12 +113,14 @@ glaceon::VulkanUtils::Buffer VulkanUtils::CreateBuffer(VulkanUtils::BufferInputP
   return buffer;
 }
 
-uint32_t VulkanUtils::FindMemoryIndex(VulkanUtils::BufferInputParams params, vk::Buffer buffer) {
+int VulkanUtils::FindMemoryIndex(VulkanUtils::BufferInputParams &params, vk::Buffer buffer) {
   vk::Device device = params.device;
   vk::PhysicalDevice physical_device = params.physical_device;
 
   // requirements from the buffer, these need to be available from the GPU
   vk::MemoryRequirements memory_requirements = device.getBufferMemoryRequirements(buffer);
+  // The size member of the VkMemoryRequirements structure returned from a call to vkGetBufferMemoryRequirements with buffer must be less than or equal to the size of memory minus memoryOffset
+  if (params.size < memory_requirements.size) { params.size = memory_requirements.size; }
 
   // these are the types of memory that are available on the GPU, check memory type - stored as a bitfield
   vk::PhysicalDeviceMemoryProperties memory_properties = physical_device.getMemoryProperties();
@@ -127,7 +129,7 @@ uint32_t VulkanUtils::FindMemoryIndex(VulkanUtils::BufferInputParams params, vk:
     if ((memory_requirements.memoryTypeBits & (1 << i))
         && (memory_properties.memoryTypes[i].propertyFlags
             & (vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent))) {
-      return i;
+      return static_cast<int>(i);
     }
   }
   return -1;

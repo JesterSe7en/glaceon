@@ -26,7 +26,7 @@ class VulkanUtils {
     vk::BufferUsageFlags buffer_usage;
   };
   static Buffer CreateBuffer(BufferInputParams params);
-  static uint32_t FindMemoryIndex(BufferInputParams params, vk::Buffer buffer);
+  static int FindMemoryIndex(BufferInputParams &params, vk::Buffer buffer);
   static void DestroyBuffer(BufferInputParams params, Buffer &buffer);
 };
 
