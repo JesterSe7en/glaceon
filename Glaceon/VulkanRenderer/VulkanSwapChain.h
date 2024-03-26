@@ -2,6 +2,7 @@
 #define GLACEON_GLACEON_VULKANRENDERER_VULKANSWAPCHAIN_H_
 
 #include "../pch.h"
+#include "VulkanUtils.h"
 
 namespace glaceon {
 
@@ -13,11 +14,24 @@ struct SwapChainSupportDetails {
   std::vector<vk::PresentModeKHR> present_modes;
 };
 
+// maybe put this in different file?
+struct UniformBufferObject {
+  glm::mat4 view;
+  glm::mat4 proj;
+  glm::mat4 view_proj;
+};
+
 struct SwapChainFrame {
   vk::Image image;
   vk::ImageView image_view;
   vk::Framebuffer frame_buffer;
+
+  // drawing resources
+  UniformBufferObject camera_data;
+  VulkanUtils::Buffer camera_data_buffer;   // used to pass uniform data from CPU (aka camera_data) to GPU
+  void *camera_data_mapped = nullptr;   // pointer to mapped memory
 };
+
 
 class VulkanSwapChain {
  public:
@@ -46,6 +60,7 @@ class VulkanSwapChain {
   void CreateSwapChain();
   void CreateImageViews();
   void CreateFrameBuffers();
+  void CreateUboResources();
   void DestroyFrames();
 };
 

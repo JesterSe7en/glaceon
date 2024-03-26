@@ -103,6 +103,18 @@ void PrepareScene(vk::CommandBuffer command_buffer) {
   command_buffer.bindVertexBuffers(0, 1, vertex_buffers, offsets);
 }
 
+void PrepareFrame(uint32_t image_index) {
+    glm::vec3 eye = {1.0f, 0.0f, 1.0f};
+    glm::vec3 center = {0.0f, 0.0f, 0.0f};
+    glm::vec3 up ={ 0.0f, 0.0f, 1.0f};
+    glm::mat4 view = glm::lookAt(eye, center, up);
+
+    // later use swapchain to get aspect ratio
+    glm::mat4 proj = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.01f, 10.0f);
+    proj[1][1] *= -1;  // to convert from opengl to vulkan????
+    uniform_buffer_collection->view_proj_ = proj * view;  
+}
+
 static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_index) {
   VulkanContext &context = currentApp->GetVulkanContext();
 
@@ -130,6 +142,8 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
   command_buffer.beginRenderPass(&render_pass_info, vk::SubpassContents::eInline);
   vk::Pipeline pipeline = context.GetVulkanPipeline().GetVkPipeline();
   command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
+
+  PrepareFrame();
 
   // Gets the vertex buffer data from TriangleMesh and pushes it as uniform data in anticipation for the vertex shader to use.
   PrepareScene(command_buffer);
@@ -357,6 +371,15 @@ void GLACEON_API RunGame(Application *app) {
   context.SetSurface(surface);
   context.AddDeviceExtension(vk::KHRSwapchainExtensionName);
   context.GetVulkanDevice().Initialize();
+
+  DescriptorSetLayoutParams params;
+  params.count = 1;
+  params.binding.push_back(0);
+  params.type.push_back(vk::DescriptorType::eUniformBuffer);
+  params.type_count.push_back(1);
+  params.stage.push_back(vk::ShaderStageFlagBits::eVertex);
+  context.GetVulkanPipeline().CreateDescriptorSetLayout(params);
+
   context.GetVulkanRenderPass().Initialize();
   context.GetVulkanSwapChain().Initialize();
   context.GetVulkanCommandPool().Initialize();

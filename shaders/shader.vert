@@ -15,6 +15,12 @@
 //    vec3(0.0, 0.0, 1.0)
 //);
 
+layout (binding = 0) uniform UBO {
+    mat4 view;
+    mat4 proj;
+    mat4 view_proj;
+} cameraData;
+
 // since we have attribute description now set in the pipeline (vec2(x,y) - position, vec3(rgb) - color layout)
 // see VulkanPipeline, "GetPosColorBindingDescription()"
 layout (location = 0) in vec2 vertex_position;
@@ -36,6 +42,6 @@ void main() {
     //    fragColor = colors[gl_VertexIndex];
 
     // instead of using the hardcoded values, we now use passed in data from the graphics pipeline.
-    gl_Position = ObjectData.model * vec4(vertex_position, 0.0, 1.0);
+    gl_Position = cameraData.view_proj * ObjectData.model * vec4(vertex_position, 0.0, 1.0);
     fragColor = vertex_color;
 }

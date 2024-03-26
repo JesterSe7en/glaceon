@@ -7,9 +7,13 @@
 
 namespace glaceon {
 
-VulkanPipeline::VulkanPipeline(VulkanContext &context) : context_(context) {}
+VulkanPipeline::VulkanPipeline(VulkanContext &context)
+    : context_(context), vk_pipeline_(VK_NULL_HANDLE), vk_pipeline_cache_(VK_NULL_HANDLE),
+      vk_descriptor_set_layout_(VK_NULL_HANDLE), vk_pipeline_layout_(VK_NULL_HANDLE) {}
 
 void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
+  VK_ASSERT(vk_descriptor_set_layout_ != VK_NULL_HANDLE,
+            "Failed to get descriptor set layout; did you initialize descriptor set layout?");
   pipeline_config_ = pipeline_config;
   vk::Pipeline old_pipeline = vk_pipeline_;
   vk::Device device = context_.GetVulkanLogicalDevice();
@@ -219,8 +223,8 @@ void VulkanPipeline::CreatePipelineLayout() {
   vk::PipelineLayoutCreateInfo pipeline_layout_info = {};
   // here we are not setting ANY uniform data
   pipeline_layout_info.sType = vk::StructureType::ePipelineLayoutCreateInfo;
-  pipeline_layout_info.setLayoutCount = 0;// this can push arbitrary data (usually large like an image) to pipeline
-  pipeline_layout_info.pSetLayouts = nullptr;
+  pipeline_layout_info.setLayoutCount = 1;// this can push arbitrary data (usually large like an image) to pipeline
+  pipeline_layout_info.pSetLayouts = &vk_descriptor_set_layout_;
 
   //  pipeline_layout_info.pushConstantRangeCount = 0;  // this can only push small data to pipeline like one matrix
   //  pipeline_layout_info.pPushConstantRanges = nullptr;
@@ -241,8 +245,57 @@ void VulkanPipeline::CreatePipelineLayout() {
   }
 }
 
+void VulkanPipeline::CreateDescriptorSetLayout(DescriptorSetLayoutParams params) {
+  vk::Device device = context_.GetVulkanLogicalDevice();
+  VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
+  // Descriptor Set layout just describes how data in a descriptor set should be laid out
+  // i.e. it is kind of like an interface.  Only describes how the data should be shaped.
+
+  // Provided by VK_VERSION_1_0
+  //  typedef struct VkDescriptorSetLayoutCreateInfo {
+  //    VkStructureType                        sType;
+  //    const void*                            pNext;
+  //    VkDescriptorSetLayoutCreateFlags       flags;
+  //    uint32_t                               bindingCount;
+  //    const VkDescriptorSetLayoutBinding*    pBindings;
+  //  } VkDescriptorSetLayoutCreateInfo;
+
+  vk::DescriptorSetLayoutCreateInfo descriptor_set_layout_info = {};
+  descriptor_set_layout_info.sType = vk::StructureType::eDescriptorSetLayoutCreateInfo;
+  descriptor_set_layout_info.pNext = nullptr;
+  descriptor_set_layout_info.flags = vk::DescriptorSetLayoutCreateFlags();
+
+  std::vector<vk::DescriptorSetLayoutBinding> bindings;
+  bindings.reserve(params.count);
+  for (int i = 0; i < params.count; i++) {
+    // Provided by VK_VERSION_1_0
+    //    typedef struct VkDescriptorSetLayoutBinding {
+    //      uint32_t              binding;
+    //      VkDescriptorType      descriptorType;
+    //      uint32_t              descriptorCount;
+    //      VkShaderStageFlags    stageFlags;
+    //      const VkSampler*      pImmutableSamplers;
+    //    } VkDescriptorSetLayoutBinding;
+    vk::DescriptorSetLayoutBinding binding = {};
+    binding.binding = params.binding[i];
+    binding.descriptorType = params.type[i];
+    binding.descriptorCount = params.type_count[i];
+    binding.stageFlags = params.stage[i];
+    bindings.push_back(binding);
+  }
+
+  descriptor_set_layout_info.bindingCount = static_cast<uint32_t>(bindings.size());
+  descriptor_set_layout_info.pBindings = bindings.data();
+
+  VK_CHECK(device.createDescriptorSetLayout(&descriptor_set_layout_info, nullptr, &vk_descriptor_set_layout_),
+           "Failed to create descriptor set layout");
+  GINFO("Successfully created descriptor set layout");
+}
+
 void VulkanPipeline::Destroy() {
   vk::Device device = context_.GetVulkanLogicalDevice();
+  VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
+
   if (vk_pipeline_cache_ != VK_NULL_HANDLE) {
     device.destroy(vk_pipeline_cache_, nullptr);
     vk_pipeline_cache_ = VK_NULL_HANDLE;
@@ -256,6 +309,11 @@ void VulkanPipeline::Destroy() {
   if (vk_pipeline_ != VK_NULL_HANDLE) {
     device.destroy(vk_pipeline_, nullptr);
     vk_pipeline_ = VK_NULL_HANDLE;
+  }
+
+  if (vk_descriptor_set_layout_ != VK_NULL_HANDLE) {
+    device.destroy(vk_descriptor_set_layout_, nullptr);
+    vk_descriptor_set_layout_ = VK_NULL_HANDLE;
   }
 }
 
@@ -294,4 +352,5 @@ std::vector<vk::VertexInputAttributeDescription> VulkanPipeline::GetPosColorAttr
 
   return attribute_descriptions;
 }
+
 }// namespace glaceon

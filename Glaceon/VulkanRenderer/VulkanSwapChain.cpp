@@ -1,7 +1,7 @@
 #include "VulkanSwapChain.h"
 
-#include "../Logger.h"
 #include "../Base.h"
+#include "../Logger.h"
 #include "VulkanContext.h"
 
 namespace glaceon {
@@ -20,6 +20,7 @@ void VulkanSwapChain::Initialize() {
   CreateSwapChain();
   CreateImageViews();
   CreateFrameBuffers();
+  CreateUboResources();
 }
 
 void VulkanSwapChain::PopulateSwapChainSupport() {
@@ -176,7 +177,8 @@ void VulkanSwapChain::CreateSwapChain() {
   swapchain_create_info.imageUsage = vk::ImageUsageFlags(vk::ImageUsageFlagBits::eColorAttachment);
 
   VK_ASSERT(context_.GetQueueIndexes().graphics_family.has_value()
-         && context_.GetQueueIndexes().present_family.has_value(), "Failed to get graphics and present queue families");
+                && context_.GetQueueIndexes().present_family.has_value(),
+            "Failed to get graphics and present queue families");
   swap_chain_extent_ = swap_chain_support_.capabilities.currentExtent;
 
   QueueIndexes indexes = context_.GetQueueIndexes();
@@ -311,7 +313,8 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
   }
 
   VK_ASSERT(context_.GetQueueIndexes().graphics_family.has_value()
-         && context_.GetQueueIndexes().present_family.has_value(), "Swap chain requires both graphics and present queues");
+                && context_.GetQueueIndexes().present_family.has_value(),
+            "Swap chain requires both graphics and present queues");
 
   QueueIndexes indexes = context_.GetQueueIndexes();
   uint32_t queue_family_indices[] = {indexes.graphics_family.value(), indexes.present_family.value()};
@@ -353,6 +356,7 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
 
   CreateImageViews();
   CreateFrameBuffers();
+  CreateUboResources();
 }
 
 void VulkanSwapChain::DestroyFrames() {
@@ -370,6 +374,15 @@ void VulkanSwapChain::DestroyFrames() {
     if (swap_chain_frame.frame_buffer != VK_NULL_HANDLE) {
       device.destroy(swap_chain_frame.frame_buffer, nullptr);
       swap_chain_frame.frame_buffer = VK_NULL_HANDLE;
+    }
+
+    // destroy ubo
+    if (swap_chain_frame.camera_data_buffer.buffer != VK_NULL_HANDLE) {
+      device.unmapMemory(swap_chain_frame.camera_data_buffer.buffer_memory);
+      device.freeMemory(swap_chain_frame.camera_data_buffer.buffer_memory, nullptr);
+      device.destroy(swap_chain_frame.camera_data_buffer.buffer, nullptr);
+      swap_chain_frame.camera_data_mapped = nullptr;
+      swap_chain_frame.camera_data_buffer.buffer = VK_NULL_HANDLE;
     }
   }
   swap_chain_frames_.clear();
@@ -409,6 +422,22 @@ void VulkanSwapChain::Destroy() {
     // destroy swap chain
     device.destroy(vk_swapchain_, nullptr);
     vk_swapchain_ = VK_NULL_HANDLE;
+  }
+}
+void VulkanSwapChain::CreateUboResources() {
+  vk::Device device = context_.GetVulkanLogicalDevice();
+
+  VulkanUtils::BufferInputParams params = {};
+  params.device = context_.GetVulkanLogicalDevice();
+  params.physical_device = context_.GetVulkanPhysicalDevice();
+  params.buffer_usage = vk::BufferUsageFlagBits::eUniformBuffer;
+  params.memory_property_flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
+  params.size = sizeof(UniformBufferObject);
+  for (auto &frame : swap_chain_frames_) {
+    frame.camera_data_buffer = VulkanUtils::CreateBuffer(params);
+    VK_CHECK(device.mapMemory(frame.camera_data_buffer.buffer_memory, 0, sizeof(UniformBufferObject), {},
+                              &frame.camera_data_mapped),
+             "Failed to map memory for camera data");
   }
 }
 }// namespace glaceon
