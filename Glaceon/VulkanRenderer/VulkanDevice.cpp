@@ -270,4 +270,23 @@ void VulkanDevice::DestroyDescriptorPool() {
   }
 }
 
+void VulkanDevice::CreateDescriptorSets() {
+  auto descriptor_set_layout = context_.GetVulkanPipeline().GetVkDescriptorSetLayout();
+  auto swap_chain = context_.GetVulkanSwapChain().GetSwapChainFrames();
+
+  // all descriptor sets will use the same layout
+  std::vector<vk::DescriptorSetLayout> layouts(swap_chain.size(), descriptor_set_layout);
+  vk::DescriptorSetAllocateInfo alloc_info(vk_descriptor_pool_, static_cast<uint32_t>(swap_chain.size()),
+                                           layouts.data());
+
+  std::vector<vk::DescriptorSet> descriptor_sets(swap_chain.size());
+  VK_CHECK(vk_device_.allocateDescriptorSets(&alloc_info, descriptor_sets.data()),
+           "Failed to allocate descriptor sets");
+
+  for (size_t i = 0; i < swap_chain.size(); i++) {
+    swap_chain[i].descriptor_set = descriptor_sets[i];
+    GINFO("Successfully allocated descriptor set for frame ", i);
+  }
+}
+
 }// namespace glaceon

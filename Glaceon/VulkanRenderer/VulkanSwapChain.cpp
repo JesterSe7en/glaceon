@@ -440,6 +440,54 @@ void VulkanSwapChain::CreateUboResources() {
     VK_CHECK(device.mapMemory(frame.camera_data_buffer.buffer_memory, 0, sizeof(UniformBufferObject), {},
                               &frame.camera_data_mapped),
              "Failed to map memory for camera data");
+
+
+    // Provided by VK_VERSION_1_0
+    //  typedef struct VkDescriptorBufferInfo {
+    //    VkBuffer        buffer;
+    //    VkDeviceSize    offset;
+    //    VkDeviceSize    range;
+    //  } VkDescriptorBufferInfo;
+
+    // Similar to UBO, we need to parse vk::DescriptorSet into its raw form.
+    // This is where the uniform buffer descriptor comes in aka vk::DescriptorSetInfo
+    frame.uniform_buffer_descriptor.buffer = frame.camera_data_buffer.buffer;
+    frame.uniform_buffer_descriptor.offset = 0;
+    frame.uniform_buffer_descriptor.range = sizeof(UniformBufferObject);
+
+
+    // Provided by VK_VERSION_1_0
+    //    typedef struct VkWriteDescriptorSet {
+    //      VkStructureType                  sType;
+    //      const void*                      pNext;
+    //      VkDescriptorSet                  dstSet;
+    //      uint32_t                         dstBinding;
+    //      uint32_t                         dstArrayElement;
+    //      uint32_t                         descriptorCount;
+    //      VkDescriptorType                 descriptorType;
+    //      const VkDescriptorImageInfo*     pImageInfo;
+    //      const VkDescriptorBufferInfo*    pBufferInfo;
+    //      const VkBufferView*              pTexelBufferView;
+    //    } VkWriteDescriptorSet;
+    vk::WriteDescriptorSet write_descriptor_set;
+    write_descriptor_set.sType = vk::StructureType::eWriteDescriptorSet;
+    write_descriptor_set.pNext = nullptr;
+    write_descriptor_set.dstSet = frame.descriptor_set;
+    write_descriptor_set.dstBinding = 0;
+    write_descriptor_set.dstArrayElement = 0;
+    write_descriptor_set.descriptorCount = 1;
+    write_descriptor_set.descriptorType = vk::DescriptorType::eUniformBuffer;
+    write_descriptor_set.pImageInfo = nullptr;
+    write_descriptor_set.pBufferInfo = &frame.uniform_buffer_descriptor;
+    write_descriptor_set.pTexelBufferView = nullptr;
+
+    device.updateDescriptorSets(write_descriptor_set, nullptr);
+
   }
+
+
+
+
+
 }
 }// namespace glaceon

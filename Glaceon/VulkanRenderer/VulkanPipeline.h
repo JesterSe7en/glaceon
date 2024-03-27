@@ -32,12 +32,16 @@ class VulkanPipeline {
   [[nodiscard]] const vk::PipelineLayout &GetVkPipelineLayout() const { return vk_pipeline_layout_; }
   [[nodiscard]] const vk::Pipeline &GetVkPipeline() const { return vk_pipeline_; }
   [[nodiscard]] const vk::PipelineCache &GetVkPipelineCache() const { return vk_pipeline_cache_; }
+  [[nodiscard]] const vk::DescriptorSetLayout &GetVkDescriptorSetLayout() const { return vk_descriptor_set_layout_; }
+
 
  private:
   VulkanContext &context_;
   GraphicsPipelineConfig pipeline_config_;
 
   vk::DescriptorSetLayout vk_descriptor_set_layout_;
+
+ private:
   vk::PipelineLayout vk_pipeline_layout_;
   vk::Pipeline vk_pipeline_;
   vk::PipelineCache vk_pipeline_cache_;

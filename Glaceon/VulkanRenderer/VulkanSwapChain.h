@@ -30,6 +30,11 @@ struct SwapChainFrame {
   UniformBufferObject camera_data{};
   VulkanUtils::Buffer camera_data_buffer;   // used to pass uniform data from CPU (aka camera_data) to GPU
   void *camera_data_mapped = nullptr;   // pointer to mapped memory
+
+  // resource descriptors
+  // These two are analogous to Vk:Buffer (vk:DescriptorSet) and Vk:BufferMemory (vk:DescriptorBufferInfo)
+  vk::DescriptorBufferInfo uniform_buffer_descriptor; // this is the descriptor for the uniform buffer -> later used during VkWriteDescriptorSet
+  vk::DescriptorSet descriptor_set;   // This is just a handle to a descriptor set.
 };
 
 

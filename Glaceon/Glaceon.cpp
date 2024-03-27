@@ -104,9 +104,9 @@ void PrepareScene(vk::CommandBuffer command_buffer) {
 }
 
 void PrepareFrame(uint32_t image_index, VulkanContext &context) {
-  glm::vec3 eye = {1.0f, 0.0f, 1.0f};
+  glm::vec3 eye = {1.0f, 0.0f, -1.0f};
   glm::vec3 center = {0.0f, 0.0f, 0.0f};
-  glm::vec3 up = {0.0f, 0.0f, 1.0f};
+  glm::vec3 up = {0.0f, 0.0f, -1.0f};
   glm::mat4 view = glm::lookAt(eye, center, up);
 
   // later use swapchain to get aspect ratio
@@ -151,7 +151,12 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
   render_pass_info.pClearValues = &clear_value;
 
   command_buffer.beginRenderPass(&render_pass_info, vk::SubpassContents::eInline);
+
   vk::Pipeline pipeline = context.GetVulkanPipeline().GetVkPipeline();
+
+  vk::DescriptorSet descriptor_set = context.GetVulkanSwapChain().GetSwapChainFrames()[image_index].descriptor_set;
+  command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, context.GetVulkanPipeline().GetVkPipelineLayout(),
+                                    0, 1, &descriptor_set, 0, nullptr);
   command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
 
   PrepareFrame(image_index, context);
@@ -396,6 +401,7 @@ void GLACEON_API RunGame(Application *app) {
   context.GetVulkanSwapChain().Initialize();
   // TODO: refactor this so we can just call CreateDescriptorPool here w/o params
   context.GetVulkanDevice().CreateDescriptorPool(params, context.GetVulkanSwapChain().GetSwapChainFrames().size());
+  context.GetVulkanDevice().CreateDescriptorSets();
   context.GetVulkanCommandPool().Initialize();
   context.GetVulkanSync().Initialize();
 
