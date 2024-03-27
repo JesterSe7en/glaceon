@@ -93,32 +93,32 @@ void VulkanDevice::Initialize() {
   } else {
     GINFO("Successfully created graphics command pool");
   }
-
-  // Provided by VK_VERSION_1_0
-  //  typedef struct VkDescriptorPoolSize {
-  //    VkDescriptorType    type;
-  //    uint32_t            descriptorCount;
-  //  } VkDescriptorPoolSize;
-  vk::DescriptorPoolSize pool_size[] = {
-      {vk::DescriptorType::eCombinedImageSampler, 1},
-  };
-
-  vk::DescriptorPoolCreateInfo pool_create_info = {};
-  pool_create_info.sType = vk::StructureType::eDescriptorPoolCreateInfo;
-  pool_create_info.pNext = nullptr;
-  pool_create_info.flags = vk::DescriptorPoolCreateFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet);
-  pool_create_info.maxSets = 1;
-  pool_create_info.poolSizeCount = 1;
-  pool_create_info.pPoolSizes = pool_size;
-  // We only have one pool (aka size of pool_size[])
-  // The Image_Sampler pool only allows for one allocation.
-  // The VkDescriptorPool itself will only allow for one descriptor set to be allocated aka maxSets
-  if (vk_device_.createDescriptorPool(&pool_create_info, nullptr, &vk_descriptor_pool_) != vk::Result::eSuccess) {
-    GERROR("Failed to create descriptor pool");
-    return;
-  } else {
-    GINFO("Successfully created descriptor pool");
-  }
+//
+//  // Provided by VK_VERSION_1_0
+//  //  typedef struct VkDescriptorPoolSize {
+//  //    VkDescriptorType    type;
+//  //    uint32_t            descriptorCount;
+//  //  } VkDescriptorPoolSize;
+//  vk::DescriptorPoolSize pool_size[] = {
+//      {vk::DescriptorType::eCombinedImageSampler, 1},
+//  };
+//
+//  vk::DescriptorPoolCreateInfo pool_create_info = {};
+//  pool_create_info.sType = vk::StructureType::eDescriptorPoolCreateInfo;
+//  pool_create_info.pNext = nullptr;
+//  pool_create_info.flags = vk::DescriptorPoolCreateFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet);
+//  pool_create_info.maxSets = 1;
+//  pool_create_info.poolSizeCount = 1;
+//  pool_create_info.pPoolSizes = pool_size;
+//  // We only have one pool (aka size of pool_size[])
+//  // The Image_Sampler pool only allows for one allocation.
+//  // The VkDescriptorPool itself will only allow for one descriptor set to be allocated aka maxSets
+//  if (vk_device_.createDescriptorPool(&pool_create_info, nullptr, &vk_descriptor_pool_) != vk::Result::eSuccess) {
+//    GERROR("Failed to create descriptor pool");
+//    return;
+//  } else {
+//    GINFO("Successfully created descriptor pool");
+//  }
 }
 
 bool VulkanDevice::CheckDeviceRequirements(vk::PhysicalDevice &vk_physical_device) {
@@ -224,11 +224,6 @@ void VulkanDevice::PrintPhysicalDevice(vk::PhysicalDevice gpu) {
 }
 
 void VulkanDevice::Destroy() {
-  if (vk_descriptor_pool_ != VK_NULL_HANDLE) {
-    vk_device_.destroy(vk_descriptor_pool_, nullptr);
-    vk_descriptor_pool_ = VK_NULL_HANDLE;
-  }
-
   if (vk_command_pool_ != VK_NULL_HANDLE) {
     vk_device_.destroy(vk_command_pool_, nullptr);
     vk_command_pool_ = VK_NULL_HANDLE;
@@ -239,54 +234,4 @@ void VulkanDevice::Destroy() {
     vk_device_ = VK_NULL_HANDLE;
   }
 }
-void VulkanDevice::CreateDescriptorPool(const DescriptorSetLayoutParams &descriptor_set_layout_params, uint32_t size) {
-  std::vector<vk::DescriptorPoolSize> pool_sizes;// This stores the type and number of descriptors
-
-  for (int i = 0; i < descriptor_set_layout_params.count; i++) {
-    vk::DescriptorPoolSize pool_size;
-    pool_size.type = descriptor_set_layout_params.type[i];
-    pool_size.descriptorCount = descriptor_set_layout_params.type_count[i];
-    pool_sizes.push_back(pool_size);
-  }
-
-  vk::DescriptorPoolCreateInfo pool_create_info = {};
-  pool_create_info.sType = vk::StructureType::eDescriptorPoolCreateInfo;
-  pool_create_info.pNext = nullptr;
-  pool_create_info.flags = vk::DescriptorPoolCreateFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet);
-  pool_create_info.maxSets = size;
-  pool_create_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
-  pool_create_info.pPoolSizes = pool_sizes.data();
-  // We only have one pool (aka size of pool_size[])
-  // The Image_Sampler pool only allows for one allocation.
-  // The VkDescriptorPool itself will only allow for one descriptor set to be allocated aka maxSets
-  VK_CHECK(vk_device_.createDescriptorPool(&pool_create_info, nullptr, &vk_descriptor_pool_),
-           "Failed to create descriptor pool");
-  GINFO("Successfully created descriptor pool");
-}
-void VulkanDevice::DestroyDescriptorPool() {
-  if (vk_descriptor_pool_ != VK_NULL_HANDLE) {
-    vk_device_.destroy(vk_descriptor_pool_, nullptr);
-    vk_descriptor_pool_ = VK_NULL_HANDLE;
-  }
-}
-
-void VulkanDevice::CreateDescriptorSets() {
-  auto descriptor_set_layout = context_.GetVulkanPipeline().GetVkDescriptorSetLayout();
-  auto swap_chain = context_.GetVulkanSwapChain().GetSwapChainFrames();
-
-  // all descriptor sets will use the same layout
-  std::vector<vk::DescriptorSetLayout> layouts(swap_chain.size(), descriptor_set_layout);
-  vk::DescriptorSetAllocateInfo alloc_info(vk_descriptor_pool_, static_cast<uint32_t>(swap_chain.size()),
-                                           layouts.data());
-
-  std::vector<vk::DescriptorSet> descriptor_sets(swap_chain.size());
-  VK_CHECK(vk_device_.allocateDescriptorSets(&alloc_info, descriptor_sets.data()),
-           "Failed to allocate descriptor sets");
-
-  for (size_t i = 0; i < swap_chain.size(); i++) {
-    swap_chain[i].descriptor_set = descriptor_sets[i];
-    GINFO("Successfully allocated descriptor set for frame ", i);
-  }
-}
-
 }// namespace glaceon

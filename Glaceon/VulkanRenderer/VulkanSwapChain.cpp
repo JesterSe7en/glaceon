@@ -276,7 +276,6 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
 
   // destroy image views, frame buffers
   DestroyFrames();
-  context_.GetVulkanDevice().DestroyDescriptorPool();
 
   uint32_t image_count =
       std::min(swap_chain_support_.capabilities.maxImageCount, swap_chain_support_.capabilities.minImageCount + 1);
@@ -358,7 +357,6 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
   CreateImageViews();
   CreateFrameBuffers();
   CreateUboResources();
-  context_.GetVulkanDevice().CreateDescriptorPool(context_.GetDescriptorSetLayoutParams(), swap_chain_frames_.size());
 }
 
 void VulkanSwapChain::DestroyFrames() {
@@ -440,21 +438,24 @@ void VulkanSwapChain::CreateUboResources() {
     VK_CHECK(device.mapMemory(frame.camera_data_buffer.buffer_memory, 0, sizeof(UniformBufferObject), {},
                               &frame.camera_data_mapped),
              "Failed to map memory for camera data");
+  }
+}
 
+void VulkanSwapChain::UpdateUboResources() {
+  vk::Device device = context_.GetVulkanLogicalDevice();
 
-    // Provided by VK_VERSION_1_0
-    //  typedef struct VkDescriptorBufferInfo {
-    //    VkBuffer        buffer;
-    //    VkDeviceSize    offset;
-    //    VkDeviceSize    range;
-    //  } VkDescriptorBufferInfo;
-
+  // Provided by VK_VERSION_1_0
+  //  typedef struct VkDescriptorBufferInfo {
+  //    VkBuffer        buffer;
+  //    VkDeviceSize    offset;
+  //    VkDeviceSize    range;
+  //  } VkDescriptorBufferInfo;
+  for (auto &frame : swap_chain_frames_) {
     // Similar to UBO, we need to parse vk::DescriptorSet into its raw form.
     // This is where the uniform buffer descriptor comes in aka vk::DescriptorSetInfo
     frame.uniform_buffer_descriptor.buffer = frame.camera_data_buffer.buffer;
     frame.uniform_buffer_descriptor.offset = 0;
     frame.uniform_buffer_descriptor.range = sizeof(UniformBufferObject);
-
 
     // Provided by VK_VERSION_1_0
     //    typedef struct VkWriteDescriptorSet {
@@ -471,23 +472,14 @@ void VulkanSwapChain::CreateUboResources() {
     //    } VkWriteDescriptorSet;
     vk::WriteDescriptorSet write_descriptor_set;
     write_descriptor_set.sType = vk::StructureType::eWriteDescriptorSet;
-    write_descriptor_set.pNext = nullptr;
     write_descriptor_set.dstSet = frame.descriptor_set;
     write_descriptor_set.dstBinding = 0;
     write_descriptor_set.dstArrayElement = 0;
     write_descriptor_set.descriptorCount = 1;
     write_descriptor_set.descriptorType = vk::DescriptorType::eUniformBuffer;
-    write_descriptor_set.pImageInfo = nullptr;
     write_descriptor_set.pBufferInfo = &frame.uniform_buffer_descriptor;
-    write_descriptor_set.pTexelBufferView = nullptr;
 
     device.updateDescriptorSets(write_descriptor_set, nullptr);
-
   }
-
-
-
-
-
 }
 }// namespace glaceon

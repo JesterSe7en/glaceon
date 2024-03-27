@@ -19,9 +19,6 @@ class VulkanDevice {
  public:
   explicit VulkanDevice(VulkanContext &context);
   void Initialize();
-  void CreateDescriptorPool(const DescriptorSetLayoutParams &descriptor_set_layout_params, uint32_t size);
-  void DestroyDescriptorPool();
-  void CreateDescriptorSets();
   void Destroy();
 
   [[nodiscard]] const vk::PhysicalDevice &GetVkPhysicalDevice() const { return vk_physical_device_; }
@@ -29,7 +26,6 @@ class VulkanDevice {
   [[nodiscard]] const vk::Queue &GetVkPresentQueue() const { return vk_present_queue_; }
   [[nodiscard]] const vk::Queue &GetVkGraphicsQueue() const { return vk_graphics_queue_; }
   [[nodiscard]] const vk::CommandPool &GetVkCommandPool() const { return vk_command_pool_; }
-  [[nodiscard]] const vk::DescriptorPool &GetVkDescriptorPool() const { return vk_descriptor_pool_; }
 
   QueueIndexes &GetQueueIndexes() { return queue_indexes_; }
 
@@ -39,9 +35,6 @@ class VulkanDevice {
   vk::Queue vk_present_queue_;
   vk::Queue vk_graphics_queue_;
   vk::CommandPool vk_command_pool_;
-  vk::DescriptorPool vk_descriptor_pool_;
-
-  std::vector<vk::DescriptorSet> vk_descriptor_sets_;
 
   std::vector<vk::QueueFamilyProperties> queue_family_;
   std::vector<vk::ExtensionProperties> device_extensions_;

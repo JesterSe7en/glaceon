@@ -4,6 +4,7 @@
 #include "../pch.h"
 #include "VulkanBackend.h"
 #include "VulkanCommandPool.h"
+#include "VulkanDescriptorPool.h"
 #include "VulkanDevice.h"
 #include "VulkanPipeline.h"
 #include "VulkanRenderPass.h"
@@ -30,15 +31,8 @@ class VulkanContext {
   void RemoveInstanceExtension(const char *ext);
   std::vector<const char *> &GetInstanceExtensions() { return instance_extensions_; }
 
-  vk::DescriptorPool GetDescriptorPool() { return device_.GetVkDescriptorPool(); }
-
   vk::SurfaceKHR GetSurface() { return surface_; }
   void SetSurface(vk::SurfaceKHR vk_surface) { this->surface_ = vk_surface; }
-
-  const DescriptorSetLayoutParams &GetDescriptorSetLayoutParams() const { return descriptor_set_layout_params_; }
-  void SetDescriptorSetLayoutParams(const DescriptorSetLayoutParams &descriptor_set_layout_params) {
-    descriptor_set_layout_params_ = descriptor_set_layout_params;
-  }
 
   VulkanBackend &GetVulkanBackend() { return backend_; }
   VulkanDevice &GetVulkanDevice() { return device_; }
@@ -46,6 +40,7 @@ class VulkanContext {
   VulkanRenderPass &GetVulkanRenderPass() { return render_pass_; }
   VulkanPipeline &GetVulkanPipeline() { return pipeline_; }
   VulkanCommandPool &GetVulkanCommandPool() { return command_pool_; }
+  VulkanDescriptorPool &GetVulkanDescriptorPool() { return descriptor_pool_; }
   VulkanSync &GetVulkanSync() { return sync_; }
 
   void Destroy();
@@ -60,15 +55,15 @@ class VulkanContext {
   VulkanRenderPass render_pass_;
   VulkanPipeline pipeline_;
   VulkanCommandPool command_pool_;
+  VulkanDescriptorPool descriptor_pool_;
+
+ private:
   VulkanSync sync_;
 
   vk::SurfaceKHR surface_ = VK_NULL_HANDLE;
 
   std::vector<const char *> device_extensions_;
   std::vector<const char *> instance_extensions_;
-
-  DescriptorSetLayoutParams descriptor_set_layout_params_;
-
 };
 
 }// namespace glaceon

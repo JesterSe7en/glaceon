@@ -51,7 +51,7 @@ static void ImGuiInitialize(VulkanContext &context, GLFWwindow *glfw_window) {
   init_info.QueueFamily = context.GetQueueIndexes().graphics_family.value();
   init_info.Queue = context.GetVulkanDevice().GetVkGraphicsQueue();
   init_info.PipelineCache = context.GetVulkanPipeline().GetVkPipelineCache();
-  init_info.DescriptorPool = context.GetDescriptorPool();
+  init_info.DescriptorPool = context.GetVulkanDescriptorPool().GetVkDescriptorPool();
   init_info.RenderPass = context.GetVulkanRenderPass().GetVkRenderPass();
   init_info.Subpass = 0;
   init_info.MinImageCount = 2;
@@ -387,21 +387,20 @@ void GLACEON_API RunGame(Application *app) {
   context.SetSurface(surface);
   context.AddDeviceExtension(vk::KHRSwapchainExtensionName);
   context.GetVulkanDevice().Initialize();
-
-  DescriptorSetLayoutParams params;
-  params.count = 1;
-  params.binding.push_back(0);
-  params.type.push_back(vk::DescriptorType::eUniformBuffer);
-  params.type_count.push_back(1);
-  params.stage.push_back(vk::ShaderStageFlagBits::eVertex);
-  context.SetDescriptorSetLayoutParams(params);
-  context.GetVulkanPipeline().CreateDescriptorSetLayout(params);
-
   context.GetVulkanRenderPass().Initialize();
   context.GetVulkanSwapChain().Initialize();
-  // TODO: refactor this so we can just call CreateDescriptorPool here w/o params
-  context.GetVulkanDevice().CreateDescriptorPool(params, context.GetVulkanSwapChain().GetSwapChainFrames().size());
-  context.GetVulkanDevice().CreateDescriptorSets();
+  DescriptorPoolSetLayoutParams params;
+  params.binding_count = 1;
+  params.binding_index.push_back(0);
+  params.descriptor_type.push_back(vk::DescriptorType::eUniformBuffer);
+  params.descriptor_type_count.push_back(1);
+  params.stage_to_bind.push_back(vk::ShaderStageFlagBits::eVertex);
+  // creates descriptor set layout, descriptor pool, and descriptor sets
+  context.GetVulkanDescriptorPool().Initialize(params);
+
+
+  // now that descriptor sets are created, we can update the UBO with the new descriptor set
+  context.GetVulkanSwapChain().UpdateUboResources();
   context.GetVulkanCommandPool().Initialize();
   context.GetVulkanSync().Initialize();
 

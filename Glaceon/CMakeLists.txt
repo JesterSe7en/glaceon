@@ -66,6 +66,8 @@ set(ALL_FILES
         StarMesh.h
         VertexBufferCollection.cpp
         VertexBufferCollection.h
+        VulkanRenderer/VulkanDescriptorPool.cpp
+        VulkanRenderer/VulkanDescriptorPool.h
 )
 
 # Target

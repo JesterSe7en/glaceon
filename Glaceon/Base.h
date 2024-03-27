@@ -22,8 +22,8 @@
 // res < 0 as some vulkan functions return just a status and not an error
 #define VK_CHECK(f, msg)                                                                                               \
   do {                                                                                                                 \
-    vk::Result r = (f);                                                                                              \
-    if (static_cast<int>(r) < 0) {                                                                                                     \
+    vk::Result r = (f);                                                                                                \
+    if (static_cast<int>(r) < 0) {                                                                                     \
       GERROR("Vulkan error: {}", msg);                                                                                 \
       GERROR("Vulkan Validation error: {}", vk::to_string(f));                                                         \
       exit(EXIT_FAILURE);                                                                                              \
@@ -42,8 +42,6 @@
 #define VK_ASSERT(expr, msg)
 #endif
 
-#include "TriangleMesh.h"
 #include "SquareMesh.h"
 #include "StarMesh.h"
-
-
+#include "TriangleMesh.h"

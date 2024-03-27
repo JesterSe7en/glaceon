@@ -43,6 +43,7 @@ class VulkanSwapChain {
   explicit VulkanSwapChain(VulkanContext &context);
   void Initialize();
   void RebuildSwapChain(int width, int height);
+  void UpdateUboResources();
   void Destroy();
 
   [[nodiscard]] const vk::SwapchainKHR &GetVkSwapchain() const { return vk_swapchain_; }
