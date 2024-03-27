@@ -276,6 +276,7 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
 
   // destroy image views, frame buffers
   DestroyFrames();
+  context_.GetVulkanDevice().DestroyDescriptorPool();
 
   uint32_t image_count =
       std::min(swap_chain_support_.capabilities.maxImageCount, swap_chain_support_.capabilities.minImageCount + 1);
@@ -357,6 +358,7 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
   CreateImageViews();
   CreateFrameBuffers();
   CreateUboResources();
+  context_.GetVulkanDevice().CreateDescriptorPool(context_.GetDescriptorSetLayoutParams(), swap_chain_frames_.size());
 }
 
 void VulkanSwapChain::DestroyFrames() {

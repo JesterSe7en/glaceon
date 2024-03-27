@@ -27,7 +27,7 @@ struct SwapChainFrame {
   vk::Framebuffer frame_buffer;
 
   // drawing resources
-  UniformBufferObject camera_data;
+  UniformBufferObject camera_data{};
   VulkanUtils::Buffer camera_data_buffer;   // used to pass uniform data from CPU (aka camera_data) to GPU
   void *camera_data_mapped = nullptr;   // pointer to mapped memory
 };

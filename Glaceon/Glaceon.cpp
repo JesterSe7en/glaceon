@@ -103,16 +103,27 @@ void PrepareScene(vk::CommandBuffer command_buffer) {
   command_buffer.bindVertexBuffers(0, 1, vertex_buffers, offsets);
 }
 
-void PrepareFrame(uint32_t image_index) {
-    glm::vec3 eye = {1.0f, 0.0f, 1.0f};
-    glm::vec3 center = {0.0f, 0.0f, 0.0f};
-    glm::vec3 up ={ 0.0f, 0.0f, 1.0f};
-    glm::mat4 view = glm::lookAt(eye, center, up);
+void PrepareFrame(uint32_t image_index, VulkanContext &context) {
+  glm::vec3 eye = {1.0f, 0.0f, 1.0f};
+  glm::vec3 center = {0.0f, 0.0f, 0.0f};
+  glm::vec3 up = {0.0f, 0.0f, 1.0f};
+  glm::mat4 view = glm::lookAt(eye, center, up);
 
-    // later use swapchain to get aspect ratio
-    glm::mat4 proj = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.01f, 10.0f);
-    proj[1][1] *= -1;  // to convert from opengl to vulkan????
-    uniform_buffer_collection->view_proj_ = proj * view;  
+  // later use swapchain to get aspect ratio
+  glm::mat4 proj = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.01f, 10.0f);
+  // Specifically, Vulkan uses a right-handed coordinate system with positive Y going down the screen, whereas OpenGL
+  // and DirectX typically use a left-handed coordinate system with positive Y going up the screen.
+  // By multiplying the [1][1] component by -1, you effectively flip the Y-axis in clip space,
+  // aligning it with Vulkan's coordinate system and ensuring that your rendered scene appears as expected.
+  proj[1][1] *= -1;
+
+  auto swap_chain_frames = context.GetVulkanSwapChain().GetSwapChainFrames();
+  swap_chain_frames[image_index].camera_data.view = view;
+  swap_chain_frames[image_index].camera_data.proj = proj;
+  swap_chain_frames[image_index].camera_data.view_proj = proj * view;
+  // Take constructed view, projection and view-projection matrices and store them in uniform buffer aka the mapped memory region
+  memcpy(swap_chain_frames[image_index].camera_data_mapped, &swap_chain_frames[image_index].camera_data,
+         sizeof(UniformBufferObject));
 }
 
 static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_index) {
@@ -143,7 +154,7 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
   vk::Pipeline pipeline = context.GetVulkanPipeline().GetVkPipeline();
   command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
 
-  PrepareFrame();
+  PrepareFrame(image_index, context);
 
   // Gets the vertex buffer data from TriangleMesh and pushes it as uniform data in anticipation for the vertex shader to use.
   PrepareScene(command_buffer);
@@ -378,10 +389,13 @@ void GLACEON_API RunGame(Application *app) {
   params.type.push_back(vk::DescriptorType::eUniformBuffer);
   params.type_count.push_back(1);
   params.stage.push_back(vk::ShaderStageFlagBits::eVertex);
+  context.SetDescriptorSetLayoutParams(params);
   context.GetVulkanPipeline().CreateDescriptorSetLayout(params);
 
   context.GetVulkanRenderPass().Initialize();
   context.GetVulkanSwapChain().Initialize();
+  // TODO: refactor this so we can just call CreateDescriptorPool here w/o params
+  context.GetVulkanDevice().CreateDescriptorPool(params, context.GetVulkanSwapChain().GetSwapChainFrames().size());
   context.GetVulkanCommandPool().Initialize();
   context.GetVulkanSync().Initialize();
 

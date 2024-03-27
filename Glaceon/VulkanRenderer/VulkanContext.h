@@ -35,6 +35,11 @@ class VulkanContext {
   vk::SurfaceKHR GetSurface() { return surface_; }
   void SetSurface(vk::SurfaceKHR vk_surface) { this->surface_ = vk_surface; }
 
+  const DescriptorSetLayoutParams &GetDescriptorSetLayoutParams() const { return descriptor_set_layout_params_; }
+  void SetDescriptorSetLayoutParams(const DescriptorSetLayoutParams &descriptor_set_layout_params) {
+    descriptor_set_layout_params_ = descriptor_set_layout_params;
+  }
+
   VulkanBackend &GetVulkanBackend() { return backend_; }
   VulkanDevice &GetVulkanDevice() { return device_; }
   VulkanSwapChain &GetVulkanSwapChain() { return swap_chain_; }
@@ -61,6 +66,9 @@ class VulkanContext {
 
   std::vector<const char *> device_extensions_;
   std::vector<const char *> instance_extensions_;
+
+  DescriptorSetLayoutParams descriptor_set_layout_params_;
+
 };
 
 }// namespace glaceon

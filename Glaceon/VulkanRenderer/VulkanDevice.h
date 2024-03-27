@@ -2,6 +2,7 @@
 #define GLACEON_GLACEON_VULKANRENDERER_VULKANDEVICE_H_
 
 #include "../pch.h"
+#include "VulkanPipeline.h"
 
 namespace glaceon {
 
@@ -18,6 +19,8 @@ class VulkanDevice {
  public:
   explicit VulkanDevice(VulkanContext &context);
   void Initialize();
+  void CreateDescriptorPool(const DescriptorSetLayoutParams &descriptor_set_layout_params, uint32_t size);
+  void DestroyDescriptorPool();
   void Destroy();
 
   [[nodiscard]] const vk::PhysicalDevice &GetVkPhysicalDevice() const { return vk_physical_device_; }
