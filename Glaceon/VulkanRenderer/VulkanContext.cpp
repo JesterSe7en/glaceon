@@ -19,6 +19,7 @@ void VulkanContext::RemoveInstanceExtension(const char *ext) {
 void VulkanContext::Destroy() {
   sync_.Destroy();
   command_pool_.Destroy();
+  descriptor_pool_.Destroy();
   pipeline_.Destroy();
   render_pass_.Destroy();
   swap_chain_.Destroy();

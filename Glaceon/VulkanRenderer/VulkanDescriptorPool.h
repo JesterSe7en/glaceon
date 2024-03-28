@@ -16,9 +16,8 @@ struct DescriptorPoolSetLayoutParams {
 class VulkanDescriptorPool {
  public:
   explicit VulkanDescriptorPool(VulkanContext &context);
-  ~VulkanDescriptorPool();
-
   void Initialize(const DescriptorPoolSetLayoutParams &params);
+  void Destroy();
 
   vk::DescriptorSetLayout &GetVkDescriptorSetLayout() { return vk_descriptor_set_layout_; }
   vk::DescriptorPool &GetVkDescriptorPool() { return vk_descriptor_pool_; }

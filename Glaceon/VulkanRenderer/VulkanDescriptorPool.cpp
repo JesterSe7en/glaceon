@@ -7,22 +7,6 @@
 namespace glaceon {
 VulkanDescriptorPool::VulkanDescriptorPool(VulkanContext &context) : context_(context) {}
 
-VulkanDescriptorPool::~VulkanDescriptorPool() {
-  VK_ASSERT(context_.GetVulkanLogicalDevice() == VK_NULL_HANDLE,
-            "Descriptor pool not destroyed; cannot find logical device");
-  if (vk_descriptor_pool_ != VK_NULL_HANDLE) {
-    context_.GetVulkanLogicalDevice().destroy(vk_descriptor_pool_);
-    vk_descriptor_pool_ = VK_NULL_HANDLE;
-  }
-
-  VK_ASSERT(context_.GetVulkanLogicalDevice() == VK_NULL_HANDLE,
-            "Descriptor set layout not destroyed; cannot find logical device");
-  if (vk_descriptor_set_layout_ != VK_NULL_HANDLE) {
-    context_.GetVulkanLogicalDevice().destroy(vk_descriptor_set_layout_);
-    vk_descriptor_set_layout_ = VK_NULL_HANDLE;
-  }
-}
-
 // Initializes/creates the descriptor set layout, descriptor pool, and descriptor sets
 void VulkanDescriptorPool::Initialize(const DescriptorPoolSetLayoutParams &params) {
   VK_ASSERT(!context_.GetVulkanSwapChain().GetSwapChainFrames().empty(), "Swap chain not initialized");
@@ -111,8 +95,8 @@ void VulkanDescriptorPool::CreateDescriptorPool() {
   pool_create_info.maxSets = static_cast<uint32_t>(
       context_.GetVulkanSwapChain().GetSwapChainFrames().size());// one set per frame in swap chain
 #if _DEBUG
-  pool_create_info.maxSets = static_cast<uint32_t>(
-      context_.GetVulkanSwapChain().GetSwapChainFrames().size()) + 1;// one set per frame in swap chain, +1 for image sampler for ImGUI
+  pool_create_info.maxSets = static_cast<uint32_t>(context_.GetVulkanSwapChain().GetSwapChainFrames().size())
+      + 1;// one set per frame in swap chain, +1 for image sampler for ImGUI
 #endif
   pool_create_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
   pool_create_info.pPoolSizes = pool_sizes.data();
@@ -139,6 +123,20 @@ void VulkanDescriptorPool::CreateDescriptorSet() {
   for (size_t i = 0; i < swap_chain_frames.size(); i++) {
     swap_chain_frames[i].descriptor_set = descriptor_sets[i];
     GINFO("Successfully allocated descriptor set for frame {}", i);
+  }
+}
+void VulkanDescriptorPool::Destroy() {
+  vk::Device device = context_.GetVulkanLogicalDevice();
+  VK_ASSERT(device != VK_NULL_HANDLE,
+            "Descriptor pool not destroyed; cannot find logical device");
+  if (vk_descriptor_pool_ != VK_NULL_HANDLE) {
+    device.destroy(vk_descriptor_pool_);
+    vk_descriptor_pool_ = VK_NULL_HANDLE;
+  }
+
+  if (vk_descriptor_set_layout_ != VK_NULL_HANDLE) {
+    device.destroy(vk_descriptor_set_layout_);
+    vk_descriptor_set_layout_ = VK_NULL_HANDLE;
   }
 }
 }// namespace glaceon
