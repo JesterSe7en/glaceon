@@ -19,7 +19,6 @@ class VulkanDescriptorPool {
   ~VulkanDescriptorPool();
 
   void Initialize(const DescriptorPoolSetLayoutParams &params);
-  void CreateDescriptorSet();
 
   vk::DescriptorSetLayout &GetVkDescriptorSetLayout() { return vk_descriptor_set_layout_; }
   vk::DescriptorPool &GetVkDescriptorPool() { return vk_descriptor_pool_; }
@@ -34,6 +33,8 @@ class VulkanDescriptorPool {
 
   // Descriptor Set layout just describes how data in a descriptor set should be laid out
   void CreateDescriptorSetLayout();
+  void CreateDescriptorPool();
+  void CreateDescriptorSet();
 };
 
 }// namespace glaceon

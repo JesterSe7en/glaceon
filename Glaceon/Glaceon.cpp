@@ -395,6 +395,12 @@ void GLACEON_API RunGame(Application *app) {
   params.descriptor_type.push_back(vk::DescriptorType::eUniformBuffer);
   params.descriptor_type_count.push_back(1);
   params.stage_to_bind.push_back(vk::ShaderStageFlagBits::eVertex);
+
+//  // this is for imgui
+//  params.binding_index.push_back(1);
+//  params.descriptor_type.push_back(vk::DescriptorType::eCombinedImageSampler);
+//  params.descriptor_type_count.push_back(1);
+//  params.stage_to_bind.push_back(vk::ShaderStageFlagBits::eFragment);
   // creates descriptor set layout, descriptor pool, and descriptor sets
   context.GetVulkanDescriptorPool().Initialize(params);
 
