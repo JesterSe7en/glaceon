@@ -25,7 +25,6 @@ class VulkanDevice {
   [[nodiscard]] const vk::Device &GetVkDevice() const { return vk_device_; }
   [[nodiscard]] const vk::Queue &GetVkPresentQueue() const { return vk_present_queue_; }
   [[nodiscard]] const vk::Queue &GetVkGraphicsQueue() const { return vk_graphics_queue_; }
-  [[nodiscard]] const vk::CommandPool &GetVkCommandPool() const { return vk_command_pool_; }
 
   QueueIndexes &GetQueueIndexes() { return queue_indexes_; }
 
@@ -34,7 +33,6 @@ class VulkanDevice {
   vk::Device vk_device_;
   vk::Queue vk_present_queue_;
   vk::Queue vk_graphics_queue_;
-  vk::CommandPool vk_command_pool_;
 
   std::vector<vk::QueueFamilyProperties> queue_family_;
   std::vector<vk::ExtensionProperties> device_extensions_;

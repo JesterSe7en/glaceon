@@ -80,45 +80,6 @@ void VulkanDevice::Initialize() {
 
   vk_device_.getQueue(queue_indexes_.graphics_family.value(), 0, &vk_graphics_queue_);
   vk_device_.getQueue(queue_indexes_.present_family.value(), 0, &vk_present_queue_);
-
-  // create command pool for graphics queue - command pool only needs VkDevice to create it
-  vk::CommandPoolCreateInfo pool_info = {};
-  pool_info.sType = vk::StructureType::eCommandPoolCreateInfo;
-  pool_info.queueFamilyIndex = queue_indexes_.graphics_family.value();
-  pool_info.flags = vk::CommandPoolCreateFlags(vk::CommandPoolCreateFlagBits::eResetCommandBuffer);
-
-  if (vk_device_.createCommandPool(&pool_info, nullptr, &vk_command_pool_) != vk::Result::eSuccess) {
-    GERROR("Failed to create graphics command pool");
-    return;
-  } else {
-    GINFO("Successfully created graphics command pool");
-  }
-//
-//  // Provided by VK_VERSION_1_0
-//  //  typedef struct VkDescriptorPoolSize {
-//  //    VkDescriptorType    type;
-//  //    uint32_t            descriptorCount;
-//  //  } VkDescriptorPoolSize;
-//  vk::DescriptorPoolSize pool_size[] = {
-//      {vk::DescriptorType::eCombinedImageSampler, 1},
-//  };
-//
-//  vk::DescriptorPoolCreateInfo pool_create_info = {};
-//  pool_create_info.sType = vk::StructureType::eDescriptorPoolCreateInfo;
-//  pool_create_info.pNext = nullptr;
-//  pool_create_info.flags = vk::DescriptorPoolCreateFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet);
-//  pool_create_info.maxSets = 1;
-//  pool_create_info.poolSizeCount = 1;
-//  pool_create_info.pPoolSizes = pool_size;
-//  // We only have one pool (aka size of pool_size[])
-//  // The Image_Sampler pool only allows for one allocation.
-//  // The VkDescriptorPool itself will only allow for one descriptor set to be allocated aka maxSets
-//  if (vk_device_.createDescriptorPool(&pool_create_info, nullptr, &vk_descriptor_pool_) != vk::Result::eSuccess) {
-//    GERROR("Failed to create descriptor pool");
-//    return;
-//  } else {
-//    GINFO("Successfully created descriptor pool");
-//  }
 }
 
 bool VulkanDevice::CheckDeviceRequirements(vk::PhysicalDevice &vk_physical_device) {
