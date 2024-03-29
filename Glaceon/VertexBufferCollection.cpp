@@ -30,8 +30,8 @@ void VertexBufferCollection::Finalize(vk::Device logical_device, vk::PhysicalDev
                                       vk::CommandBuffer command_buffer) {
   vk_device_ = logical_device;
   VulkanUtils::BufferInputParams params;
-  params = {logical_device, physical_device, vertices_.size() * sizeof(float), vk::BufferUsageFlagBits::eTransferSrc};
-  params.memory_property_flags = vk::MemoryPropertyFlagBits::eHostCoherent | vk::MemoryPropertyFlagBits::eHostVisible;
+  params = {logical_device, physical_device, vertices_.size() * sizeof(float), vk::BufferUsageFlagBits::eTransferSrc,
+            vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent};
 
   VulkanUtils::Buffer staging_buffer = VulkanUtils::CreateBuffer(params);
 

@@ -18,7 +18,8 @@ StarMesh::StarMesh(vk::Device logical_device, vk::PhysicalDevice physical_device
        -0.03f, 0.0f,    0.0f, 0.0f, 1.0f, 0.0f,   0.01f,   0.0f, 0.0f, 1.0f, -0.04f, 0.05f,   0.0f, 0.0f, 1.0f}};
 
   VulkanUtils::BufferInputParams params;
-  params = {vk_device_, vk_physical_device_, verticies.size() * sizeof(float), vk::BufferUsageFlagBits::eVertexBuffer};
+  params = {vk_device_, vk_physical_device_, verticies.size() * sizeof(float), vk::BufferUsageFlagBits::eVertexBuffer,
+            vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent};
 
   buffer_ = VulkanUtils::CreateBuffer(params);
 
