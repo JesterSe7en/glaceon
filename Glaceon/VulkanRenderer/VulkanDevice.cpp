@@ -185,11 +185,6 @@ void VulkanDevice::PrintPhysicalDevice(vk::PhysicalDevice gpu) {
 }
 
 void VulkanDevice::Destroy() {
-  if (vk_command_pool_ != VK_NULL_HANDLE) {
-    vk_device_.destroy(vk_command_pool_, nullptr);
-    vk_command_pool_ = VK_NULL_HANDLE;
-  }
-
   if (vk_device_ != VK_NULL_HANDLE) {
     vk_device_.destroy();
     vk_device_ = VK_NULL_HANDLE;
