@@ -20,7 +20,7 @@ void VulkanSwapChain::Initialize() {
   CreateSwapChain();
   CreateImageViews();
   CreateFrameBuffers();
-  CreateUboResources();
+  CreateDescriptorResources();
 }
 
 void VulkanSwapChain::PopulateSwapChainSupport() {
@@ -356,7 +356,7 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
 
   CreateImageViews();
   CreateFrameBuffers();
-  CreateUboResources();
+  CreateDescriptorResources();
 }
 
 void VulkanSwapChain::DestroyFrames() {
@@ -383,6 +383,15 @@ void VulkanSwapChain::DestroyFrames() {
       device.destroy(swap_chain_frame.camera_data_buffer.buffer, nullptr);
       swap_chain_frame.camera_data_mapped = nullptr;
       swap_chain_frame.camera_data_buffer.buffer = VK_NULL_HANDLE;
+    }
+
+    // destroy model matrices
+    if (swap_chain_frame.model_matrices_buffer.buffer != VK_NULL_HANDLE) {
+      device.unmapMemory(swap_chain_frame.model_matrices_buffer.buffer_memory);
+      device.freeMemory(swap_chain_frame.model_matrices_buffer.buffer_memory, nullptr);
+      device.destroy(swap_chain_frame.model_matrices_buffer.buffer, nullptr);
+      swap_chain_frame.model_matrices_mapped = nullptr;
+      swap_chain_frame.model_matrices_buffer.buffer = VK_NULL_HANDLE;
     }
   }
   swap_chain_frames_.clear();
@@ -424,24 +433,40 @@ void VulkanSwapChain::Destroy() {
     vk_swapchain_ = VK_NULL_HANDLE;
   }
 }
-void VulkanSwapChain::CreateUboResources() {
+void VulkanSwapChain::CreateDescriptorResources() {
   vk::Device device = context_.GetVulkanLogicalDevice();
 
-  VulkanUtils::BufferInputParams params = {};
-  params.device = context_.GetVulkanLogicalDevice();
-  params.physical_device = context_.GetVulkanPhysicalDevice();
-  params.buffer_usage = vk::BufferUsageFlagBits::eUniformBuffer;
-  params.memory_property_flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
-  params.size = sizeof(UniformBufferObject);
+  VulkanUtils::BufferInputParams uniform_params = {};
+  uniform_params.device = context_.GetVulkanLogicalDevice();
+  uniform_params.physical_device = context_.GetVulkanPhysicalDevice();
+  uniform_params.buffer_usage = vk::BufferUsageFlagBits::eUniformBuffer;
+  uniform_params.memory_property_flags =
+      vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
+  uniform_params.size = sizeof(UniformBufferObject);
+
+  VulkanUtils::BufferInputParams storage_params = {};
+  storage_params.device = context_.GetVulkanLogicalDevice();
+  storage_params.physical_device = context_.GetVulkanPhysicalDevice();
+  storage_params.buffer_usage = vk::BufferUsageFlagBits::eUniformBuffer;
+  storage_params.memory_property_flags =
+      vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
+  storage_params.size = sizeof(glm::mat4) * 1024;
+
   for (auto &frame : swap_chain_frames_) {
-    frame.camera_data_buffer = VulkanUtils::CreateBuffer(params);
+    frame.camera_data_buffer = VulkanUtils::CreateBuffer(uniform_params);
     VK_CHECK(device.mapMemory(frame.camera_data_buffer.buffer_memory, 0, sizeof(UniformBufferObject), {},
                               &frame.camera_data_mapped),
              "Failed to map memory for camera data");
+
+    frame.model_matrices.resize(1024, glm::mat4(1.0f));
+    frame.model_matrices_buffer = VulkanUtils::CreateBuffer(storage_params);
+    VK_CHECK(device.mapMemory(frame.model_matrices_buffer.buffer_memory, 0, sizeof(glm::mat4) * 1024, {},
+                              &frame.model_matrices_mapped),
+             "Failed to map memory for model matrices data");
   }
 }
 
-void VulkanSwapChain::UpdateUboResources() {
+void VulkanSwapChain::UpdateDescriptorResources() {
   vk::Device device = context_.GetVulkanLogicalDevice();
 
   // Provided by VK_VERSION_1_0
@@ -456,6 +481,10 @@ void VulkanSwapChain::UpdateUboResources() {
     frame.uniform_buffer_descriptor.buffer = frame.camera_data_buffer.buffer;
     frame.uniform_buffer_descriptor.offset = 0;
     frame.uniform_buffer_descriptor.range = sizeof(UniformBufferObject);
+
+    frame.model_matrices_buffer_descriptor.buffer = frame.model_matrices_buffer.buffer;
+    frame.model_matrices_buffer_descriptor.offset = 0;
+    frame.model_matrices_buffer_descriptor.range = sizeof(glm::mat4) * 1024;
 
     // Provided by VK_VERSION_1_0
     //    typedef struct VkWriteDescriptorSet {
@@ -481,5 +510,9 @@ void VulkanSwapChain::UpdateUboResources() {
 
     device.updateDescriptorSets(write_descriptor_set, nullptr);
   }
+}
+void VulkanSwapChain::CreateModelMatricesResource() {
+  vk::Device device = context_.GetVulkanLogicalDevice();
+  VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get logical device");
 }
 }// namespace glaceon

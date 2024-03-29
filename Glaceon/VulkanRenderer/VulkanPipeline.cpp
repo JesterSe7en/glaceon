@@ -227,12 +227,12 @@ void VulkanPipeline::CreatePipelineLayout() {
   //  pipeline_layout_info.pushConstantRangeCount = 0;  // this can only push small data to pipeline like one matrix
   //  pipeline_layout_info.pPushConstantRanges = nullptr;
 
-  pipeline_layout_info.pushConstantRangeCount = 1;
+  pipeline_layout_info.pushConstantRangeCount = 0;
   vk::PushConstantRange push_constant_info = {};
   // pushing one matrix to pipeline as a "global" uniform
-  push_constant_info.stageFlags = vk::ShaderStageFlagBits::eVertex;
-  push_constant_info.offset = 0;
-  push_constant_info.size = sizeof(glm::mat4);
+  //  push_constant_info.stageFlags = vk::ShaderStageFlagBits::eVertex;
+  //  push_constant_info.offset = 0;
+  //  push_constant_info.size = sizeof(glm::mat4);
   pipeline_layout_info.pPushConstantRanges = &push_constant_info;
 
   if (device.createPipelineLayout(&pipeline_layout_info, nullptr, &vk_pipeline_layout_) != vk::Result::eSuccess) {

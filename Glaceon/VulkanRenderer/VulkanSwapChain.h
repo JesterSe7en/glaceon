@@ -31,9 +31,14 @@ struct SwapChainFrame {
   VulkanUtils::Buffer camera_data_buffer;   // used to pass uniform data from CPU (aka camera_data) to GPU
   void *camera_data_mapped = nullptr;   // pointer to mapped memory
 
+  std::vector<glm::mat4> model_matrices;
+  VulkanUtils::Buffer model_matrices_buffer;
+  void *model_matrices_mapped = nullptr;
+
   // resource descriptors
   // These two are analogous to Vk:Buffer (vk:DescriptorSet) and Vk:BufferMemory (vk:DescriptorBufferInfo)
   vk::DescriptorBufferInfo uniform_buffer_descriptor; // this is the descriptor for the uniform buffer -> later used during VkWriteDescriptorSet
+  vk::DescriptorBufferInfo model_matrices_buffer_descriptor;
   vk::DescriptorSet descriptor_set;   // This is just a handle to a descriptor set.
 };
 
@@ -43,7 +48,7 @@ class VulkanSwapChain {
   explicit VulkanSwapChain(VulkanContext &context);
   void Initialize();
   void RebuildSwapChain(int width, int height);
-  void UpdateUboResources();
+  void UpdateDescriptorResources();
   void Destroy();
 
   [[nodiscard]] const vk::SwapchainKHR &GetVkSwapchain() const { return vk_swapchain_; }
@@ -66,7 +71,8 @@ class VulkanSwapChain {
   void CreateSwapChain();
   void CreateImageViews();
   void CreateFrameBuffers();
-  void CreateUboResources();
+  void CreateDescriptorResources();
+  void CreateModelMatricesResource();
   void DestroyFrames();
 };
 

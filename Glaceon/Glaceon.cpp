@@ -109,6 +109,8 @@ void PrepareFrame(uint32_t image_index, VulkanContext &context) {
   glm::vec3 up = {0.0f, 0.0f, -1.0f};
   glm::mat4 view = glm::lookAt(eye, center, up);
 
+  Scene& scene = currentApp->GetScene();
+
   // later use swapchain to get aspect ratio
   glm::mat4 proj = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.01f, 10.0f);
   // Specifically, Vulkan uses a right-handed coordinate system with positive Y going down the screen, whereas OpenGL
@@ -117,13 +119,18 @@ void PrepareFrame(uint32_t image_index, VulkanContext &context) {
   // aligning it with Vulkan's coordinate system and ensuring that your rendered scene appears as expected.
   proj[1][1] *= -1;
 
-  auto swap_chain_frames = context.GetVulkanSwapChain().GetSwapChainFrames();
-  swap_chain_frames[image_index].camera_data.view = view;
-  swap_chain_frames[image_index].camera_data.proj = proj;
-  swap_chain_frames[image_index].camera_data.view_proj = proj * view;
+  auto& swap_chain_frame = context.GetVulkanSwapChain().GetSwapChainFrames()[image_index];
+  swap_chain_frame.camera_data.view = view;
+  swap_chain_frame.camera_data.proj = proj;
+  swap_chain_frame.camera_data.view_proj = proj * view;
   // Take constructed view, projection and view-projection matrices and store them in uniform buffer aka the mapped memory region
-  memcpy(swap_chain_frames[image_index].camera_data_mapped, &swap_chain_frames[image_index].camera_data,
+  memcpy(swap_chain_frame.camera_data_mapped, &swap_chain_frame.camera_data,
          sizeof(UniformBufferObject));
+
+  // model matrices
+  
+  memcpy(swap_chain_frame.model_matrices_mapped, &swap_chain_frame.model_matrices,
+         sizeof(glm::mat4) * swap_chain_frame.model_matrices.size());
 }
 
 static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_index) {
@@ -390,9 +397,14 @@ void GLACEON_API RunGame(Application *app) {
   context.GetVulkanRenderPass().Initialize();
   context.GetVulkanSwapChain().Initialize();
   DescriptorPoolSetLayoutParams params;
-  params.binding_count = 1;
+  params.binding_count = 2;
   params.binding_index.push_back(0);
   params.descriptor_type.push_back(vk::DescriptorType::eUniformBuffer);
+  params.descriptor_type_count.push_back(1);
+  params.stage_to_bind.push_back(vk::ShaderStageFlagBits::eVertex);
+
+  params.binding_index.push_back(1);
+  params.descriptor_type.push_back(vk::DescriptorType::eStorageBuffer);
   params.descriptor_type_count.push_back(1);
   params.stage_to_bind.push_back(vk::ShaderStageFlagBits::eVertex);
 
@@ -406,7 +418,7 @@ void GLACEON_API RunGame(Application *app) {
 
 
   // now that descriptor sets are created, we can update the UBO with the new descriptor set
-  context.GetVulkanSwapChain().UpdateUboResources();
+  context.GetVulkanSwapChain().UpdateDescriptorResources();
   context.GetVulkanCommandPool().Initialize();
   context.GetVulkanSync().Initialize();
 
