@@ -109,7 +109,7 @@ void PrepareFrame(uint32_t image_index, VulkanContext &context) {
   glm::vec3 up = {0.0f, 0.0f, -1.0f};
   glm::mat4 view = glm::lookAt(eye, center, up);
 
-  Scene& scene = currentApp->GetScene();
+  Scene &scene = currentApp->GetScene();
 
   // later use swapchain to get aspect ratio
   glm::mat4 proj = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.01f, 10.0f);
@@ -119,18 +119,30 @@ void PrepareFrame(uint32_t image_index, VulkanContext &context) {
   // aligning it with Vulkan's coordinate system and ensuring that your rendered scene appears as expected.
   proj[1][1] *= -1;
 
-  auto& swap_chain_frame = context.GetVulkanSwapChain().GetSwapChainFrames()[image_index];
+  auto &swap_chain_frame = context.GetVulkanSwapChain().GetSwapChainFrames()[image_index];
   swap_chain_frame.camera_data.view = view;
   swap_chain_frame.camera_data.proj = proj;
   swap_chain_frame.camera_data.view_proj = proj * view;
   // Take constructed view, projection and view-projection matrices and store them in uniform buffer aka the mapped memory region
-  memcpy(swap_chain_frame.camera_data_mapped, &swap_chain_frame.camera_data,
-         sizeof(UniformBufferObject));
+  memcpy(swap_chain_frame.camera_data_mapped, &swap_chain_frame.camera_data, sizeof(UniformBufferObject));
 
   // model matrices
-  
-  memcpy(swap_chain_frame.model_matrices_mapped, &swap_chain_frame.model_matrices,
-         sizeof(glm::mat4) * swap_chain_frame.model_matrices.size());
+  // triangle positions
+  size_t i = 0;
+  for (auto &position : scene.triangle_positions_) {
+    swap_chain_frame.model_matrices[i++] = glm::translate(glm::mat4(1.0f), position);
+  }
+
+  // square positions
+  for (auto &position : scene.square_positions_) {
+    swap_chain_frame.model_matrices[i++] = glm::translate(glm::mat4(1.0f), position);
+  }
+
+  // star positions
+  for (auto &position : scene.star_positions_) {
+    swap_chain_frame.model_matrices[i++] = glm::translate(glm::mat4(1.0f), position);
+  }
+  memcpy(swap_chain_frame.model_matrices_mapped, swap_chain_frame.model_matrices.data(), sizeof(glm::mat4) * i);
 }
 
 static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_index) {
@@ -161,9 +173,8 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
 
   vk::Pipeline pipeline = context.GetVulkanPipeline().GetVkPipeline();
 
-  vk::DescriptorSet descriptor_set = context.GetVulkanSwapChain().GetSwapChainFrames()[image_index].descriptor_set;
   command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, context.GetVulkanPipeline().GetVkPipelineLayout(),
-                                    0, 1, &descriptor_set, 0, nullptr);
+                                    0, 1, &context.GetVulkanDescriptorPool().GetVkDescriptorSet(), 0, nullptr);
   command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
 
   PrepareFrame(image_index, context);
@@ -171,55 +182,28 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
   // Gets the vertex buffer data from TriangleMesh and pushes it as uniform data in anticipation for the vertex shader to use.
   PrepareScene(command_buffer);
 
-  // command_buffer.pushConstants() this defines push constants for shader code to use
-  // command_buffer.pushConstants(layout, stageflags, offset, size, value);
-  // layout is the pipeline layout
-  // stageflags is the shader stage to push constants (in our case we want to push constants to the vertex shader)
-  // offset is the offset in the push constant block
-  // size is the size of the data in the push constant block
-  vk::PipelineLayout pipeline_layout = context.GetVulkanPipeline().GetVkPipelineLayout();
-  //  glm::mat4 model_matrix =
-  //      glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.5f, 0.0f));// Move the triangle down halfway
-  //
-  //  command_buffer.pushConstants(pipeline_layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4), &model_matrix);
-
-  // take a look at scene class and use the triangle_positions_ vector
-
-  // we are basically pushing a constant to the vertex shader and rendering the triangle at multiple positions.
-
   // ------ Draw triangles ------
   int first_vertex = vertex_buffer_collection->offsets_.find(MeshType::TRIANGLE)->second;
   int vertex_count = vertex_buffer_collection->sizes_.find(MeshType::TRIANGLE)->second;
   std::vector<glm::vec3> triangle_positions = currentApp->GetScene().triangle_positions_;
-
-  for (auto position : triangle_positions) {
-    glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position);
-    command_buffer.pushConstants(pipeline_layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4),
-                                 &model_matrix);
-    command_buffer.draw(vertex_count, 1, first_vertex, 0);// This draws a triangle - hard coded for now
-  }
+  uint32_t start_instance = 0;
+  auto instance_count = static_cast<uint32_t>(triangle_positions.size());
+  command_buffer.draw(vertex_count, instance_count, first_vertex, start_instance);
+  start_instance += instance_count;
 
   // ------ Draw squares ------
   first_vertex = vertex_buffer_collection->offsets_.find(MeshType::SQUARE)->second;
   vertex_count = vertex_buffer_collection->sizes_.find(MeshType::SQUARE)->second;
   std::vector<glm::vec3> square_positions = currentApp->GetScene().square_positions_;
-  for (auto position : square_positions) {
-    glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position);
-    command_buffer.pushConstants(pipeline_layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4),
-                                 &model_matrix);
-    command_buffer.draw(vertex_count, 1, first_vertex, 0);// This draws a triangle - hard coded for now
-  }
+  command_buffer.draw(vertex_count, instance_count, first_vertex, start_instance);
+  start_instance += instance_count;
 
   // ------ Draw stars -------
   first_vertex = vertex_buffer_collection->offsets_.find(MeshType::STAR)->second;
   vertex_count = vertex_buffer_collection->sizes_.find(MeshType::STAR)->second;
   std::vector<glm::vec3> star_positions = currentApp->GetScene().star_positions_;
-  for (auto position : star_positions) {
-    glm::mat4 model_matrix = glm::translate(glm::mat4(1.0f), position);
-    command_buffer.pushConstants(pipeline_layout, vk::ShaderStageFlagBits::eVertex, 0, sizeof(glm::mat4),
-                                 &model_matrix);
-    command_buffer.draw(vertex_count, 1, first_vertex, 0);// This draws a triangle - hard coded for now
-  }
+  command_buffer.draw(vertex_count, instance_count, first_vertex, start_instance);
+  start_instance += instance_count;
 }
 
 /**
@@ -410,14 +394,13 @@ void GLACEON_API RunGame(Application *app) {
   params.descriptor_type_count.push_back(1);
   params.stage_to_bind.push_back(vk::ShaderStageFlagBits::eVertex);
 
-//  // this is for imgui
-//  params.binding_index.push_back(1);
-//  params.descriptor_type.push_back(vk::DescriptorType::eCombinedImageSampler);
-//  params.descriptor_type_count.push_back(1);
-//  params.stage_to_bind.push_back(vk::ShaderStageFlagBits::eFragment);
+  //  // this is for imgui
+  //  params.binding_index.push_back(1);
+  //  params.descriptor_type.push_back(vk::DescriptorType::eCombinedImageSampler);
+  //  params.descriptor_type_count.push_back(1);
+  //  params.stage_to_bind.push_back(vk::ShaderStageFlagBits::eFragment);
   // creates descriptor set layout, descriptor pool, and descriptor sets
   context.GetVulkanDescriptorPool().Initialize(params);
-
 
   // now that descriptor sets are created, we can update the UBO with the new descriptor set
   context.GetVulkanSwapChain().UpdateDescriptorResources();

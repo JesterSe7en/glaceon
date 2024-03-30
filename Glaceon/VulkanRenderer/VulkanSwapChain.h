@@ -39,7 +39,6 @@ struct SwapChainFrame {
   // These two are analogous to Vk:Buffer (vk:DescriptorSet) and Vk:BufferMemory (vk:DescriptorBufferInfo)
   vk::DescriptorBufferInfo uniform_buffer_descriptor; // this is the descriptor for the uniform buffer -> later used during VkWriteDescriptorSet
   vk::DescriptorBufferInfo model_matrices_buffer_descriptor;
-  vk::DescriptorSet descriptor_set;   // This is just a handle to a descriptor set.
 };
 
 

@@ -110,18 +110,27 @@ void VulkanDescriptorPool::CreateDescriptorSet() {
   auto device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
 
-  auto &swap_chain_frames = context_.GetVulkanSwapChain().GetSwapChainFrames();
-  std::vector<vk::DescriptorSetLayout> layouts(swap_chain_frames.size(), vk_descriptor_set_layout_);
-  vk::DescriptorSetAllocateInfo alloc_info(vk_descriptor_pool_, static_cast<uint32_t>(swap_chain_frames.size()),
-                                           layouts.data());
-
-  std::vector<vk::DescriptorSet> descriptor_sets(swap_chain_frames.size());
-  VK_CHECK(device.allocateDescriptorSets(&alloc_info, descriptor_sets.data()), "Failed to allocate descriptor sets");
-
-  for (size_t i = 0; i < swap_chain_frames.size(); i++) {
-    swap_chain_frames[i].descriptor_set = descriptor_sets[i];
-    GINFO("Successfully allocated descriptor set for frame {}", i);
-  }
+  vk::DescriptorSetAllocateInfo allocate_info = {};
+  allocate_info.sType = vk::StructureType::eDescriptorSetAllocateInfo;
+  allocate_info.pNext = nullptr;
+  allocate_info.descriptorPool = vk_descriptor_pool_;
+  allocate_info.descriptorSetCount = 1;
+  allocate_info.pSetLayouts = &vk_descriptor_set_layout_;
+  VK_CHECK(device.allocateDescriptorSets(&allocate_info, &vk_descriptor_set_), "Failed to allocate descriptor set");
+  GINFO("Successfully allocated descriptor set");
+//
+//  auto &swap_chain_frames = context_.GetVulkanSwapChain().GetSwapChainFrames();
+//  std::vector<vk::DescriptorSetLayout> layouts(swap_chain_frames.size(), vk_descriptor_set_layout_);
+//  vk::DescriptorSetAllocateInfo alloc_info(vk_descriptor_pool_, static_cast<uint32_t>(swap_chain_frames.size()),
+//                                           layouts.data());
+//
+//  std::vector<vk::DescriptorSet> descriptor_sets(swap_chain_frames.size());
+//  VK_CHECK(device.allocateDescriptorSets(&alloc_info, descriptor_sets.data()), "Failed to allocate descriptor sets");
+//
+//  for (size_t i = 0; i < swap_chain_frames.size(); i++) {
+//    swap_chain_frames[i].descriptor_set = descriptor_sets[i];
+//    GINFO("Successfully allocated descriptor set for frame {}", i);
+//  }
 }
 void VulkanDescriptorPool::Destroy() {
   vk::Device device = context_.GetVulkanLogicalDevice();

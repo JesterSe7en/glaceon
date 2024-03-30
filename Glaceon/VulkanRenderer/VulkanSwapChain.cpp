@@ -447,7 +447,7 @@ void VulkanSwapChain::CreateDescriptorResources() {
   VulkanUtils::BufferInputParams storage_params = {};
   storage_params.device = context_.GetVulkanLogicalDevice();
   storage_params.physical_device = context_.GetVulkanPhysicalDevice();
-  storage_params.buffer_usage = vk::BufferUsageFlagBits::eUniformBuffer;
+  storage_params.buffer_usage = vk::BufferUsageFlagBits::eStorageBuffer;
   storage_params.memory_property_flags =
       vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
   storage_params.size = sizeof(glm::mat4) * 1024;
@@ -463,6 +463,7 @@ void VulkanSwapChain::CreateDescriptorResources() {
     VK_CHECK(device.mapMemory(frame.model_matrices_buffer.buffer_memory, 0, sizeof(glm::mat4) * 1024, {},
                               &frame.model_matrices_mapped),
              "Failed to map memory for model matrices data");
+    GINFO("Address of model matrices buffer: {}", frame.model_matrices_mapped);
   }
 }
 
@@ -475,6 +476,7 @@ void VulkanSwapChain::UpdateDescriptorResources() {
   //    VkDeviceSize    offset;
   //    VkDeviceSize    range;
   //  } VkDescriptorBufferInfo;
+
   for (auto &frame : swap_chain_frames_) {
     // Similar to UBO, we need to parse vk::DescriptorSet into its raw form.
     // This is where the uniform buffer descriptor comes in aka vk::DescriptorSetInfo
@@ -501,13 +503,21 @@ void VulkanSwapChain::UpdateDescriptorResources() {
     //    } VkWriteDescriptorSet;
     vk::WriteDescriptorSet write_descriptor_set;
     write_descriptor_set.sType = vk::StructureType::eWriteDescriptorSet;
-    write_descriptor_set.dstSet = frame.descriptor_set;
+    write_descriptor_set.dstSet = context_.GetVulkanDescriptorPool().GetVkDescriptorSet();
     write_descriptor_set.dstBinding = 0;
     write_descriptor_set.dstArrayElement = 0;
     write_descriptor_set.descriptorCount = 1;
     write_descriptor_set.descriptorType = vk::DescriptorType::eUniformBuffer;
     write_descriptor_set.pBufferInfo = &frame.uniform_buffer_descriptor;
 
+    device.updateDescriptorSets(write_descriptor_set, nullptr);
+
+    write_descriptor_set.dstSet = context_.GetVulkanDescriptorPool().GetVkDescriptorSet();
+    write_descriptor_set.dstBinding = 1;
+    write_descriptor_set.dstArrayElement = 0;
+    write_descriptor_set.descriptorCount = 1;
+    write_descriptor_set.descriptorType = vk::DescriptorType::eStorageBuffer;
+    write_descriptor_set.pBufferInfo = &frame.model_matrices_buffer_descriptor;
     device.updateDescriptorSets(write_descriptor_set, nullptr);
   }
 }
