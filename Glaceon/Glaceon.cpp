@@ -398,11 +398,13 @@ void GLACEON_API RunGame(Application *app) {
   context.GetVulkanSwapChain().Initialize();
   DescriptorPoolSetLayoutParams params;
   params.binding_count = 2;
+  // Uniform buffer for the camera data
   params.binding_index.push_back(0);
   params.descriptor_type.push_back(vk::DescriptorType::eUniformBuffer);
   params.descriptor_type_count.push_back(1);
   params.stage_to_bind.push_back(vk::ShaderStageFlagBits::eVertex);
 
+  // Storage buffer for all the vertex data (triangles, squares, stars, etc.)
   params.binding_index.push_back(1);
   params.descriptor_type.push_back(vk::DescriptorType::eStorageBuffer);
   params.descriptor_type_count.push_back(1);

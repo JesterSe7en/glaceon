@@ -71,19 +71,22 @@ void VulkanDescriptorPool::CreateDescriptorPool() {
   auto device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
   // Determine the size of the pool
+  uint8_t num_descriptor_sets = 0;
   std::vector<vk::DescriptorPoolSize> pool_sizes;// This stores the type and number of descriptors
   for (int i = 0; i < descriptor_pool_set_layout_params_.binding_count; i++) {
     vk::DescriptorPoolSize pool_size;
     pool_size.type = descriptor_pool_set_layout_params_.descriptor_type[i];
-    pool_size.descriptorCount = static_cast<uint32_t>(context_.GetVulkanSwapChain().GetSwapChainFrames().size());
+    pool_size.descriptorCount = descriptor_pool_set_layout_params_.descriptor_type_count[i];
+    num_descriptor_sets++;
     pool_sizes.push_back(pool_size);
   }
 
 #if _DEBUG
-  // Add image sampler to the pool
+  // Add image sampler to the pool for ImGui
   vk::DescriptorPoolSize image_sampler;
   image_sampler.type = vk::DescriptorType::eCombinedImageSampler;
   image_sampler.descriptorCount = 1;
+  num_descriptor_sets++;
   pool_sizes.push_back(image_sampler);
 #endif
 
@@ -92,12 +95,7 @@ void VulkanDescriptorPool::CreateDescriptorPool() {
   pool_create_info.sType = vk::StructureType::eDescriptorPoolCreateInfo;
   pool_create_info.pNext = nullptr;
   pool_create_info.flags = vk::DescriptorPoolCreateFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet);
-  pool_create_info.maxSets = static_cast<uint32_t>(
-      context_.GetVulkanSwapChain().GetSwapChainFrames().size());// one set per frame in swap chain
-#if _DEBUG
-  pool_create_info.maxSets = static_cast<uint32_t>(context_.GetVulkanSwapChain().GetSwapChainFrames().size())
-      + 1;// one set per frame in swap chain, +1 for image sampler for ImGUI
-#endif
+  pool_create_info.maxSets = static_cast<uint32_t>(num_descriptor_sets);
   pool_create_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
   pool_create_info.pPoolSizes = pool_sizes.data();
   // We only have one pool (aka size of pool_size[])
