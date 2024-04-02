@@ -18,8 +18,8 @@ VertexBufferCollection::~VertexBufferCollection() {
 }
 void VertexBufferCollection::Add(MeshType type, const std::vector<float> &vector) {
   for (float v : vector) { vertices_.push_back(v); }
-  // divide by 5 to get the number of vertices, since vectors will be structured as (x, y, r, g, b)
-  int vertex_count = static_cast<int>(vector.size() / 5);
+  // divide by 7 to get the number of vertices, since vectors will be structured as (x, y, r, g, b, u, v)
+  int vertex_count = static_cast<int>(vector.size() / 7);
 
   offsets_.insert(std::make_pair(type, offset_));
   sizes_.insert(std::make_pair(type, vertex_count));

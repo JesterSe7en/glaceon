@@ -521,8 +521,4 @@ void VulkanSwapChain::UpdateDescriptorResources() {
     device.updateDescriptorSets(write_descriptor_set, nullptr);
   }
 }
-void VulkanSwapChain::CreateModelMatricesResource() {
-  vk::Device device = context_.GetVulkanLogicalDevice();
-  VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get logical device");
-}
 }// namespace glaceon

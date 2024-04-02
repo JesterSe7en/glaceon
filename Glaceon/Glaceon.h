@@ -6,6 +6,7 @@
 #include "Application.h"
 #include "Base.h"
 #include "VertexBufferCollection.h"
+#include "VulkanRenderer/VulkanTexture.h"
 
 namespace glaceon {
 
@@ -16,7 +17,8 @@ TriangleMesh *triangle_mesh = nullptr;
 SquareMesh *square_mesh = nullptr;
 StarMesh *star_mesh = nullptr;
 
-VertexBufferCollection * vertex_buffer_collection = nullptr;
+VertexBufferCollection *vertex_buffer_collection = nullptr;
+std::unordered_map<MeshType, VulkanTexture *> materials;
 
 }// namespace glaceon
 #endif// GLACEON_GLACEON_GLACEON_H_

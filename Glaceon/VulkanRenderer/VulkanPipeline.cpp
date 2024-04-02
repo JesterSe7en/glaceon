@@ -49,7 +49,7 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   // - Offset
   // - Format - you would still use the VK_FORMAT enums even if the attribute is e.g. position.
   //            vec2 position's format would be vk::Format::eR32G32Sfloat => 2 - 32-bit signed floats
-  std::vector<vk::VertexInputAttributeDescription> attribute_descriptions = GetPosColorAttributeDescriptions();
+  std::vector<vk::VertexInputAttributeDescription> attribute_descriptions = GetPosColorTexCoordAttributeDescriptions();
   vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32_t>(attribute_descriptions.size());
   vertex_input_info.pVertexAttributeDescriptions = attribute_descriptions.data();
 
@@ -58,7 +58,7 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   // 1. Binding No.
   // 2. Stride - # of bytes per vertex
   // 3. InputRate - tells if the data is per vertex or per instance
-  vk::VertexInputBindingDescription binding_description = GetPosColorBindingDescription();
+  vk::VertexInputBindingDescription binding_description = GetPosColorTexCoordBindingDescription();
   vertex_input_info.vertexBindingDescriptionCount = 1;
   vertex_input_info.pVertexBindingDescriptions = &binding_description;
   pipeline_create_info.pVertexInputState = &vertex_input_info;
@@ -221,8 +221,11 @@ void VulkanPipeline::CreatePipelineLayout() {
   vk::PipelineLayoutCreateInfo pipeline_layout_info = {};
   // here we are not setting ANY uniform data
   pipeline_layout_info.sType = vk::StructureType::ePipelineLayoutCreateInfo;
-  pipeline_layout_info.setLayoutCount = 1;// this can push arbitrary data (usually large like an image) to pipeline
-  pipeline_layout_info.pSetLayouts = &context_.GetVulkanDescriptorPool().GetVkDescriptorSetLayout();
+  pipeline_layout_info.setLayoutCount = 2;// this can push arbitrary data (usually large like an image) to pipeline
+  std::vector<vk::DescriptorSetLayout> descriptor_set_layouts = {
+      context_.GetVulkanDescriptorPool().GetFrameVkDescriptorSetLayout(),
+      context_.GetVulkanDescriptorPool().GetMeshVkDescriptorSetLayout()};
+  pipeline_layout_info.pSetLayouts = descriptor_set_layouts.data();
 
   //  pipeline_layout_info.pushConstantRangeCount = 0;  // this can only push small data to pipeline like one matrix
   //  pipeline_layout_info.pPushConstantRanges = nullptr;
@@ -263,7 +266,7 @@ void VulkanPipeline::Destroy() {
   }
 }
 
-vk::VertexInputBindingDescription VulkanPipeline::GetPosColorBindingDescription() {
+vk::VertexInputBindingDescription VulkanPipeline::GetPosColorTexCoordBindingDescription() {
   // Provided by VK_VERSION_1_0
   //  typedef struct VkVertexInputBindingDescription {
   //    uint32_t             binding;
@@ -274,12 +277,13 @@ vk::VertexInputBindingDescription VulkanPipeline::GetPosColorBindingDescription(
   // Returns a binding description with POSITION and COLOR
   vk::VertexInputBindingDescription pos_color_binding = {};
   pos_color_binding.binding = 0;
-  pos_color_binding.stride = sizeof(glm::vec2) + sizeof(glm::vec3);// Position = vec3, Color = vec3
+  pos_color_binding.stride =
+      sizeof(glm::vec2) + sizeof(glm::vec3) + sizeof(glm::vec2);// Position = vec3, Color = vec3, Texture Coords = vec2
   pos_color_binding.inputRate = vk::VertexInputRate::eVertex;
   return pos_color_binding;
 }
 
-std::vector<vk::VertexInputAttributeDescription> VulkanPipeline::GetPosColorAttributeDescriptions() {
+std::vector<vk::VertexInputAttributeDescription> VulkanPipeline::GetPosColorTexCoordAttributeDescriptions() {
   // Provided by VK_VERSION_1_0
   //  typedef struct VkVertexInputAttributeDescription {
   //    uint32_t    location;   // corresponds in shader code as e.g. layout(location = 0)
@@ -295,6 +299,9 @@ std::vector<vk::VertexInputAttributeDescription> VulkanPipeline::GetPosColorAttr
   // Color
   // offset is +vec2 since position is of vec2 size
   attribute_descriptions.emplace_back(1, 0, vk::Format::eR32G32B32Sfloat, sizeof(glm::vec2));
+  // Texture Coords
+  // offset is +vec3 since color is of vec3 size
+  attribute_descriptions.emplace_back(2, 0, vk::Format::eR32G32Sfloat, sizeof(glm::vec2) + sizeof(glm::vec3));
 
   return attribute_descriptions;
 }

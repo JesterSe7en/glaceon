@@ -51,7 +51,7 @@ static void ImGuiInitialize(VulkanContext &context, GLFWwindow *glfw_window) {
   init_info.QueueFamily = context.GetQueueIndexes().graphics_family.value();
   init_info.Queue = context.GetVulkanDevice().GetVkGraphicsQueue();
   init_info.PipelineCache = context.GetVulkanPipeline().GetVkPipelineCache();
-  init_info.DescriptorPool = context.GetVulkanDescriptorPool().GetVkDescriptorPool();
+  init_info.DescriptorPool = context.GetVulkanDescriptorPool().GetFrameVkDescriptorPool();
   init_info.RenderPass = context.GetVulkanRenderPass().GetVkRenderPass();
   init_info.Subpass = 0;
   init_info.MinImageCount = 2;
@@ -72,29 +72,46 @@ static void ImGuiInitialize(VulkanContext &context, GLFWwindow *glfw_window) {
 
 void MakeAssets(VulkanContext &context) {
   vertex_buffer_collection = new VertexBufferCollection();
-  std::vector<float> triangle_vertices = {0.0f, -0.05f, 0.0f,   0.0f,  1.0f, 0.05f, 0.05f, 0.0f,
-                                          0.0f, 1.0f,   -0.05f, 0.05f, 0.0f, 0.0f,  1.0f};
+  std::vector<float> triangle_vertices = {0.0f, -0.1f, 0.0f, 1.0f,  0.0f, 0.5f, 0.0f, 0.1f, 0.1f, 0.0f, 1.0f,
+                                          0.0f, 1.0f,  1.0f, -0.1f, 0.1f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f};
   vertex_buffer_collection->Add(MeshType::TRIANGLE, triangle_vertices);
 
-  std::vector<float> square_vertices = {{-0.05f, 0.05f,  1.0f, 0.0f, 0.0f, -0.05f, -0.05f, 1.0f, 0.0f, 0.0f,
-                                         0.05f,  -0.05f, 1.0f, 0.0f, 0.0f, 0.05f,  -0.05f, 1.0f, 0.0f, 0.0f,
-                                         0.05f,  0.05f,  1.0f, 0.0f, 0.0f, -0.05f, 0.05f,  1.0f, 0.0f, 0.0f}};
+  std::vector<float> square_vertices = {{-0.1f, 0.1f, 1.0f,  0.0f, 0.0f,  0.0f, 1.0f, -0.1f, -0.1f, 1.0f, 0.0f,
+                                         0.0f,  0.0f, 0.0f,  0.1f, -0.1f, 1.0f, 0.0f, 0.0f,  1.0f,  0.0f, 0.1f,
+                                         -0.1f, 1.0f, 0.0f,  0.0f, 1.0f,  0.0f, 0.1f, 0.1f,  1.0f,  0.0f, 0.0f,
+                                         1.0f,  1.0f, -0.1f, 0.1f, 1.0f,  0.0f, 0.0f, 0.0f,  1.0f}};
   vertex_buffer_collection->Add(MeshType::SQUARE, square_vertices);
 
   std::vector<float> star_vertices = {
-      {-0.05f, -0.025f, 0.0f, 0.0f, 1.0f, -0.02f, -0.025f, 0.0f, 0.0f, 1.0f, -0.03f, 0.0f,    0.0f, 0.0f, 1.0f,
-       -0.02f, -0.025f, 0.0f, 0.0f, 1.0f, 0.0f,   -0.05f,  0.0f, 0.0f, 1.0f, 0.02f,  -0.025f, 0.0f, 0.0f, 1.0f,
-       -0.03f, 0.0f,    0.0f, 0.0f, 1.0f, -0.02f, -0.025f, 0.0f, 0.0f, 1.0f, 0.02f,  -0.025f, 0.0f, 0.0f, 1.0f,
-       0.02f,  -0.025f, 0.0f, 0.0f, 1.0f, 0.05f,  -0.025f, 0.0f, 0.0f, 1.0f, 0.03f,  0.0f,    0.0f, 0.0f, 1.0f,
-       -0.03f, 0.0f,    0.0f, 0.0f, 1.0f, 0.02f,  -0.025f, 0.0f, 0.0f, 1.0f, 0.03f,  0.0f,    0.0f, 0.0f, 1.0f,
-       0.03f,  0.0f,    0.0f, 0.0f, 1.0f, 0.04f,  0.05f,   0.0f, 0.0f, 1.0f, 0.0f,   0.01f,   0.0f, 0.0f, 1.0f,
-       -0.03f, 0.0f,    0.0f, 0.0f, 1.0f, 0.03f,  0.0f,    0.0f, 0.0f, 1.0f, 0.0f,   0.01f,   0.0f, 0.0f, 1.0f,
-       -0.03f, 0.0f,    0.0f, 0.0f, 1.0f, 0.0f,   0.01f,   0.0f, 0.0f, 1.0f, -0.04f, 0.05f,   0.0f, 0.0f, 1.0f}};
+      {-0.1f,  -0.05f, 0.0f, 0.0f, 1.0f, 0.0f, 0.25f, -0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.3f, 0.25f,
+       -0.06f, 0.0f,   0.0f, 0.0f, 1.0f, 0.2f, 0.5f,  -0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.3f, 0.25f,
+       0.0f,   -0.1f,  0.0f, 0.0f, 1.0f, 0.5f, 0.0f,  0.04f,  -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f,
+       -0.06f, 0.0f,   0.0f, 0.0f, 1.0f, 0.2f, 0.5f,  -0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.3f, 0.25f,
+       0.04f,  -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f, 0.04f,  -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f,
+       0.1f,   -0.05f, 0.0f, 0.0f, 1.0f, 1.0f, 0.25f, 0.06f,  0.0f,   0.0f, 0.0f, 1.0f, 0.8f, 0.5f,
+       -0.06f, 0.0f,   0.0f, 0.0f, 1.0f, 0.2f, 0.5f,  0.04f,  -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f,
+       0.06f,  0.0f,   0.0f, 0.0f, 1.0f, 0.8f, 0.5f,  0.06f,  0.0f,   0.0f, 0.0f, 1.0f, 0.8f, 0.5f,
+       0.08f,  0.1f,   0.0f, 0.0f, 1.0f, 0.9f, 1.0f,  0.0f,   0.02f,  0.0f, 0.0f, 1.0f, 0.5f, 0.6f,
+       -0.06f, 0.0f,   0.0f, 0.0f, 1.0f, 0.2f, 0.5f,  0.06f,  0.0f,   0.0f, 0.0f, 1.0f, 0.8f, 0.5f,
+       0.0f,   0.02f,  0.0f, 0.0f, 1.0f, 0.5f, 0.6f,  -0.06f, 0.0f,   0.0f, 0.0f, 1.0f, 0.2f, 0.5f,
+       0.0f,   0.02f,  0.0f, 0.0f, 1.0f, 0.5f, 0.6f,  -0.08f, 0.1f,   0.0f, 0.0f, 1.0f, 0.1f, 1.0f}};
   vertex_buffer_collection->Add(MeshType::STAR, star_vertices);
 
   vertex_buffer_collection->Finalize(context.GetVulkanLogicalDevice(), context.GetVulkanPhysicalDevice(),
                                      context.GetVulkanDevice().GetVkGraphicsQueue(),
                                      context.GetVulkanCommandPool().GetVkMainCommandBuffer());
+
+  // Materials
+  std::unordered_map<MeshType, const char *> filenames = {{MeshType::TRIANGLE, "../textures/folds.jpg"},
+                                                          {MeshType::SQUARE, "../textures/paper_crinkle.jpg"},
+                                                          {MeshType::STAR, "../textures/water.jpg"}};
+
+  for (auto &kPair : filenames) {
+    auto *texture = new VulkanTexture(context, kPair.second);
+    materials[kPair.first] = texture;
+  }
+
+  // Create descriptor pool for textures
 }
 
 void PrepareScene(vk::CommandBuffer command_buffer) {
@@ -145,6 +162,25 @@ void PrepareFrame(uint32_t image_index, VulkanContext &context) {
   memcpy(swap_chain_frame.model_matrices_mapped, swap_chain_frame.model_matrices.data(), sizeof(glm::mat4) * i);
 }
 
+/**
+ * Renders requested number of MeshType objects.
+ *
+ * @param command_buffer The Vulkan command buffer to render the objects.
+ * @param mesh_type The type of mesh to render.
+ * @param start_instance The starting instance for rendering.
+ * @param instance_count The number of instances to render.
+ */
+void RenderObjects(vk::CommandBuffer &command_buffer, MeshType mesh_type, uint32_t &start_instance,
+                   uint32_t instance_count) {
+  // ------ Draw triangles ------
+  int first_vertex = vertex_buffer_collection->offsets_.find(mesh_type)->second;
+  int vertex_count = vertex_buffer_collection->sizes_.find(mesh_type)->second;
+  // attach material
+  materials[mesh_type]->Use();
+  command_buffer.draw(vertex_count, instance_count, first_vertex, start_instance);
+  start_instance += instance_count;
+}
+
 static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_index) {
   VulkanContext &context = currentApp->GetVulkanContext();
 
@@ -182,28 +218,18 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
   // Gets the vertex buffer data from TriangleMesh and pushes it as uniform data in anticipation for the vertex shader to use.
   PrepareScene(command_buffer);
 
-  // ------ Draw triangles ------
-  int first_vertex = vertex_buffer_collection->offsets_.find(MeshType::TRIANGLE)->second;
-  int vertex_count = vertex_buffer_collection->sizes_.find(MeshType::TRIANGLE)->second;
-  std::vector<glm::vec3> triangle_positions = currentApp->GetScene().triangle_positions_;
   uint32_t start_instance = 0;
-  auto instance_count = static_cast<uint32_t>(triangle_positions.size());
-  command_buffer.draw(vertex_count, instance_count, first_vertex, start_instance);
-  start_instance += instance_count;
+  std::vector<glm::vec3> const &triangle_positions = currentApp->GetScene().triangle_positions_;
+  std::vector<glm::vec3> const &square_positions = currentApp->GetScene().square_positions_;
+  std::vector<glm::vec3> const &star_positions = currentApp->GetScene().star_positions_;
 
-  // ------ Draw squares ------
-  first_vertex = vertex_buffer_collection->offsets_.find(MeshType::SQUARE)->second;
-  vertex_count = vertex_buffer_collection->sizes_.find(MeshType::SQUARE)->second;
-  std::vector<glm::vec3> square_positions = currentApp->GetScene().square_positions_;
-  command_buffer.draw(vertex_count, instance_count, first_vertex, start_instance);
-  start_instance += instance_count;
+  RenderObjects(command_buffer, MeshType::TRIANGLE, start_instance, static_cast<uint32_t>(triangle_positions.size()));
+  start_instance += static_cast<uint32_t>(triangle_positions.size());
 
-  // ------ Draw stars -------
-  first_vertex = vertex_buffer_collection->offsets_.find(MeshType::STAR)->second;
-  vertex_count = vertex_buffer_collection->sizes_.find(MeshType::STAR)->second;
-  std::vector<glm::vec3> star_positions = currentApp->GetScene().star_positions_;
-  command_buffer.draw(vertex_count, instance_count, first_vertex, start_instance);
-  start_instance += instance_count;
+  RenderObjects(command_buffer, MeshType::SQUARE, start_instance, static_cast<uint32_t>(square_positions.size()));
+  start_instance += static_cast<uint32_t>(square_positions.size());
+
+  RenderObjects(command_buffer, MeshType::STAR, start_instance, static_cast<uint32_t>(star_positions.size()));
 }
 
 /**
@@ -380,19 +406,35 @@ void GLACEON_API RunGame(Application *app) {
   context.GetVulkanDevice().Initialize();
   context.GetVulkanRenderPass().Initialize();
   context.GetVulkanSwapChain().Initialize();
-  DescriptorPoolSetLayoutParams params;
-  params.binding_count = 2;
+
+  std::vector<DescriptorPoolSetLayoutParams> descriptor_pool_set_layouts;
+  // -- frame descriptor set --
+  DescriptorPoolSetLayoutParams frame_set_layout;
+  frame_set_layout.descriptor_pool_type = DescriptorPoolType::FRAME;
+  frame_set_layout.binding_count = 2;
   // Uniform buffer for the camera data
-  params.binding_index.push_back(0);
-  params.descriptor_type.push_back(vk::DescriptorType::eUniformBuffer);
-  params.descriptor_type_count.push_back(1);
-  params.stage_to_bind.push_back(vk::ShaderStageFlagBits::eVertex);
+  frame_set_layout.binding_index.push_back(0);
+  frame_set_layout.descriptor_type.push_back(vk::DescriptorType::eUniformBuffer);
+  frame_set_layout.descriptor_type_count.push_back(1);
+  frame_set_layout.stage_to_bind.push_back(vk::ShaderStageFlagBits::eVertex);
 
   // Storage buffer for all the vertex data (triangles, squares, stars, etc.)
-  params.binding_index.push_back(1);
-  params.descriptor_type.push_back(vk::DescriptorType::eStorageBuffer);
-  params.descriptor_type_count.push_back(1);
-  params.stage_to_bind.push_back(vk::ShaderStageFlagBits::eVertex);
+  frame_set_layout.binding_index.push_back(1);
+  frame_set_layout.descriptor_type.push_back(vk::DescriptorType::eStorageBuffer);
+  frame_set_layout.descriptor_type_count.push_back(1);
+  frame_set_layout.stage_to_bind.push_back(vk::ShaderStageFlagBits::eVertex);
+  descriptor_pool_set_layouts.push_back(frame_set_layout);
+
+  // -- mesh descriptor set --
+  DescriptorPoolSetLayoutParams mesh_set_layout;
+  mesh_set_layout.descriptor_pool_type = DescriptorPoolType::MESH;
+  mesh_set_layout.binding_count = 1;
+  // Combined image sampler for the mesh image
+  mesh_set_layout.binding_index.push_back(0);
+  mesh_set_layout.descriptor_type.push_back(vk::DescriptorType::eCombinedImageSampler);
+  mesh_set_layout.descriptor_type_count.push_back(1);
+  mesh_set_layout.stage_to_bind.push_back(vk::ShaderStageFlagBits::eFragment);
+  descriptor_pool_set_layouts.push_back(mesh_set_layout);
 
   //  // this is for imgui
   //  params.binding_index.push_back(1);
@@ -400,7 +442,7 @@ void GLACEON_API RunGame(Application *app) {
   //  params.descriptor_type_count.push_back(1);
   //  params.stage_to_bind.push_back(vk::ShaderStageFlagBits::eFragment);
   // creates descriptor set layout, descriptor pool, and descriptor sets
-  context.GetVulkanDescriptorPool().Initialize(params);
+  context.GetVulkanDescriptorPool().Initialize(descriptor_pool_set_layouts);
 
   // now that descriptor sets are created, we can update the UBO with the new descriptor set
   context.GetVulkanSwapChain().UpdateDescriptorResources();
@@ -497,6 +539,9 @@ void GLACEON_API RunGame(Application *app) {
   ImGui::DestroyContext();
 #endif
 
+  delete vertex_buffer_collection;
+  for (auto &[_, texture] : materials) { delete texture; }
+  
   context.Destroy();
 
   glfwDestroyWindow(glfw_window);

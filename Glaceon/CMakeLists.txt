@@ -25,6 +25,12 @@ set(Header_Files
         VulkanRenderer/VulkanPipeline.h
         VulkanRenderer/VulkanCommandPool.h
         VulkanRenderer/VulkanSync.h
+        VulkanRenderer/VulkanDescriptorPool.h
+        VulkanRenderer/VulkanTexture.h
+        TriangleMesh.h
+        SquareMesh.h
+        StarMesh.h
+        VertexBufferCollection.h
         Scene.h
 )
 source_group("Header Files" FILES ${Header_Files})
@@ -50,7 +56,13 @@ set(Source_Files
         VulkanRenderer/VulkanUtils.cpp
         VulkanRenderer/VulkanPipeline.cpp
         VulkanRenderer/VulkanCommandPool.cpp
+        VulkanRenderer/VulkanDescriptorPool.cpp
+        VulkanRenderer/VulkanTexture.cpp
         VulkanRenderer/VulkanSync.cpp
+        TriangleMesh.cpp
+        SquareMesh.cpp
+        StarMesh.cpp
+        VertexBufferCollection.cpp
         Scene.cpp
 )
 source_group("Source Files" FILES ${Source_Files})
@@ -58,16 +70,6 @@ source_group("Source Files" FILES ${Source_Files})
 set(ALL_FILES
         ${Header_Files}
         ${Source_Files}
-        TriangleMesh.cpp
-        TriangleMesh.h
-        SquareMesh.cpp
-        SquareMesh.h
-        StarMesh.cpp
-        StarMesh.h
-        VertexBufferCollection.cpp
-        VertexBufferCollection.h
-        VulkanRenderer/VulkanDescriptorPool.cpp
-        VulkanRenderer/VulkanDescriptorPool.h
 )
 
 # Target
@@ -170,6 +172,7 @@ target_link_libraries(${PROJECT_NAME} PUBLIC glfw Vulkan::Vulkan)
 target_include_directories(${PROJECT_NAME} PUBLIC
         ${CMAKE_SOURCE_DIR}/extern/glm
         ${CMAKE_SOURCE_DIR}/extern/spdlog/include
+        ${CMAKE_SOURCE_DIR}/extern/stb
         ${CMAKE_SOURCE_DIR}/extern/imgui
         ${CMAKE_SOURCE_DIR}/extern/imgui/backends)
 add_dependencies(${PROJECT_NAME} spdlog)

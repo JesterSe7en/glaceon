@@ -34,8 +34,8 @@ class VulkanPipeline {
 
  private:
   void CreatePipelineLayout();
-  vk::VertexInputBindingDescription GetPosColorBindingDescription();
-  std::vector<vk::VertexInputAttributeDescription> GetPosColorAttributeDescriptions();
+  static vk::VertexInputBindingDescription GetPosColorTexCoordBindingDescription();
+  static std::vector<vk::VertexInputAttributeDescription> GetPosColorTexCoordAttributeDescriptions();
 };
 
 }// namespace glaceon

@@ -71,7 +71,6 @@ class VulkanSwapChain {
   void CreateImageViews();
   void CreateFrameBuffers();
   void CreateDescriptorResources();
-  void CreateModelMatricesResource();
   void DestroyFrames();
 };
 
