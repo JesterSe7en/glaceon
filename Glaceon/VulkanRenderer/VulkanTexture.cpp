@@ -1,4 +1,5 @@
 #include "VulkanTexture.h"
+#include <cstring>
 #define STB_IMAGE_IMPLEMENTATION
 #include "../Base.h"
 #include "../Logger.h"
@@ -101,8 +102,12 @@ void VulkanTexture::Populate() {
 
   VulkanUtils::Buffer staging_buffer = VulkanUtils::CreateBuffer(params);
   void *staging_buffer_mapped = device.mapMemory(staging_buffer.buffer_memory, 0, params.size);
-  // TODO: maybe use memcpy for gcc/clang support; memcpy_s is only msvc
+
+#ifdef __linux__
+  memcpy(staging_buffer_mapped, pixels_, params.size);
+#else
   memcpy_s(staging_buffer_mapped, params.size, pixels_, params.size);
+#endif
 
   TransitionImageLayout(vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
 
