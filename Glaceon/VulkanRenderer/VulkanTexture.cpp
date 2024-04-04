@@ -6,7 +6,7 @@
 
 namespace glaceon {
 
-VulkanTexture::VulkanTexture(VulkanContext &context, const char *filename) : context_(context), filename_(filename) {
+VulkanTexture::VulkanTexture(VulkanContext &context, const char *filename) : filename_(filename), context_(context) {
   LoadImageFromFile();
   CreateVkImage();
   CreateVkImageView();
@@ -102,7 +102,7 @@ void VulkanTexture::Populate() {
 
   VulkanUtils::Buffer staging_buffer = VulkanUtils::CreateBuffer(params);
   void *staging_buffer_mapped = device.mapMemory(staging_buffer.buffer_memory, 0, params.size);
-  memcpy_s(staging_buffer_mapped, params.size, pixels_, params.size);
+  memcpy(staging_buffer_mapped, pixels_, params.size);
 
   TransitionImageLayout(vk::ImageLayout::eTransferDstOptimal);
 
