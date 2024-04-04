@@ -218,8 +218,7 @@ void VulkanPipeline::CreatePipelineLayout() {
   // here we are not setting ANY uniform data
   pipeline_layout_info.sType = vk::StructureType::ePipelineLayoutCreateInfo;
   pipeline_layout_info.setLayoutCount = 2;// this can push arbitrary data (usually large like an image) to pipeline
-  std::unordered_map<DescriptorPoolType, vk::DescriptorSetLayout> descriptor_set_layouts =
-      context_.GetVulkanDescriptorPool().GetDescriptorSetLayouts();
+  auto descriptor_set_layouts = context_.GetVulkanDescriptorPool().GetDescriptorSetLayouts();
   std::vector<vk::DescriptorSetLayout> set_layouts = {};
   for (auto &kLayout : descriptor_set_layouts) { set_layouts.push_back(kLayout.second); }
   pipeline_layout_info.pSetLayouts = set_layouts.data();

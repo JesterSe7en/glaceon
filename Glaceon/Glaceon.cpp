@@ -161,8 +161,8 @@ void RenderObjects(vk::CommandBuffer &command_buffer, MeshType mesh_type, uint32
   // ------ Draw triangles ------
   int first_vertex = vertex_buffer_collection->offsets_.find(mesh_type)->second;
   int vertex_count = vertex_buffer_collection->sizes_.find(mesh_type)->second;
-  // attach material
-  materials[mesh_type]->Use();
+  // we are attaching descriptor set for the mesh (which just has one binding, the combined image sampler)
+  //  materials[mesh_type]->Use();
   command_buffer.draw(vertex_count, instance_count, first_vertex, start_instance);
   start_instance += instance_count;
 }
@@ -195,8 +195,10 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
 
   vk::Pipeline pipeline = context.GetVulkanPipeline().GetVkPipeline();
 
-  vk::DescriptorSet frame_descriptors = context.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::FRAME);
-  command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, context.GetVulkanPipeline().GetVkPipelineLayout(), 0, 1, &frame_descriptors, 0,
+  // frame descriptors have two bindings to describe the frame, the camera and the model vertex buffer
+  std::vector<vk::DescriptorSet> sets = {context.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::FRAME),
+                                         context.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::MESH)};
+  command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, context.GetVulkanPipeline().GetVkPipelineLayout(), 0, sets.size(), sets.data(), 0,
                                     nullptr);
   command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
 

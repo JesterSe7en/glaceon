@@ -16,7 +16,6 @@ VulkanTexture::VulkanTexture(VulkanContext &context, const char *filename)
   CreateVkImageView();
   CreateSampler();
   UpdateDescriptorSet();
-  // setup redner pass and pipline to use the texture (probably not in here?)
 }
 
 void VulkanTexture::LoadImageFromFile() {
@@ -110,9 +109,7 @@ void VulkanTexture::Populate() {
 #endif
 
   TransitionImageLayout(vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
-
   CopyBufferToImage(staging_buffer.buffer, vk_image_);
-
   TransitionImageLayout(vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 
   VulkanUtils::DestroyBuffer(params, staging_buffer);
@@ -217,16 +214,8 @@ void VulkanTexture::UpdateDescriptorSet() {
   VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
 
   // allocate descriptor set on the device - this is done already during initialization of the descriptor pool
-  //  vk::DescriptorSet descriptor_set;
-  //  vk::DescriptorSetAllocateInfo descriptor_set_allocate_info = {};
-  //  descriptor_set_allocate_info.sType = vk::StructureType::eDescriptorSetAllocateInfo;
-  //  descriptor_set_allocate_info.pNext = nullptr;
-  //  descriptor_set_allocate_info.descriptorPool = context_.GetVulkanDescriptorPool().GetDescriptorPool(DescriptorPoolType::MESH);
-  //  descriptor_set_allocate_info.descriptorSetCount = 1;
-  //  descriptor_set_allocate_info.pSetLayouts = &context_.GetVulkanDescriptorPool().GetDescriptorSetLayout(DescriptorPoolType::MESH);
-  //  VK_CHECK(device.allocateDescriptorSets(&descriptor_set_allocate_info, &descriptor_set), "Failed to allocate descriptor set");
-
   vk::DescriptorSet dst_set = context_.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::MESH);
+  VK_ASSERT(dst_set != VK_NULL_HANDLE, "Descriptor set not initialized");
 
   // combined image sampler
   vk::DescriptorImageInfo descriptor_image_info = {};
