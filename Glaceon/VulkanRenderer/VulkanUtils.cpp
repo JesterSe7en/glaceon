@@ -174,6 +174,14 @@ void VulkanUtils::DestroyBuffer(VulkanUtils::BufferInputParams params, VulkanUti
   buffer.buffer = VK_NULL_HANDLE;
   buffer.buffer_memory = VK_NULL_HANDLE;
 }
-
+uint32_t VulkanUtils::GetMemoryIndex(uint32_t bits, vk::Flags<vk::MemoryPropertyFlagBits> flags) {
+  vk::PhysicalDeviceMemoryProperties memory_properties = vk_physical_device_.getMemoryProperties();
+  for (uint32_t i = 0; i < memory_properties.memoryTypeCount; i++) {
+    if ((bits & (1 << i)) && (memory_properties.memoryTypes[i].propertyFlags & flags)) {
+      return i;
+    }
+  }
+  return -1;
+}
 
 }// namespace glaceon

@@ -24,12 +24,13 @@ class VulkanUtils {
     vk::PhysicalDevice physical_device;
     size_t size;
     vk::BufferUsageFlags buffer_usage;
-    vk::MemoryPropertyFlags memory_property_flags;  // these are the types of memory that you want to use on the GPU
+    vk::MemoryPropertyFlags memory_property_flags;// these are the types of memory that you want to use on the GPU
   };
   static Buffer CreateBuffer(BufferInputParams params);
   static int FindMemoryIndex(BufferInputParams &params, vk::Buffer buffer);
-  static void CopyBuffer(Buffer& src, Buffer& dst, vk::DeviceSize size, vk::Queue queue, vk::CommandBuffer command_buffer);
+  static void CopyBuffer(Buffer &src, Buffer &dst, vk::DeviceSize size, vk::Queue queue, vk::CommandBuffer command_buffer);
   static void DestroyBuffer(BufferInputParams params, Buffer &buffer);
+  static uint32_t GetMemoryIndex(uint32_t bits, vk::Flags<vk::MemoryPropertyFlagBits> flags);
 };
 
 }// namespace glaceon

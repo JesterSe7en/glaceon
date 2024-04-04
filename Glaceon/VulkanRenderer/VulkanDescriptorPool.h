@@ -22,30 +22,20 @@ class VulkanDescriptorPool {
   void Initialize(const std::vector<DescriptorPoolSetLayoutParams> &params);
   void Destroy();
 
-  [[nodiscard]] const vk::DescriptorSetLayout &GetFrameVkDescriptorSetLayout() const {
-    return vk_frame_descriptor_set_layout_;
-  }
-  [[nodiscard]] const vk::DescriptorPool &GetFrameVkDescriptorPool() const { return vk_frame_descriptor_pool_; }
-  [[nodiscard]] const vk::DescriptorSetLayout &GetMeshVkDescriptorSetLayout() const {
-    return vk_mesh_descriptor_set_layout_;
-  }
-  [[nodiscard]] const vk::DescriptorPool &GetMeshVkDescriptorPool() const { return vk_mesh_descriptor_pool_; }
+  vk::DescriptorSetLayout &GetDescriptorSetLayout(DescriptorPoolType type) { return vk_descriptor_set_layouts_.at(type); }
+  vk::DescriptorPool &GetDescriptorPool(DescriptorPoolType type) { return vk_descriptor_pools_.at(type); }
 
-  [[nodiscard]] const vk::DescriptorSet &GetVkDescriptorSet() const { return vk_descriptor_set_; }
+  std::unordered_map<DescriptorPoolType, vk::DescriptorSetLayout> &GetDescriptorSetLayouts() { return vk_descriptor_set_layouts_; }
+  std::unordered_map<DescriptorPoolType, vk::DescriptorPool> &GetDescriptorPools() { return vk_descriptor_pools_; }
+  std::unordered_map<DescriptorPoolType, vk::DescriptorSet> &GetDescriptorSets() { return vk_descriptor_sets_; }
 
  private:
   VulkanContext &context_;
   std::vector<DescriptorPoolSetLayoutParams> descriptor_pool_set_layout_params_;
 
-  vk::DescriptorSetLayout vk_frame_descriptor_set_layout_;
-  vk::DescriptorPool vk_frame_descriptor_pool_;
-
-  vk::DescriptorSetLayout vk_mesh_descriptor_set_layout_;
-  vk::DescriptorPool vk_mesh_descriptor_pool_;
-
-  // Descriptor Set layout just describes how data in a descriptor set should be laid out
-  // i.e. it is kind of like an interface.  Only describes how the data should be shaped.
-  vk::DescriptorSet vk_descriptor_set_;
+  std::unordered_map<DescriptorPoolType, vk::DescriptorSetLayout> vk_descriptor_set_layouts_;
+  std::unordered_map<DescriptorPoolType, vk::DescriptorPool> vk_descriptor_pools_;
+  std::unordered_map<DescriptorPoolType, vk::DescriptorSet> vk_descriptor_sets_;
 
  private:
   // Descriptor Set layout just describes how data in a descriptor set should be laid out

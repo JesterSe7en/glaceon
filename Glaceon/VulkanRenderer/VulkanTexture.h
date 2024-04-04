@@ -36,6 +36,15 @@ class VulkanTexture {
   vk::Queue vk_queue_;
 
   VulkanContext &context_;
+
+  void LoadImageFromFile();
+  void CreateVkImage();
+  void CreateVkImageView();
+  void TransitionImageLayout(vk::ImageLayout layout);
+  void CreateSampler();
+  void UpdateDescriptorSet();
+  void Populate();
+  void CopyBufferToImage(vk::Buffer &src_buffer, vk::Image &dst_image);
 };
 
 }// namespace glaceon

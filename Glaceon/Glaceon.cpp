@@ -219,17 +219,17 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
   PrepareScene(command_buffer);
 
   uint32_t start_instance = 0;
-  std::vector<glm::vec3> const &triangle_positions = currentApp->GetScene().triangle_positions_;
-  std::vector<glm::vec3> const &square_positions = currentApp->GetScene().square_positions_;
-  std::vector<glm::vec3> const &star_positions = currentApp->GetScene().star_positions_;
+  std::vector<glm::vec3> const &kTrianglePositions = currentApp->GetScene().triangle_positions_;
+  std::vector<glm::vec3> const &kSquarePositions = currentApp->GetScene().square_positions_;
+  std::vector<glm::vec3> const &kStarPositions = currentApp->GetScene().star_positions_;
 
-  RenderObjects(command_buffer, MeshType::TRIANGLE, start_instance, static_cast<uint32_t>(triangle_positions.size()));
-  start_instance += static_cast<uint32_t>(triangle_positions.size());
+  RenderObjects(command_buffer, MeshType::TRIANGLE, start_instance, static_cast<uint32_t>(kTrianglePositions.size()));
+  start_instance += static_cast<uint32_t>(kTrianglePositions.size());
 
-  RenderObjects(command_buffer, MeshType::SQUARE, start_instance, static_cast<uint32_t>(square_positions.size()));
-  start_instance += static_cast<uint32_t>(square_positions.size());
+  RenderObjects(command_buffer, MeshType::SQUARE, start_instance, static_cast<uint32_t>(kSquarePositions.size()));
+  start_instance += static_cast<uint32_t>(kSquarePositions.size());
 
-  RenderObjects(command_buffer, MeshType::STAR, start_instance, static_cast<uint32_t>(star_positions.size()));
+  RenderObjects(command_buffer, MeshType::STAR, start_instance, static_cast<uint32_t>(kStarPositions.size()));
 }
 
 /**
@@ -541,7 +541,7 @@ void GLACEON_API RunGame(Application *app) {
 
   delete vertex_buffer_collection;
   for (auto &[_, texture] : materials) { delete texture; }
-  
+
   context.Destroy();
 
   glfwDestroyWindow(glfw_window);

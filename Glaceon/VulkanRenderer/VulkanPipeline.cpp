@@ -8,8 +8,7 @@
 namespace glaceon {
 
 VulkanPipeline::VulkanPipeline(VulkanContext &context)
-    : context_(context), vk_pipeline_(VK_NULL_HANDLE), vk_pipeline_cache_(VK_NULL_HANDLE),
-      vk_pipeline_layout_(VK_NULL_HANDLE) {}
+    : context_(context), vk_pipeline_(VK_NULL_HANDLE), vk_pipeline_cache_(VK_NULL_HANDLE), vk_pipeline_layout_(VK_NULL_HANDLE) {}
 
 void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   pipeline_config_ = pipeline_config;
@@ -33,8 +32,7 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   pipeline_create_info.pNext = nullptr;
   pipeline_create_info.flags = vk::PipelineCreateFlags();
 
-  std::vector<vk::PipelineShaderStageCreateInfo>
-      shader_stages;// these store the configurations for vertex input, fragment, etc.
+  std::vector<vk::PipelineShaderStageCreateInfo> shader_stages;// these store the configurations for vertex input, fragment, etc.
 
   // Vertex Input
   vk::PipelineVertexInputStateCreateInfo vertex_input_info = {};
@@ -162,9 +160,8 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   // Color Blend - alpha transparency, etc.
   // This is doing no blending
   vk::PipelineColorBlendAttachmentState color_blend_attachment = {};
-  color_blend_attachment.colorWriteMask =
-      vk::ColorComponentFlags(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG
-                              | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA);
+  color_blend_attachment.colorWriteMask = vk::ColorComponentFlags(vk::ColorComponentFlagBits::eR | vk::ColorComponentFlagBits::eG
+                                                                  | vk::ColorComponentFlagBits::eB | vk::ColorComponentFlagBits::eA);
   color_blend_attachment.blendEnable = VK_FALSE;
 
   vk::PipelineColorBlendStateCreateInfo color_blending = {};
@@ -191,8 +188,7 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   pipeline_create_info.basePipelineHandle = old_pipeline;// Optional - to base pipeline on
 
   // Create pipeline - for now just one pipeline
-  if (device.createGraphicsPipelines(vk_pipeline_cache_, 1, &pipeline_create_info, nullptr, &vk_pipeline_)
-      != vk::Result::eSuccess) {
+  if (device.createGraphicsPipelines(vk_pipeline_cache_, 1, &pipeline_create_info, nullptr, &vk_pipeline_) != vk::Result::eSuccess) {
     GERROR("Failed to create graphics pipeline");
     vk_pipeline_ = nullptr;
   } else {
@@ -222,10 +218,11 @@ void VulkanPipeline::CreatePipelineLayout() {
   // here we are not setting ANY uniform data
   pipeline_layout_info.sType = vk::StructureType::ePipelineLayoutCreateInfo;
   pipeline_layout_info.setLayoutCount = 2;// this can push arbitrary data (usually large like an image) to pipeline
-  std::vector<vk::DescriptorSetLayout> descriptor_set_layouts = {
-      context_.GetVulkanDescriptorPool().GetFrameVkDescriptorSetLayout(),
-      context_.GetVulkanDescriptorPool().GetMeshVkDescriptorSetLayout()};
-  pipeline_layout_info.pSetLayouts = descriptor_set_layouts.data();
+  std::unordered_map<DescriptorPoolType, vk::DescriptorSetLayout> descriptor_set_layouts =
+      context_.GetVulkanDescriptorPool().GetDescriptorSetLayouts();
+  std::vector<vk::DescriptorSetLayout> set_layouts = {};
+  for (auto &kLayout : descriptor_set_layouts) { set_layouts.push_back(kLayout.second); }
+  pipeline_layout_info.pSetLayouts = set_layouts.data();
 
   //  pipeline_layout_info.pushConstantRangeCount = 0;  // this can only push small data to pipeline like one matrix
   //  pipeline_layout_info.pPushConstantRanges = nullptr;
@@ -277,8 +274,7 @@ vk::VertexInputBindingDescription VulkanPipeline::GetPosColorTexCoordBindingDesc
   // Returns a binding description with POSITION and COLOR
   vk::VertexInputBindingDescription pos_color_binding = {};
   pos_color_binding.binding = 0;
-  pos_color_binding.stride =
-      sizeof(glm::vec2) + sizeof(glm::vec3) + sizeof(glm::vec2);// Position = vec3, Color = vec3, Texture Coords = vec2
+  pos_color_binding.stride = sizeof(glm::vec2) + sizeof(glm::vec3) + sizeof(glm::vec2);// Position = vec3, Color = vec3, Texture Coords = vec2
   pos_color_binding.inputRate = vk::VertexInputRate::eVertex;
   return pos_color_binding;
 }
