@@ -19,8 +19,7 @@ void CheckVkResult(VkResult result) {
   }
 }
 
-void KeyboardCallback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, int action,
-                      [[maybe_unused]] int mods) {
+void KeyboardCallback(GLFWwindow *window, int key, [[maybe_unused]] int scancode, int action, [[maybe_unused]] int mods) {
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
     GINFO("Escape key pressed, closing window...");
     glfwSetWindowShouldClose(window, GLFW_TRUE);
@@ -51,7 +50,7 @@ static void ImGuiInitialize(VulkanContext &context, GLFWwindow *glfw_window) {
   init_info.QueueFamily = context.GetQueueIndexes().graphics_family.value();
   init_info.Queue = context.GetVulkanDevice().GetVkGraphicsQueue();
   init_info.PipelineCache = context.GetVulkanPipeline().GetVkPipelineCache();
-  init_info.DescriptorPool = context.GetVulkanDescriptorPool().GetFrameVkDescriptorPool();
+  init_info.DescriptorPool = context.GetVulkanDescriptorPool().GetDescriptorPool(DescriptorPoolType::FRAME);
   init_info.RenderPass = context.GetVulkanRenderPass().GetVkRenderPass();
   init_info.Subpass = 0;
   init_info.MinImageCount = 2;
@@ -76,35 +75,29 @@ void MakeAssets(VulkanContext &context) {
                                           0.0f, 1.0f,  1.0f, -0.1f, 0.1f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f};
   vertex_buffer_collection->Add(MeshType::TRIANGLE, triangle_vertices);
 
-  std::vector<float> square_vertices = {{-0.1f, 0.1f, 1.0f,  0.0f, 0.0f,  0.0f, 1.0f, -0.1f, -0.1f, 1.0f, 0.0f,
-                                         0.0f,  0.0f, 0.0f,  0.1f, -0.1f, 1.0f, 0.0f, 0.0f,  1.0f,  0.0f, 0.1f,
-                                         -0.1f, 1.0f, 0.0f,  0.0f, 1.0f,  0.0f, 0.1f, 0.1f,  1.0f,  0.0f, 0.0f,
-                                         1.0f,  1.0f, -0.1f, 0.1f, 1.0f,  0.0f, 0.0f, 0.0f,  1.0f}};
+  std::vector<float> square_vertices = {{-0.1f, 0.1f,  1.0f, 0.0f, 0.0f, 0.0f, 1.0f, -0.1f, -0.1f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+                                         0.1f,  -0.1f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.1f,  -0.1f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+                                         0.1f,  0.1f,  1.0f, 0.0f, 0.0f, 1.0f, 1.0f, -0.1f, 0.1f,  1.0f, 0.0f, 0.0f, 0.0f, 1.0f}};
   vertex_buffer_collection->Add(MeshType::SQUARE, square_vertices);
 
   std::vector<float> star_vertices = {
-      {-0.1f,  -0.05f, 0.0f, 0.0f, 1.0f, 0.0f, 0.25f, -0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.3f, 0.25f,
-       -0.06f, 0.0f,   0.0f, 0.0f, 1.0f, 0.2f, 0.5f,  -0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.3f, 0.25f,
-       0.0f,   -0.1f,  0.0f, 0.0f, 1.0f, 0.5f, 0.0f,  0.04f,  -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f,
-       -0.06f, 0.0f,   0.0f, 0.0f, 1.0f, 0.2f, 0.5f,  -0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.3f, 0.25f,
-       0.04f,  -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f, 0.04f,  -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f,
-       0.1f,   -0.05f, 0.0f, 0.0f, 1.0f, 1.0f, 0.25f, 0.06f,  0.0f,   0.0f, 0.0f, 1.0f, 0.8f, 0.5f,
-       -0.06f, 0.0f,   0.0f, 0.0f, 1.0f, 0.2f, 0.5f,  0.04f,  -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f,
-       0.06f,  0.0f,   0.0f, 0.0f, 1.0f, 0.8f, 0.5f,  0.06f,  0.0f,   0.0f, 0.0f, 1.0f, 0.8f, 0.5f,
-       0.08f,  0.1f,   0.0f, 0.0f, 1.0f, 0.9f, 1.0f,  0.0f,   0.02f,  0.0f, 0.0f, 1.0f, 0.5f, 0.6f,
-       -0.06f, 0.0f,   0.0f, 0.0f, 1.0f, 0.2f, 0.5f,  0.06f,  0.0f,   0.0f, 0.0f, 1.0f, 0.8f, 0.5f,
-       0.0f,   0.02f,  0.0f, 0.0f, 1.0f, 0.5f, 0.6f,  -0.06f, 0.0f,   0.0f, 0.0f, 1.0f, 0.2f, 0.5f,
-       0.0f,   0.02f,  0.0f, 0.0f, 1.0f, 0.5f, 0.6f,  -0.08f, 0.1f,   0.0f, 0.0f, 1.0f, 0.1f, 1.0f}};
+      {-0.1f,  -0.05f, 0.0f, 0.0f, 1.0f, 0.0f, 0.25f, -0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.3f, 0.25f, -0.06f, 0.0f,   0.0f, 0.0f, 1.0f, 0.2f, 0.5f,
+       -0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.3f, 0.25f, 0.0f,   -0.1f,  0.0f, 0.0f, 1.0f, 0.5f, 0.0f,  0.04f,  -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f,
+       -0.06f, 0.0f,   0.0f, 0.0f, 1.0f, 0.2f, 0.5f,  -0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.3f, 0.25f, 0.04f,  -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f,
+       0.04f,  -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f, 0.1f,   -0.05f, 0.0f, 0.0f, 1.0f, 1.0f, 0.25f, 0.06f,  0.0f,   0.0f, 0.0f, 1.0f, 0.8f, 0.5f,
+       -0.06f, 0.0f,   0.0f, 0.0f, 1.0f, 0.2f, 0.5f,  0.04f,  -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f, 0.06f,  0.0f,   0.0f, 0.0f, 1.0f, 0.8f, 0.5f,
+       0.06f,  0.0f,   0.0f, 0.0f, 1.0f, 0.8f, 0.5f,  0.08f,  0.1f,   0.0f, 0.0f, 1.0f, 0.9f, 1.0f,  0.0f,   0.02f,  0.0f, 0.0f, 1.0f, 0.5f, 0.6f,
+       -0.06f, 0.0f,   0.0f, 0.0f, 1.0f, 0.2f, 0.5f,  0.06f,  0.0f,   0.0f, 0.0f, 1.0f, 0.8f, 0.5f,  0.0f,   0.02f,  0.0f, 0.0f, 1.0f, 0.5f, 0.6f,
+       -0.06f, 0.0f,   0.0f, 0.0f, 1.0f, 0.2f, 0.5f,  0.0f,   0.02f,  0.0f, 0.0f, 1.0f, 0.5f, 0.6f,  -0.08f, 0.1f,   0.0f, 0.0f, 1.0f, 0.1f, 1.0f}};
   vertex_buffer_collection->Add(MeshType::STAR, star_vertices);
 
   vertex_buffer_collection->Finalize(context.GetVulkanLogicalDevice(), context.GetVulkanPhysicalDevice(),
-                                     context.GetVulkanDevice().GetVkGraphicsQueue(),
-                                     context.GetVulkanCommandPool().GetVkMainCommandBuffer());
+                                     context.GetVulkanDevice().GetVkGraphicsQueue(), context.GetVulkanCommandPool().GetVkMainCommandBuffer());
 
   // Materials
-  std::unordered_map<MeshType, const char *> filenames = {{MeshType::TRIANGLE, "../textures/folds.jpg"},
-                                                          {MeshType::SQUARE, "../textures/paper_crinkle.jpg"},
-                                                          {MeshType::STAR, "../textures/water.jpg"}};
+  std::unordered_map<MeshType, const char *> filenames = {{MeshType::TRIANGLE, "../../textures/folds.jpg"},
+                                                          {MeshType::SQUARE, "../../textures/paper_crinkle.jpg"},
+                                                          {MeshType::STAR, "../../textures/water.jpg"}};
 
   for (auto &kPair : filenames) {
     auto *texture = new VulkanTexture(context, kPair.second);
@@ -146,19 +139,13 @@ void PrepareFrame(uint32_t image_index, VulkanContext &context) {
   // model matrices
   // triangle positions
   size_t i = 0;
-  for (auto &position : scene.triangle_positions_) {
-    swap_chain_frame.model_matrices[i++] = glm::translate(glm::mat4(1.0f), position);
-  }
+  for (auto &position : scene.triangle_positions_) { swap_chain_frame.model_matrices[i++] = glm::translate(glm::mat4(1.0f), position); }
 
   // square positions
-  for (auto &position : scene.square_positions_) {
-    swap_chain_frame.model_matrices[i++] = glm::translate(glm::mat4(1.0f), position);
-  }
+  for (auto &position : scene.square_positions_) { swap_chain_frame.model_matrices[i++] = glm::translate(glm::mat4(1.0f), position); }
 
   // star positions
-  for (auto &position : scene.star_positions_) {
-    swap_chain_frame.model_matrices[i++] = glm::translate(glm::mat4(1.0f), position);
-  }
+  for (auto &position : scene.star_positions_) { swap_chain_frame.model_matrices[i++] = glm::translate(glm::mat4(1.0f), position); }
   memcpy(swap_chain_frame.model_matrices_mapped, swap_chain_frame.model_matrices.data(), sizeof(glm::mat4) * i);
 }
 
@@ -170,8 +157,7 @@ void PrepareFrame(uint32_t image_index, VulkanContext &context) {
  * @param start_instance The starting instance for rendering.
  * @param instance_count The number of instances to render.
  */
-void RenderObjects(vk::CommandBuffer &command_buffer, MeshType mesh_type, uint32_t &start_instance,
-                   uint32_t instance_count) {
+void RenderObjects(vk::CommandBuffer &command_buffer, MeshType mesh_type, uint32_t &start_instance, uint32_t instance_count) {
   // ------ Draw triangles ------
   int first_vertex = vertex_buffer_collection->offsets_.find(mesh_type)->second;
   int vertex_count = vertex_buffer_collection->sizes_.find(mesh_type)->second;
@@ -209,8 +195,9 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
 
   vk::Pipeline pipeline = context.GetVulkanPipeline().GetVkPipeline();
 
-  command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, context.GetVulkanPipeline().GetVkPipelineLayout(),
-                                    0, 1, &context.GetVulkanDescriptorPool().GetVkDescriptorSet(), 0, nullptr);
+  vk::DescriptorSet frame_descriptors = context.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::FRAME);
+  command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, context.GetVulkanPipeline().GetVkPipelineLayout(), 0, 1, &frame_descriptors, 0,
+                                    nullptr);
   command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
 
   PrepareFrame(image_index, context);
@@ -249,9 +236,8 @@ static void SetupRender(VulkanContext &context) {
   // the semaphore passes is what is going to be signaled once the image is
   // acquired
 
-  vk::Result res =
-      device.acquireNextImageKHR(swap_chain, UINT64_MAX, image_available_semaphores[context.semaphore_index_],
-                                 VK_NULL_HANDLE, &context.current_frame_index_);
+  vk::Result res = device.acquireNextImageKHR(swap_chain, UINT64_MAX, image_available_semaphores[context.semaphore_index_], VK_NULL_HANDLE,
+                                              &context.current_frame_index_);
 
   // reset the fence - "close the fence behind us"
   VK_CHECK(device.resetFences(1, &in_flight_fences[context.current_frame_index_]), "Failed to reset fences");
@@ -293,9 +279,7 @@ static void FramePresent(VulkanContext &context) {
   }
 
   context.semaphore_index_ = (context.semaphore_index_ + 1)
-      % context.GetVulkanSwapChain()
-            .GetSwapChainFrames()
-            .size();// mod semaphore index to wrap indexing back to beginning
+      % context.GetVulkanSwapChain().GetSwapChainFrames().size();// mod semaphore index to wrap indexing back to beginning
 }
 
 void SubmitCommandBuffer(VulkanContext &context) {
@@ -306,8 +290,7 @@ void SubmitCommandBuffer(VulkanContext &context) {
   std::vector<vk::Semaphore> render_complete_semaphores = context.GetVulkanSync().GetRenderFinishedSemaphores();
 
   // current frame command buffer
-  vk::CommandBuffer command_buffer =
-      context.GetVulkanCommandPool().GetVkFrameCommandBuffers()[context.current_frame_index_];
+  vk::CommandBuffer command_buffer = context.GetVulkanCommandPool().GetVkFrameCommandBuffers()[context.current_frame_index_];
   command_buffer.endRenderPass();
   command_buffer.end();
 
@@ -319,15 +302,13 @@ void SubmitCommandBuffer(VulkanContext &context) {
   submit_info.pWaitSemaphores = &image_available_semaphores[context.semaphore_index_];
   submit_info.pWaitDstStageMask = &wait_stage;
   submit_info.commandBufferCount = 1;
-  submit_info.pCommandBuffers =
-      &context.GetVulkanCommandPool().GetVkFrameCommandBuffers()[context.current_frame_index_];
+  submit_info.pCommandBuffers = &context.GetVulkanCommandPool().GetVkFrameCommandBuffers()[context.current_frame_index_];
   submit_info.signalSemaphoreCount = 1;
   submit_info.pSignalSemaphores = &render_complete_semaphores[context.semaphore_index_];
 
   // fence is provided here so that once we submit the command buffer, we can
   // safely reset the fence
-  VK_CHECK(graphics_queue.submit(1, &submit_info, in_flight_fences[context.current_frame_index_]),
-           "Failed to submit to queue");
+  VK_CHECK(graphics_queue.submit(1, &submit_info, in_flight_fences[context.current_frame_index_]), "Failed to submit to queue");
 }
 
 // void framebufferResizeCallback(GLFWwindow *window, int width, int height) {
@@ -495,8 +476,7 @@ void GLACEON_API RunGame(Application *app) {
     if (width <= 0 || height <= 0) { continue; }
 
     SetupRender(context);
-    RecordDrawCommands(context.GetVulkanCommandPool().GetVkFrameCommandBuffers()[context.current_frame_index_],
-                       context.current_frame_index_);
+    RecordDrawCommands(context.GetVulkanCommandPool().GetVkFrameCommandBuffers()[context.current_frame_index_], context.current_frame_index_);
 
 #if _DEBUG
     // ------------------ Render ImGui Frame ------------------ //
@@ -523,8 +503,7 @@ void GLACEON_API RunGame(Application *app) {
     }
 
     ImDrawData *draw_data = ImGui::GetDrawData();
-    ImGui_ImplVulkan_RenderDrawData(
-        draw_data, context.GetVulkanCommandPool().GetVkFrameCommandBuffers()[context.current_frame_index_]);
+    ImGui_ImplVulkan_RenderDrawData(draw_data, context.GetVulkanCommandPool().GetVkFrameCommandBuffers()[context.current_frame_index_]);
 #endif
 
     SubmitCommandBuffer(context);

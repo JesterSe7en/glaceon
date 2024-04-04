@@ -11,8 +11,7 @@ VulkanSwapChain::VulkanSwapChain(VulkanContext &context)
       // then use that to create the swap chain
       // for now, hardcode it
       // FIFO present mode is guaranteed to be supported
-      surface_format_(vk::Format::eB8G8R8A8Unorm), color_space_(vk::ColorSpaceKHR::eSrgbNonlinear),
-      present_mode_(vk::PresentModeKHR::eMailbox) {}
+      surface_format_(vk::Format::eB8G8R8A8Unorm), color_space_(vk::ColorSpaceKHR::eSrgbNonlinear), present_mode_(vk::PresentModeKHR::eMailbox) {}
 
 // create swap chain, get images, create image views, then create the frame buffers
 void VulkanSwapChain::Initialize() {
@@ -67,8 +66,7 @@ void VulkanSwapChain::PopulateSwapChainSupport() {
   if (format_count != 0) {
     swap_chain_support_.formats.resize(format_count);
     // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkSurfaceFormatKHR.html
-    if (physical_device.getSurfaceFormatsKHR(surface, &format_count, swap_chain_support_.formats.data())
-        != vk::Result::eSuccess) {
+    if (physical_device.getSurfaceFormatsKHR(surface, &format_count, swap_chain_support_.formats.data()) != vk::Result::eSuccess) {
       GERROR("Failed to get surface formats");
       swap_chain_support_.formats.clear();
       return;
@@ -104,8 +102,7 @@ void VulkanSwapChain::PopulateSwapChainSupport() {
   if (format_count != 0) {
     swap_chain_support_.present_modes.resize(format_count);
     // https://registry.khronos.org/vulkan/specs/1.3-extensions/man/html/VkPresentModeKHR.html
-    if (physical_device.getSurfacePresentModesKHR(surface, &format_count, swap_chain_support_.present_modes.data())
-        != vk::Result::eSuccess) {
+    if (physical_device.getSurfacePresentModesKHR(surface, &format_count, swap_chain_support_.present_modes.data()) != vk::Result::eSuccess) {
       GERROR("Failed to get surface present modes");
       swap_chain_support_.present_modes.clear();
       return;
@@ -141,8 +138,7 @@ void VulkanSwapChain::CreateSwapChain() {
   vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(surface != VK_NULL_HANDLE && device != VK_NULL_HANDLE, "Failed to get Vulkan logical device or surface");
 
-  uint32_t image_count =
-      std::min(swap_chain_support_.capabilities.maxImageCount, swap_chain_support_.capabilities.minImageCount + 1);
+  uint32_t image_count = std::min(swap_chain_support_.capabilities.maxImageCount, swap_chain_support_.capabilities.minImageCount + 1);
 
   //  typedef struct VkSwapchainCreateInfoKHR {
   //    VkStructureType                  sType;
@@ -176,8 +172,7 @@ void VulkanSwapChain::CreateSwapChain() {
   swapchain_create_info.imageArrayLayers = 1;
   swapchain_create_info.imageUsage = vk::ImageUsageFlags(vk::ImageUsageFlagBits::eColorAttachment);
 
-  VK_ASSERT(context_.GetQueueIndexes().graphics_family.has_value()
-                && context_.GetQueueIndexes().present_family.has_value(),
+  VK_ASSERT(context_.GetQueueIndexes().graphics_family.has_value() && context_.GetQueueIndexes().present_family.has_value(),
             "Failed to get graphics and present queue families");
   swap_chain_extent_ = swap_chain_support_.capabilities.currentExtent;
 
@@ -277,8 +272,7 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
   // destroy image views, frame buffers
   DestroyFrames();
 
-  uint32_t image_count =
-      std::min(swap_chain_support_.capabilities.maxImageCount, swap_chain_support_.capabilities.minImageCount + 1);
+  uint32_t image_count = std::min(swap_chain_support_.capabilities.maxImageCount, swap_chain_support_.capabilities.minImageCount + 1);
   std::vector<VkImageView> image_views;
 
   vk::SwapchainCreateInfoKHR swapchain_create_info = {};
@@ -312,8 +306,7 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
     swapchain_create_info.imageExtent.height = height = cap.currentExtent.height;
   }
 
-  VK_ASSERT(context_.GetQueueIndexes().graphics_family.has_value()
-                && context_.GetQueueIndexes().present_family.has_value(),
+  VK_ASSERT(context_.GetQueueIndexes().graphics_family.has_value() && context_.GetQueueIndexes().present_family.has_value(),
             "Swap chain requires both graphics and present queues");
 
   QueueIndexes indexes = context_.GetQueueIndexes();
@@ -412,8 +405,7 @@ void VulkanSwapChain::CreateFrameBuffers() {
   for (auto &swap_chain_frame : swap_chain_frames_) {
     vk::ImageView attachments[] = {swap_chain_frame.image_view};
     framebuffer_create_info.pAttachments = attachments;
-    if (device.createFramebuffer(&framebuffer_create_info, nullptr, &swap_chain_frame.frame_buffer)
-        != vk::Result::eSuccess) {
+    if (device.createFramebuffer(&framebuffer_create_info, nullptr, &swap_chain_frame.frame_buffer) != vk::Result::eSuccess) {
       GERROR("Failed to create frame buffers");
       return;
     }
@@ -440,28 +432,24 @@ void VulkanSwapChain::CreateDescriptorResources() {
   uniform_params.device = context_.GetVulkanLogicalDevice();
   uniform_params.physical_device = context_.GetVulkanPhysicalDevice();
   uniform_params.buffer_usage = vk::BufferUsageFlagBits::eUniformBuffer;
-  uniform_params.memory_property_flags =
-      vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
+  uniform_params.memory_property_flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
   uniform_params.size = sizeof(UniformBufferObject);
 
   VulkanUtils::BufferInputParams storage_params = {};
   storage_params.device = context_.GetVulkanLogicalDevice();
   storage_params.physical_device = context_.GetVulkanPhysicalDevice();
   storage_params.buffer_usage = vk::BufferUsageFlagBits::eStorageBuffer;
-  storage_params.memory_property_flags =
-      vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
+  storage_params.memory_property_flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
   storage_params.size = sizeof(glm::mat4) * 1024;
 
   for (auto &frame : swap_chain_frames_) {
     frame.camera_data_buffer = VulkanUtils::CreateBuffer(uniform_params);
-    VK_CHECK(device.mapMemory(frame.camera_data_buffer.buffer_memory, 0, sizeof(UniformBufferObject), {},
-                              &frame.camera_data_mapped),
+    VK_CHECK(device.mapMemory(frame.camera_data_buffer.buffer_memory, 0, sizeof(UniformBufferObject), {}, &frame.camera_data_mapped),
              "Failed to map memory for camera data");
 
     frame.model_matrices.resize(1024, glm::mat4(1.0f));
     frame.model_matrices_buffer = VulkanUtils::CreateBuffer(storage_params);
-    VK_CHECK(device.mapMemory(frame.model_matrices_buffer.buffer_memory, 0, sizeof(glm::mat4) * 1024, {},
-                              &frame.model_matrices_mapped),
+    VK_CHECK(device.mapMemory(frame.model_matrices_buffer.buffer_memory, 0, sizeof(glm::mat4) * 1024, {}, &frame.model_matrices_mapped),
              "Failed to map memory for model matrices data");
     GINFO("Address of model matrices buffer: {}", frame.model_matrices_mapped);
   }
@@ -501,9 +489,14 @@ void VulkanSwapChain::UpdateDescriptorResources() {
     //      const VkDescriptorBufferInfo*    pBufferInfo;
     //      const VkBufferView*              pTexelBufferView;
     //    } VkWriteDescriptorSet;
+    vk::DescriptorSet dst_set = context_.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::FRAME);
+    // frame descriptor set has two bindings
+    // binding 0: camera data
+    // binding 1: model matrices
+
     vk::WriteDescriptorSet write_descriptor_set;
     write_descriptor_set.sType = vk::StructureType::eWriteDescriptorSet;
-    write_descriptor_set.dstSet = context_.GetVulkanDescriptorPool().GetVkDescriptorSet();
+    write_descriptor_set.dstSet = dst_set;
     write_descriptor_set.dstBinding = 0;
     write_descriptor_set.dstArrayElement = 0;
     write_descriptor_set.descriptorCount = 1;
@@ -512,7 +505,7 @@ void VulkanSwapChain::UpdateDescriptorResources() {
 
     device.updateDescriptorSets(write_descriptor_set, nullptr);
 
-    write_descriptor_set.dstSet = context_.GetVulkanDescriptorPool().GetVkDescriptorSet();
+    write_descriptor_set.dstSet = dst_set;
     write_descriptor_set.dstBinding = 1;
     write_descriptor_set.dstArrayElement = 0;
     write_descriptor_set.descriptorCount = 1;

@@ -126,8 +126,7 @@ int VulkanUtils::FindMemoryIndex(VulkanUtils::BufferInputParams &params, vk::Buf
   vk::PhysicalDeviceMemoryProperties memory_properties = physical_device.getMemoryProperties();
 
   for (uint32_t i = 0; i < memory_properties.memoryTypeCount; i++) {
-    if ((memory_requirements.memoryTypeBits & (1 << i))
-        && (memory_properties.memoryTypes[i].propertyFlags & params.memory_property_flags)) {
+    if ((memory_requirements.memoryTypeBits & (1 << i)) && (memory_properties.memoryTypes[i].propertyFlags & params.memory_property_flags)) {
       return static_cast<int>(i);
     }
   }
@@ -174,14 +173,41 @@ void VulkanUtils::DestroyBuffer(VulkanUtils::BufferInputParams params, VulkanUti
   buffer.buffer = VK_NULL_HANDLE;
   buffer.buffer_memory = VK_NULL_HANDLE;
 }
-uint32_t VulkanUtils::GetMemoryIndex(uint32_t bits, vk::Flags<vk::MemoryPropertyFlagBits> flags) {
-  vk::PhysicalDeviceMemoryProperties memory_properties = vk_physical_device_.getMemoryProperties();
+
+uint32_t VulkanUtils::FindMemoryTypeIndex(vk::PhysicalDevice physical_device, uint32_t type_filter, vk::MemoryPropertyFlags properties) {
+  vk::PhysicalDeviceMemoryProperties memory_properties = physical_device.getMemoryProperties();
+
   for (uint32_t i = 0; i < memory_properties.memoryTypeCount; i++) {
-    if ((bits & (1 << i)) && (memory_properties.memoryTypes[i].propertyFlags & flags)) {
-      return i;
-    }
+      bool supported { static_cast<bool>(type_filter & (1 << i)) };
+
+      bool sufficient { (memory_properties.memoryTypes[i].propertyFlags & properties) == properties };
+      if (supported && sufficient) { return i; }
   }
-  return -1;
+  return 0;
+}
+
+void VulkanUtils::BeginSingleTimeCommands(vk::CommandBuffer command_buffer) {
+  // command pool has VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT set.
+  // Reset is implicitly called "via [...] when calling vkBeginCommandBuffer." - 1.3.281 Vulkan spec
+  //  command_buffer.reset();
+
+  vk::CommandBufferBeginInfo command_buffer_begin_info = {};
+  command_buffer_begin_info.sType = vk::StructureType::eCommandBufferBeginInfo;
+  command_buffer_begin_info.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
+  command_buffer_begin_info.pNext = nullptr;
+  VK_CHECK(command_buffer.begin(&command_buffer_begin_info), "Failed to begin command buffer");
+}
+
+void VulkanUtils::EndSingleTimeCommands(vk::CommandBuffer command_buffer, vk::Queue queue) {
+  command_buffer.end();
+
+  vk::SubmitInfo submit_info = {};
+  submit_info.sType = vk::StructureType::eSubmitInfo;
+  submit_info.pNext = nullptr;
+  submit_info.commandBufferCount = 1;
+  submit_info.pCommandBuffers = &command_buffer;
+  VK_CHECK(queue.submit(1, &submit_info, VK_NULL_HANDLE), "Failed to submit queue");
+  queue.waitIdle();
 }
 
 }// namespace glaceon

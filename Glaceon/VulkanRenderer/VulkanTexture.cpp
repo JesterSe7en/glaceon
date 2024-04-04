@@ -1,20 +1,20 @@
 #include "VulkanTexture.h"
-
+#define STB_IMAGE_IMPLEMENTATION
 #include "../Base.h"
 #include "../Logger.h"
 #include "VulkanContext.h"
+#include <stb_image.h>
 
 namespace glaceon {
 
-VulkanTexture::VulkanTexture(VulkanContext &context, const char *filename) : filename_(filename), context_(context) {
+VulkanTexture::VulkanTexture(VulkanContext &context, const char *filename)
+    : width_(0), height_(0), channels_(0), context_(context), filename_(filename) {
   LoadImageFromFile();
   CreateVkImage();
-  CreateVkImageView();
   Populate();
-  TransitionImageLayout(vk::ImageLayout::eShaderReadOnlyOptimal);
+  CreateVkImageView();
   CreateSampler();
   UpdateDescriptorSet();
-  // update descriptor set
   // setup redner pass and pipline to use the texture (probably not in here?)
 }
 
@@ -42,10 +42,9 @@ void VulkanTexture::CreateVkImage() {
   image_info.arrayLayers = 1;
   image_info.samples = vk::SampleCountFlagBits::e1;
   image_info.tiling = vk::ImageTiling::eOptimal;
-  image_info.usage = vk::ImageUsageFlagBits::eSampled;
+  // need both usage flags as we are transferring from cpu to gpu, and will be sampled from in shader code
+  image_info.usage = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled;
   image_info.sharingMode = vk::SharingMode::eExclusive;
-  image_info.queueFamilyIndexCount = 0;
-  image_info.pQueueFamilyIndices = nullptr;
   image_info.initialLayout = vk::ImageLayout::eUndefined;
 
   VK_CHECK(device.createImage(&image_info, nullptr, &vk_image_), "Failed to create image");
@@ -58,8 +57,8 @@ void VulkanTexture::CreateVkImage() {
   memory_allocate_info.sType = vk::StructureType::eMemoryAllocateInfo;
   memory_allocate_info.pNext = nullptr;
   memory_allocate_info.allocationSize = memory_requirements.size;
-  memory_allocate_info.memoryTypeIndex = VulkanUtils::GetMemoryIndex(
-      memory_requirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent);
+  memory_allocate_info.memoryTypeIndex = VulkanUtils::FindMemoryTypeIndex(context_.GetVulkanPhysicalDevice(), memory_requirements.memoryTypeBits,
+                                                                          vk::MemoryPropertyFlagBits::eDeviceLocal);
   VK_CHECK(device.allocateMemory(&memory_allocate_info, nullptr, &vk_image_memory_), "Failed to allocate image memory");
 
   device.bindImageMemory(vk_image_, vk_image_memory_, 0);
@@ -102,11 +101,14 @@ void VulkanTexture::Populate() {
 
   VulkanUtils::Buffer staging_buffer = VulkanUtils::CreateBuffer(params);
   void *staging_buffer_mapped = device.mapMemory(staging_buffer.buffer_memory, 0, params.size);
-  memcpy(staging_buffer_mapped, pixels_, params.size);
+  // TODO: maybe use memcpy for gcc/clang support; memcpy_s is only msvc
+  memcpy_s(staging_buffer_mapped, params.size, pixels_, params.size);
 
-  TransitionImageLayout(vk::ImageLayout::eTransferDstOptimal);
+  TransitionImageLayout(vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal);
 
   CopyBufferToImage(staging_buffer.buffer, vk_image_);
+
+  TransitionImageLayout(vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::eShaderReadOnlyOptimal);
 
   VulkanUtils::DestroyBuffer(params, staging_buffer);
 }
@@ -117,12 +119,7 @@ void VulkanTexture::CopyBufferToImage(vk::Buffer &src_buffer, vk::Image &dst_ima
   vk::CommandBuffer command_buffer = context_.GetVulkanCommandPool().GetVkMainCommandBuffer();
   VK_ASSERT(command_buffer != VK_NULL_HANDLE, "Main command buffer not initialized");
 
-  command_buffer.reset();
-
-  vk::CommandBufferBeginInfo command_buffer_begin_info = {};
-  command_buffer_begin_info.sType = vk::StructureType::eCommandBufferBeginInfo;
-  command_buffer_begin_info.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
-  VK_CHECK(command_buffer.begin(&command_buffer_begin_info), "Failed to begin command buffer");
+  VulkanUtils::BeginSingleTimeCommands(command_buffer);
 
   vk::BufferImageCopy buffer_image_copy = {};
   buffer_image_copy.bufferOffset = 0;
@@ -140,55 +137,48 @@ void VulkanTexture::CopyBufferToImage(vk::Buffer &src_buffer, vk::Image &dst_ima
   buffer_image_copy.imageExtent = vk::Extent3D(width_, height_, 1);
 
   command_buffer.copyBufferToImage(src_buffer, dst_image, vk::ImageLayout::eTransferDstOptimal, 1, &buffer_image_copy);
-  command_buffer.end();
-
-  vk::SubmitInfo submit_info = {};
-  submit_info.sType = vk::StructureType::eSubmitInfo;
-  submit_info.commandBufferCount = 1;
-  submit_info.pCommandBuffers = &command_buffer;
-  auto queue = context_.GetVulkanDevice().GetVkGraphicsQueue();
-  VK_CHECK(queue.submit(1, &submit_info, VK_NULL_HANDLE), "Failed to submit queue");
-  queue.waitIdle();
+  VulkanUtils::EndSingleTimeCommands(command_buffer, context_.GetVulkanDevice().GetVkGraphicsQueue());
 }
 
-void VulkanTexture::TransitionImageLayout(vk::ImageLayout layout) {
+void VulkanTexture::TransitionImageLayout(vk::ImageLayout old_layout, vk::ImageLayout new_layout) {
   vk::Device device = context_.GetVulkanLogicalDevice();
   vk::CommandBuffer command_buffer = context_.GetVulkanCommandPool().GetVkMainCommandBuffer();
   VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
   VK_ASSERT(command_buffer != VK_NULL_HANDLE, "Main command buffer not initialized");
-  command_buffer.reset();
 
-  vk::CommandBufferBeginInfo command_buffer_begin_info = {};
-  command_buffer_begin_info.sType = vk::StructureType::eCommandBufferBeginInfo;
-  command_buffer_begin_info.flags = vk::CommandBufferUsageFlagBits::eOneTimeSubmit;
-  VK_CHECK(command_buffer.begin(&command_buffer_begin_info), "Failed to begin command buffer");
+  VulkanUtils::BeginSingleTimeCommands(command_buffer);
 
   vk::ImageMemoryBarrier image_memory_barrier = {};
   image_memory_barrier.sType = vk::StructureType::eImageMemoryBarrier;
-  image_memory_barrier.oldLayout = vk::ImageLayout::eUndefined;
-  image_memory_barrier.newLayout = layout;
+  image_memory_barrier.oldLayout = old_layout;
+  image_memory_barrier.newLayout = new_layout;
   image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
   image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
   image_memory_barrier.image = vk_image_;
+
+  // which bit of the image we are looking at?
   image_memory_barrier.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
   image_memory_barrier.subresourceRange.baseMipLevel = 0;
   image_memory_barrier.subresourceRange.levelCount = 1;
   image_memory_barrier.subresourceRange.baseArrayLayer = 0;
   image_memory_barrier.subresourceRange.layerCount = 1;
 
-  vk::PipelineStageFlags src_stage_mask = vk::PipelineStageFlagBits::eTopOfPipe;
-  vk::PipelineStageFlags dst_stage_mask = vk::PipelineStageFlagBits::eFragmentShader;
-  command_buffer.pipelineBarrier(src_stage_mask, dst_stage_mask, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
-  command_buffer.end();
+  vk::PipelineStageFlags src_stage_mask, dst_stage_mask;
+  if (old_layout == vk::ImageLayout::eUndefined && new_layout == vk::ImageLayout::eTransferDstOptimal) {
+    image_memory_barrier.srcAccessMask = vk::AccessFlagBits::eNoneKHR;
+    image_memory_barrier.dstAccessMask = vk::AccessFlagBits::eTransferWrite;
 
-  // submit command buffer to queue
-  vk::Queue graphics_queue = context_.GetVulkanDevice().GetVkGraphicsQueue();
-  vk::SubmitInfo submit_info = {};
-  submit_info.sType = vk::StructureType::eSubmitInfo;
-  submit_info.pNext = nullptr;
-  submit_info.commandBufferCount = 1;
-  submit_info.pCommandBuffers = &command_buffer;
-  VK_CHECK(graphics_queue.submit(1, &submit_info, nullptr), "Failed to submit command buffer - transition image layout");
+    src_stage_mask = vk::PipelineStageFlagBits::eTopOfPipe;
+    dst_stage_mask = vk::PipelineStageFlagBits::eTransfer;
+  } else {
+    image_memory_barrier.srcAccessMask = vk::AccessFlagBits::eTransferWrite;
+    image_memory_barrier.dstAccessMask = vk::AccessFlagBits::eShaderRead;
+
+    src_stage_mask = vk::PipelineStageFlagBits::eTransfer;
+    dst_stage_mask = vk::PipelineStageFlagBits::eFragmentShader;
+  }
+  command_buffer.pipelineBarrier(src_stage_mask, dst_stage_mask, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+  VulkanUtils::EndSingleTimeCommands(command_buffer, context_.GetVulkanDevice().GetVkGraphicsQueue());
 }
 
 void VulkanTexture::CreateSampler() {
@@ -200,9 +190,9 @@ void VulkanTexture::CreateSampler() {
   sampler_info.pNext = nullptr;
   sampler_info.flags = vk::SamplerCreateFlags();
   sampler_info.magFilter = vk::Filter::eLinear;
-  sampler_info.minFilter = vk::Filter::eLinear;
+  sampler_info.minFilter = vk::Filter::eNearest;
   sampler_info.mipmapMode = vk::SamplerMipmapMode::eLinear;
-  sampler_info.addressModeU = vk::SamplerAddressMode::eRepeat;
+  sampler_info.addressModeU = vk::SamplerAddressMode::eRepeat;// these tell the sampler how to sample when out of bounds in the u, v, w axes
   sampler_info.addressModeV = vk::SamplerAddressMode::eRepeat;
   sampler_info.addressModeW = vk::SamplerAddressMode::eRepeat;
   sampler_info.mipLodBias = 0.0f;
@@ -221,19 +211,34 @@ void VulkanTexture::UpdateDescriptorSet() {
   auto device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
 
-  vk::DescriptorImageInfo image_info = {};
-  image_info.sampler = vk_sampler_;
-  image_info.imageView = vk_image_view_;
-  image_info.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
+  // allocate descriptor set on the device - this is done already during initialization of the descriptor pool
+  //  vk::DescriptorSet descriptor_set;
+  //  vk::DescriptorSetAllocateInfo descriptor_set_allocate_info = {};
+  //  descriptor_set_allocate_info.sType = vk::StructureType::eDescriptorSetAllocateInfo;
+  //  descriptor_set_allocate_info.pNext = nullptr;
+  //  descriptor_set_allocate_info.descriptorPool = context_.GetVulkanDescriptorPool().GetDescriptorPool(DescriptorPoolType::MESH);
+  //  descriptor_set_allocate_info.descriptorSetCount = 1;
+  //  descriptor_set_allocate_info.pSetLayouts = &context_.GetVulkanDescriptorPool().GetDescriptorSetLayout(DescriptorPoolType::MESH);
+  //  VK_CHECK(device.allocateDescriptorSets(&descriptor_set_allocate_info, &descriptor_set), "Failed to allocate descriptor set");
+
+  vk::DescriptorSet dst_set = context_.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::MESH);
+
+  // combined image sampler
+  vk::DescriptorImageInfo descriptor_image_info = {};
+  descriptor_image_info.sampler = vk_sampler_;
+  descriptor_image_info.imageView = vk_image_view_;
+  descriptor_image_info.imageLayout = vk::ImageLayout::eShaderReadOnlyOptimal;
 
   vk::WriteDescriptorSet write_descriptor_set = {};
   write_descriptor_set.sType = vk::StructureType::eWriteDescriptorSet;
-  //  write_descriptor_set.dstSet = context_.GetVulkanDescriptorSet();
+  write_descriptor_set.dstSet = dst_set;
   write_descriptor_set.dstBinding = 0;
   write_descriptor_set.dstArrayElement = 0;
   write_descriptor_set.descriptorType = vk::DescriptorType::eCombinedImageSampler;
   write_descriptor_set.descriptorCount = 1;
-  write_descriptor_set.pImageInfo = &image_info;
+  write_descriptor_set.pImageInfo = &descriptor_image_info;
+
+  device.updateDescriptorSets(1, &write_descriptor_set, 0, nullptr);
 }
 
 void VulkanTexture::Use() {

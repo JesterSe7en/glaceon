@@ -28,9 +28,14 @@ class VulkanUtils {
   };
   static Buffer CreateBuffer(BufferInputParams params);
   static int FindMemoryIndex(BufferInputParams &params, vk::Buffer buffer);
+  static uint32_t FindMemoryTypeIndex(vk::PhysicalDevice physical_device, uint32_t type_filter, vk::MemoryPropertyFlags properties);
   static void CopyBuffer(Buffer &src, Buffer &dst, vk::DeviceSize size, vk::Queue queue, vk::CommandBuffer command_buffer);
   static void DestroyBuffer(BufferInputParams params, Buffer &buffer);
-  static uint32_t GetMemoryIndex(uint32_t bits, vk::Flags<vk::MemoryPropertyFlagBits> flags);
+
+
+  // Job management
+  static void BeginSingleTimeCommands(vk::CommandBuffer command_buffer);
+  static void EndSingleTimeCommands(vk::CommandBuffer command_buffer, vk::Queue queue);
 };
 
 }// namespace glaceon

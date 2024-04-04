@@ -3,9 +3,6 @@
 
 namespace glaceon {
 
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb_image.h>
-
 class VulkanContext;
 
 class VulkanTexture {
@@ -19,7 +16,7 @@ class VulkanTexture {
   int height_;
   int channels_;
   const char *filename_;
-  stbi_uc *pixels_;
+  unsigned char *pixels_;
   vk::Device vk_device_;
   vk::PhysicalDevice vk_physical_device_;
 
@@ -40,7 +37,7 @@ class VulkanTexture {
   void LoadImageFromFile();
   void CreateVkImage();
   void CreateVkImageView();
-  void TransitionImageLayout(vk::ImageLayout layout);
+  void TransitionImageLayout(vk::ImageLayout old_layout, vk::ImageLayout new_layout);
   void CreateSampler();
   void UpdateDescriptorSet();
   void Populate();

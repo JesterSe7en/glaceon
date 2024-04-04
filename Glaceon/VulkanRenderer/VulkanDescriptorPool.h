@@ -24,6 +24,7 @@ class VulkanDescriptorPool {
 
   vk::DescriptorSetLayout &GetDescriptorSetLayout(DescriptorPoolType type) { return vk_descriptor_set_layouts_.at(type); }
   vk::DescriptorPool &GetDescriptorPool(DescriptorPoolType type) { return vk_descriptor_pools_.at(type); }
+  vk::DescriptorSet &GetDescriptorSet(DescriptorPoolType type) { return vk_descriptor_sets_.at(type); }
 
   std::unordered_map<DescriptorPoolType, vk::DescriptorSetLayout> &GetDescriptorSetLayouts() { return vk_descriptor_set_layouts_; }
   std::unordered_map<DescriptorPoolType, vk::DescriptorPool> &GetDescriptorPools() { return vk_descriptor_pools_; }
