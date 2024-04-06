@@ -8,8 +8,8 @@
 
 namespace glaceon {
 
-VulkanTexture::VulkanTexture(VulkanContext &context, const char *filename)
-    : width_(0), height_(0), channels_(0), context_(context), filename_(filename) {
+VulkanTexture::VulkanTexture(VulkanContext &context, vk::DescriptorSet target_descriptor_set, const char *filename)
+    : width_(0), height_(0), channels_(0), pixels_(nullptr), context_(context), filename_(filename), vk_descriptor_set_(target_descriptor_set) {
   LoadImageFromFile();
   CreateVkImage();
   Populate();
@@ -213,10 +213,6 @@ void VulkanTexture::UpdateDescriptorSet() {
   auto device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
 
-  // allocate descriptor set on the device - this is done already during initialization of the descriptor pool
-  vk::DescriptorSet dst_set = context_.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::MESH);
-  VK_ASSERT(dst_set != VK_NULL_HANDLE, "Descriptor set not initialized");
-
   // combined image sampler
   vk::DescriptorImageInfo descriptor_image_info = {};
   descriptor_image_info.sampler = vk_sampler_;
@@ -225,7 +221,7 @@ void VulkanTexture::UpdateDescriptorSet() {
 
   vk::WriteDescriptorSet write_descriptor_set = {};
   write_descriptor_set.sType = vk::StructureType::eWriteDescriptorSet;
-  write_descriptor_set.dstSet = dst_set;
+  write_descriptor_set.dstSet = vk_descriptor_set_;
   write_descriptor_set.dstBinding = 0;
   write_descriptor_set.dstArrayElement = 0;
   write_descriptor_set.descriptorType = vk::DescriptorType::eCombinedImageSampler;

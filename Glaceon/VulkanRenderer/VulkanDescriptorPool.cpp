@@ -59,33 +59,20 @@ void VulkanDescriptorPool::CreateDescriptorPool() {
   for (auto &params : descriptor_pool_set_layout_params_) {
 
     // Determine the size of the pool
-    uint8_t num_descriptor_sets = 0;
     std::vector<vk::DescriptorPoolSize> pool_sizes;// This stores the type and number of descriptors
     for (int i = 0; i < params.binding_count; i++) {
       vk::DescriptorPoolSize pool_size;
       pool_size.type = params.descriptor_type[i];
-      pool_size.descriptorCount = params.descriptor_type_count[i];
-      num_descriptor_sets++;
+      pool_size.descriptorCount = params.set_count;
       pool_sizes.push_back(pool_size);
     }
-
-#if _DEBUG
-    if (params.descriptor_pool_type == DescriptorPoolType::FRAME) {
-      // Add image sampler to the pool for ImGui
-      vk::DescriptorPoolSize image_sampler;
-      image_sampler.type = vk::DescriptorType::eCombinedImageSampler;
-      image_sampler.descriptorCount = 1;
-      num_descriptor_sets++;
-      pool_sizes.push_back(image_sampler);
-    }
-#endif
 
     // Allocating the right size of descriptor pool
     vk::DescriptorPoolCreateInfo pool_create_info = {};
     pool_create_info.sType = vk::StructureType::eDescriptorPoolCreateInfo;
     pool_create_info.pNext = nullptr;
     pool_create_info.flags = vk::DescriptorPoolCreateFlags(vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet);
-    pool_create_info.maxSets = static_cast<uint32_t>(num_descriptor_sets);
+    pool_create_info.maxSets = params.set_count;
     pool_create_info.poolSizeCount = static_cast<uint32_t>(pool_sizes.size());
     pool_create_info.pPoolSizes = pool_sizes.data();
     // We only have one pool (aka size of pool_size[])
@@ -103,15 +90,19 @@ void VulkanDescriptorPool::CreateDescriptorSet() {
   VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
 
   for (auto &params : descriptor_pool_set_layout_params_) {
-    vk::DescriptorSetAllocateInfo allocate_info = {};
-    allocate_info.sType = vk::StructureType::eDescriptorSetAllocateInfo;
-    allocate_info.pNext = nullptr;
-    allocate_info.descriptorPool = vk_descriptor_pools_[params.descriptor_pool_type];
-    allocate_info.descriptorSetCount = 1;
-    allocate_info.pSetLayouts = &vk_descriptor_set_layouts_[params.descriptor_pool_type];
-    vk::DescriptorSet vk_descriptor_set = nullptr;
-    VK_CHECK(device.allocateDescriptorSets(&allocate_info, &vk_descriptor_set), "Failed to allocate descriptor set");
-    vk_descriptor_sets_.insert(std::make_pair(params.descriptor_pool_type, vk_descriptor_set));
+    std::vector<vk::DescriptorSet> all_sets;
+    for (int i = 0; i < params.set_count; i++) {
+      vk::DescriptorSetAllocateInfo allocate_info = {};
+      allocate_info.sType = vk::StructureType::eDescriptorSetAllocateInfo;
+      allocate_info.pNext = nullptr;
+      allocate_info.descriptorPool = vk_descriptor_pools_[params.descriptor_pool_type];
+      allocate_info.descriptorSetCount = 1;
+      allocate_info.pSetLayouts = &vk_descriptor_set_layouts_[params.descriptor_pool_type];
+      vk::DescriptorSet vk_descriptor_set = nullptr;
+      VK_CHECK(device.allocateDescriptorSets(&allocate_info, &vk_descriptor_set), "Failed to allocate descriptor set");
+      all_sets.push_back(vk_descriptor_set);
+    }
+    vk_descriptor_sets_.insert(std::make_pair(params.descriptor_pool_type, all_sets));
   }
 }
 

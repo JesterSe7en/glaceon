@@ -489,7 +489,7 @@ void VulkanSwapChain::UpdateDescriptorResources() {
     //      const VkDescriptorBufferInfo*    pBufferInfo;
     //      const VkBufferView*              pTexelBufferView;
     //    } VkWriteDescriptorSet;
-    vk::DescriptorSet dst_set = context_.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::FRAME);
+    vk::DescriptorSet dst_set = context_.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::FRAME)[0];
     // frame descriptor set has two bindings
     // binding 0: camera data
     // binding 1: model matrices

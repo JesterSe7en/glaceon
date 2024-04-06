@@ -99,9 +99,12 @@ void MakeAssets(VulkanContext &context) {
                                                           {MeshType::SQUARE, "../../textures/paper_crinkle.jpg"},
                                                           {MeshType::STAR, "../../textures/water.jpg"}};
 
+  int idx = 0;
   for (auto &kPair : filenames) {
-    auto *texture = new VulkanTexture(context, kPair.second);
-    materials[kPair.first] = texture;
+    vk::DescriptorSet set = context.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::MESH)[0];
+    auto *texture = new VulkanTexture(context, set, kPair.second);
+    materials_.insert(std::make_pair(kPair.first, texture));
+    idx++;
   }
 
   // Create descriptor pool for textures
@@ -162,7 +165,7 @@ void RenderObjects(vk::CommandBuffer &command_buffer, MeshType mesh_type, uint32
   int first_vertex = vertex_buffer_collection->offsets_.find(mesh_type)->second;
   int vertex_count = vertex_buffer_collection->sizes_.find(mesh_type)->second;
   // we are attaching descriptor set for the mesh (which just has one binding, the combined image sampler)
-  //  materials[mesh_type]->Use();
+  materials_[mesh_type]->Use();
   command_buffer.draw(vertex_count, instance_count, first_vertex, start_instance);
   start_instance += instance_count;
 }
@@ -196,10 +199,10 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
   vk::Pipeline pipeline = context.GetVulkanPipeline().GetVkPipeline();
 
   // frame descriptors have two bindings to describe the frame, the camera and the model vertex buffer
-  std::vector<vk::DescriptorSet> sets = {context.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::FRAME),
-                                         context.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::MESH)};
-  command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, context.GetVulkanPipeline().GetVkPipelineLayout(), 0, sets.size(), sets.data(), 0,
-                                    nullptr);
+  std::vector<vk::DescriptorSet> sets = {context.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::FRAME)
+                                         };
+  command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, context.GetVulkanPipeline().GetVkPipelineLayout(), 0, sets.size(), sets.data(),
+                                    0, nullptr);
   command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
 
   PrepareFrame(image_index, context);
@@ -391,9 +394,21 @@ void GLACEON_API RunGame(Application *app) {
   context.GetVulkanSwapChain().Initialize();
 
   std::vector<DescriptorPoolSetLayoutParams> descriptor_pool_set_layouts;
+  // -- imgui descriptor set --
+  DescriptorPoolSetLayoutParams imgui_set_layout;
+  imgui_set_layout.descriptor_pool_type = DescriptorPoolType::IMGUI;
+  imgui_set_layout.set_count = 1;
+  imgui_set_layout.binding_count = 1;
+  imgui_set_layout.binding_index.push_back(0);
+  imgui_set_layout.descriptor_type.push_back(vk::DescriptorType::eCombinedImageSampler);
+  imgui_set_layout.descriptor_type_count.push_back(1);
+  imgui_set_layout.stage_to_bind.push_back(vk::ShaderStageFlagBits::eFragment);
+  descriptor_pool_set_layouts.push_back(imgui_set_layout);
+
   // -- frame descriptor set --
   DescriptorPoolSetLayoutParams frame_set_layout;
   frame_set_layout.descriptor_pool_type = DescriptorPoolType::FRAME;
+  frame_set_layout.set_count = 1;
   frame_set_layout.binding_count = 2;
   // Uniform buffer for the camera data
   frame_set_layout.binding_index.push_back(0);
@@ -410,6 +425,7 @@ void GLACEON_API RunGame(Application *app) {
 
   // -- mesh descriptor set --
   DescriptorPoolSetLayoutParams mesh_set_layout;
+  mesh_set_layout.set_count = 3;// one for each texture
   mesh_set_layout.descriptor_pool_type = DescriptorPoolType::MESH;
   mesh_set_layout.binding_count = 1;
   // Combined image sampler for the mesh image
@@ -521,7 +537,7 @@ void GLACEON_API RunGame(Application *app) {
 #endif
 
   delete vertex_buffer_collection;
-  for (auto &[_, texture] : materials) { delete texture; }
+  for (auto &[_, texture] : materials_) { delete texture; }
 
   context.Destroy();
 
