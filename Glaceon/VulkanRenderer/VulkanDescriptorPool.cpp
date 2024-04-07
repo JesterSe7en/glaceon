@@ -90,6 +90,10 @@ void VulkanDescriptorPool::CreateDescriptorSet() {
   VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
 
   for (auto &params : descriptor_pool_set_layout_params_) {
+    if (params.descriptor_pool_type == DescriptorPoolType::IMGUI) {
+      // let imgui allocate the set
+      continue;
+    }
     std::vector<vk::DescriptorSet> all_sets;
     for (int i = 0; i < params.set_count; i++) {
       vk::DescriptorSetAllocateInfo allocate_info = {};

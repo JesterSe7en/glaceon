@@ -50,7 +50,7 @@ static void ImGuiInitialize(VulkanContext &context, GLFWwindow *glfw_window) {
   init_info.QueueFamily = context.GetQueueIndexes().graphics_family.value();
   init_info.Queue = context.GetVulkanDevice().GetVkGraphicsQueue();
   init_info.PipelineCache = context.GetVulkanPipeline().GetVkPipelineCache();
-  init_info.DescriptorPool = context.GetVulkanDescriptorPool().GetDescriptorPool(DescriptorPoolType::FRAME);
+  init_info.DescriptorPool = context.GetVulkanDescriptorPool().GetDescriptorPool(DescriptorPoolType::IMGUI);
   init_info.RenderPass = context.GetVulkanRenderPass().GetVkRenderPass();
   init_info.Subpass = 0;
   init_info.MinImageCount = 2;
@@ -165,7 +165,7 @@ void RenderObjects(vk::CommandBuffer &command_buffer, MeshType mesh_type, uint32
   int first_vertex = vertex_buffer_collection->offsets_.find(mesh_type)->second;
   int vertex_count = vertex_buffer_collection->sizes_.find(mesh_type)->second;
   // we are attaching descriptor set for the mesh (which just has one binding, the combined image sampler)
-  materials_[mesh_type]->Use();
+  materials_[mesh_type]->Use(command_buffer);
   command_buffer.draw(vertex_count, instance_count, first_vertex, start_instance);
   start_instance += instance_count;
 }
@@ -199,16 +199,16 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
   vk::Pipeline pipeline = context.GetVulkanPipeline().GetVkPipeline();
 
   // frame descriptors have two bindings to describe the frame, the camera and the model vertex buffer
-  std::vector<vk::DescriptorSet> sets = {context.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::FRAME)
-                                         };
+  std::vector<vk::DescriptorSet> sets = {context.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::FRAME)};
   command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, context.GetVulkanPipeline().GetVkPipelineLayout(), 0, sets.size(), sets.data(),
                                     0, nullptr);
-  command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
-
   PrepareFrame(image_index, context);
 
   // Gets the vertex buffer data from TriangleMesh and pushes it as uniform data in anticipation for the vertex shader to use.
   PrepareScene(command_buffer);
+
+  command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
+
 
   uint32_t start_instance = 0;
   std::vector<glm::vec3> const &kTrianglePositions = currentApp->GetScene().triangle_positions_;
@@ -394,17 +394,6 @@ void GLACEON_API RunGame(Application *app) {
   context.GetVulkanSwapChain().Initialize();
 
   std::vector<DescriptorPoolSetLayoutParams> descriptor_pool_set_layouts;
-  // -- imgui descriptor set --
-  DescriptorPoolSetLayoutParams imgui_set_layout;
-  imgui_set_layout.descriptor_pool_type = DescriptorPoolType::IMGUI;
-  imgui_set_layout.set_count = 1;
-  imgui_set_layout.binding_count = 1;
-  imgui_set_layout.binding_index.push_back(0);
-  imgui_set_layout.descriptor_type.push_back(vk::DescriptorType::eCombinedImageSampler);
-  imgui_set_layout.descriptor_type_count.push_back(1);
-  imgui_set_layout.stage_to_bind.push_back(vk::ShaderStageFlagBits::eFragment);
-  descriptor_pool_set_layouts.push_back(imgui_set_layout);
-
   // -- frame descriptor set --
   DescriptorPoolSetLayoutParams frame_set_layout;
   frame_set_layout.descriptor_pool_type = DescriptorPoolType::FRAME;
@@ -422,6 +411,17 @@ void GLACEON_API RunGame(Application *app) {
   frame_set_layout.descriptor_type_count.push_back(1);
   frame_set_layout.stage_to_bind.push_back(vk::ShaderStageFlagBits::eVertex);
   descriptor_pool_set_layouts.push_back(frame_set_layout);
+
+  // -- imgui descriptor set --
+  DescriptorPoolSetLayoutParams imgui_set_layout;
+  imgui_set_layout.descriptor_pool_type = DescriptorPoolType::IMGUI;
+  imgui_set_layout.set_count = 1;
+  imgui_set_layout.binding_count = 1;
+  imgui_set_layout.binding_index.push_back(0);
+  imgui_set_layout.descriptor_type.push_back(vk::DescriptorType::eCombinedImageSampler);
+  imgui_set_layout.descriptor_type_count.push_back(1);
+  imgui_set_layout.stage_to_bind.push_back(vk::ShaderStageFlagBits::eFragment);
+  descriptor_pool_set_layouts.push_back(imgui_set_layout);
 
   // -- mesh descriptor set --
   DescriptorPoolSetLayoutParams mesh_set_layout;

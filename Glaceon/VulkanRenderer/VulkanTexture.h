@@ -8,7 +8,7 @@ class VulkanContext;
 class VulkanTexture {
  public:
   VulkanTexture(VulkanContext &context, vk::DescriptorSet target_descriptor_set, const char *filename);
-  void Use();
+  void Use(vk::CommandBuffer &command_buffer);
   ~VulkanTexture();
 
  private:

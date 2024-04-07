@@ -231,8 +231,7 @@ void VulkanTexture::UpdateDescriptorSet() {
   device.updateDescriptorSets(1, &write_descriptor_set, 0, nullptr);
 }
 
-void VulkanTexture::Use() {
-  vk::CommandBuffer command_buffer = context_.GetVulkanCommandPool().GetVkMainCommandBuffer();
+void VulkanTexture::Use(vk::CommandBuffer &command_buffer) {
   vk::PipelineLayout pipeline_layout = context_.GetVulkanPipeline().GetVkPipelineLayout();
   VK_ASSERT(command_buffer != VK_NULL_HANDLE, "Command buffer not initialized");
   VK_ASSERT(pipeline_layout != VK_NULL_HANDLE, "Pipeline layout not initialized");
