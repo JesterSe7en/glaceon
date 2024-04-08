@@ -101,7 +101,7 @@ void MakeAssets(VulkanContext &context) {
 
   int idx = 0;
   for (auto &kPair : filenames) {
-    vk::DescriptorSet set = context.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::MESH)[0];
+    vk::DescriptorSet set = context.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::MESH)[idx];
     auto *texture = new VulkanTexture(context, set, kPair.second);
     materials_.insert(std::make_pair(kPair.first, texture));
     idx++;
