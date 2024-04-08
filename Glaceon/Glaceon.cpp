@@ -125,7 +125,10 @@ void PrepareFrame(uint32_t image_index, VulkanContext &context) {
   Scene &scene = currentApp->GetScene();
 
   // later use swapchain to get aspect ratio
-  glm::mat4 proj = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.01f, 10.0f);
+  vk::Extent2D extent = context.GetVulkanSwapChain().GetSwapChainExtent();
+  auto width = static_cast<float>(extent.width);
+  auto height = static_cast<float>(extent.height);
+  glm::mat4 proj = glm::perspective(glm::radians(45.0f), width / height, 0.1f, 10.0f);
   // Specifically, Vulkan uses a right-handed coordinate system with positive Y going down the screen, whereas OpenGL
   // and DirectX typically use a left-handed coordinate system with positive Y going up the screen.
   // By multiplying the [1][1] component by -1, you effectively flip the Y-axis in clip space,
