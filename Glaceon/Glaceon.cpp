@@ -212,18 +212,13 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
 
   command_buffer.bindPipeline(vk::PipelineBindPoint::eGraphics, pipeline);
 
-
   uint32_t start_instance = 0;
   std::vector<glm::vec3> const &kTrianglePositions = currentApp->GetScene().triangle_positions_;
   std::vector<glm::vec3> const &kSquarePositions = currentApp->GetScene().square_positions_;
   std::vector<glm::vec3> const &kStarPositions = currentApp->GetScene().star_positions_;
 
   RenderObjects(command_buffer, MeshType::TRIANGLE, start_instance, static_cast<uint32_t>(kTrianglePositions.size()));
-  start_instance += static_cast<uint32_t>(kTrianglePositions.size());
-
   RenderObjects(command_buffer, MeshType::SQUARE, start_instance, static_cast<uint32_t>(kSquarePositions.size()));
-  start_instance += static_cast<uint32_t>(kSquarePositions.size());
-
   RenderObjects(command_buffer, MeshType::STAR, start_instance, static_cast<uint32_t>(kStarPositions.size()));
 }
 
