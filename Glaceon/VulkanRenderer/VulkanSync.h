@@ -21,12 +21,8 @@ class VulkanSync {
   void Rebuild();
   void Destroy();
 
-  [[nodiscard]] const std::vector<vk::Semaphore> &GetImageAvailableSemaphores() const {
-    return image_available_semaphores_;
-  }
-  [[nodiscard]] const std::vector<vk::Semaphore> &GetRenderFinishedSemaphores() const {
-    return render_finished_semaphores_;
-  }
+  [[nodiscard]] const std::vector<vk::Semaphore> &GetImageAvailableSemaphores() const { return image_available_semaphores_; }
+  [[nodiscard]] const std::vector<vk::Semaphore> &GetRenderFinishedSemaphores() const { return render_finished_semaphores_; }
   [[nodiscard]] const std::vector<vk::Fence> &GetInFlightFences() const { return in_flight_fences_; }
 
  private:

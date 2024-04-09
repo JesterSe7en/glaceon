@@ -178,10 +178,10 @@ uint32_t VulkanUtils::FindMemoryTypeIndex(vk::PhysicalDevice physical_device, ui
   vk::PhysicalDeviceMemoryProperties memory_properties = physical_device.getMemoryProperties();
 
   for (uint32_t i = 0; i < memory_properties.memoryTypeCount; i++) {
-      bool supported { static_cast<bool>(type_filter & (1 << i)) };
+    bool supported{static_cast<bool>(type_filter & (1 << i))};
 
-      bool sufficient { (memory_properties.memoryTypes[i].propertyFlags & properties) == properties };
-      if (supported && sufficient) { return i; }
+    bool sufficient{(memory_properties.memoryTypes[i].propertyFlags & properties) == properties};
+    if (supported && sufficient) { return i; }
   }
   return 0;
 }

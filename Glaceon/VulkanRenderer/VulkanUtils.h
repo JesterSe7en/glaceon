@@ -32,7 +32,6 @@ class VulkanUtils {
   static void CopyBuffer(Buffer &src, Buffer &dst, vk::DeviceSize size, vk::Queue queue, vk::CommandBuffer command_buffer);
   static void DestroyBuffer(BufferInputParams params, Buffer &buffer);
 
-
   // Job management
   static void BeginSingleTimeCommands(vk::CommandBuffer command_buffer);
   static void EndSingleTimeCommands(vk::CommandBuffer command_buffer, vk::Queue queue);

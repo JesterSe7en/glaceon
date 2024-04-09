@@ -20,10 +20,8 @@ class VulkanBackend {
   vk::Instance instance_;
 
   static bool IsLayerAvailable(const std::vector<vk::LayerProperties> &layers, const char *layer_to_check);
-  static bool IsExtensionAvailable(const std::vector<vk::ExtensionProperties> &all_extensions,
-                                   const char *extension_to_check);
-  static VkBool32 DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
-                                VkDebugUtilsMessageTypeFlagsEXT message_type,
+  static bool IsExtensionAvailable(const std::vector<vk::ExtensionProperties> &all_extensions, const char *extension_to_check);
+  static VkBool32 DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity, VkDebugUtilsMessageTypeFlagsEXT message_type,
                                 const VkDebugUtilsMessengerCallbackDataEXT *p_callback_data, void *p_user_data);
 };
 
