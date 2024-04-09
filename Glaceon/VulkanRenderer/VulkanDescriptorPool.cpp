@@ -3,7 +3,6 @@
 #include "../Logger.h"
 #include "VulkanContext.h"
 
-
 // maybe refactor this as a descritpor manager?
 // initalizes if set not avaialble upon request?
 // create discrete pools based on usage?

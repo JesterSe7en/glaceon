@@ -31,8 +31,7 @@ void VulkanBackend::Initialize() {
   for (const char *layer : validation_layers) {
     if (!IsLayerAvailable(layer_properties, layer)) {
       GERROR("Validation layer {} not available", layer);
-      validation_layers.erase(std::remove(validation_layers.begin(), validation_layers.end(), layer),
-                              validation_layers.end());
+      validation_layers.erase(std::remove(validation_layers.begin(), validation_layers.end(), layer), validation_layers.end());
     }
   }
 
@@ -43,10 +42,9 @@ void VulkanBackend::Initialize() {
   debug_create_info.sType = vk::StructureType::eDebugUtilsMessengerCreateInfoEXT;
   debug_create_info.pNext = nullptr;
   debug_create_info.flags = vk::DebugUtilsMessengerCreateFlagsEXT();
-  debug_create_info.messageSeverity =
-      vk::DebugUtilsMessageSeverityFlagBitsEXT::eError | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning;
-  debug_create_info.messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral
-      | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
+  debug_create_info.messageSeverity = vk::DebugUtilsMessageSeverityFlagBitsEXT::eError | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning;
+  debug_create_info.messageType = vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation
+      | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance;
   debug_create_info.pfnUserCallback = DebugCallback;
   debug_create_info.pUserData = nullptr;
   instance_create_info.pNext = &debug_create_info;
@@ -75,8 +73,7 @@ void VulkanBackend::Initialize() {
   for (auto &extension : instance_extensions) {
     if (!IsExtensionAvailable(properties, extension)) {
       GERROR("Extension {} not available", extension);
-      instance_extensions.erase(std::remove(instance_extensions.begin(), instance_extensions.end(), extension),
-                                instance_extensions.end());
+      instance_extensions.erase(std::remove(instance_extensions.begin(), instance_extensions.end(), extension), instance_extensions.end());
     }
   }
   instance_create_info.enabledExtensionCount = static_cast<uint32_t>(instance_extensions.size());
@@ -91,8 +88,7 @@ void VulkanBackend::Initialize() {
 
 VkBool32 VulkanBackend::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
                                       [[maybe_unused]] VkDebugUtilsMessageTypeFlagsEXT message_type,
-                                      const VkDebugUtilsMessengerCallbackDataEXT *p_callback_data,
-                                      [[maybe_unused]] void *p_user_data) {
+                                      const VkDebugUtilsMessengerCallbackDataEXT *p_callback_data, [[maybe_unused]] void *p_user_data) {
   switch (message_severity) {
     case VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT:
       GTRACE("Validation layer: {}", p_callback_data->pMessage);
@@ -125,8 +121,7 @@ bool VulkanBackend::IsLayerAvailable(const std::vector<vk::LayerProperties> &lay
   }
   return false;
 }
-bool VulkanBackend::IsExtensionAvailable(const std::vector<vk::ExtensionProperties> &all_extensions,
-                                         const char *extension_to_check) {
+bool VulkanBackend::IsExtensionAvailable(const std::vector<vk::ExtensionProperties> &all_extensions, const char *extension_to_check) {
   for (const auto &kExt : all_extensions) {
     if (strcmp(kExt.extensionName, extension_to_check) == 0) { return true; }
   }

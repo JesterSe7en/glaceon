@@ -74,8 +74,7 @@ void VulkanCommandPool::RebuildCommandBuffers() {
 
   // destroy all old command buffers
   device.freeCommandBuffers(vk_command_pool_, 1, &vk_main_command_buffer_);
-  device.freeCommandBuffers(vk_command_pool_, static_cast<uint32_t>(vk_frame_command_buffers_.size()),
-                            vk_frame_command_buffers_.data());
+  device.freeCommandBuffers(vk_command_pool_, static_cast<uint32_t>(vk_frame_command_buffers_.size()), vk_frame_command_buffers_.data());
 
   vk_frame_command_buffers_.clear();
   std::vector<SwapChainFrame> swap_chain_frames = context_.GetVulkanSwapChain().GetSwapChainFrames();
@@ -94,8 +93,7 @@ void VulkanCommandPool::RebuildCommandBuffers() {
 
   for (size_t i = 0; i < swap_chain_frames.size(); ++i) {
     // allocate command buffers for each swap chain frame
-    if (device.allocateCommandBuffers(&command_buffer_allocate_info, &vk_frame_command_buffers_[i])
-        != vk::Result::eSuccess) {
+    if (device.allocateCommandBuffers(&command_buffer_allocate_info, &vk_frame_command_buffers_[i]) != vk::Result::eSuccess) {
       GERROR("Failed to allocate command buffer for swap chain frame");
       return;
     }

@@ -3,8 +3,8 @@
 namespace glaceon {
 
 VulkanContext::VulkanContext()
-    : backend_(*this), device_(*this), swap_chain_(*this), render_pass_(*this), pipeline_(*this), command_pool_(*this),
-      descriptor_pool_(*this), sync_(*this), device_extensions_(), instance_extensions_() {}
+    : backend_(*this), device_(*this), swap_chain_(*this), render_pass_(*this), pipeline_(*this), command_pool_(*this), descriptor_pool_(*this),
+      sync_(*this), device_extensions_(), instance_extensions_() {}
 void VulkanContext::AddDeviceExtension(const char *ext) { device_extensions_.push_back(ext); }
 void VulkanContext::AddInstanceExtension(const char *ext) { instance_extensions_.push_back(ext); }
 void VulkanContext::RemoveDeviceExtension(const char *ext) {

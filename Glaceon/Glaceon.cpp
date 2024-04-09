@@ -71,25 +71,52 @@ static void ImGuiInitialize(VulkanContext &context, GLFWwindow *glfw_window) {
 
 void MakeAssets(VulkanContext &context) {
   vertex_buffer_collection = new VertexBufferCollection();
-  std::vector<float> triangle_vertices = {0.0f, -0.1f, 0.0f, 1.0f,  0.0f, 0.5f, 0.0f, 0.1f, 0.1f, 0.0f, 1.0f,
-                                          0.0f, 1.0f,  1.0f, -0.1f, 0.1f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f};
-  vertex_buffer_collection->Add(MeshType::TRIANGLE, triangle_vertices);
+  std::vector<float> triangle_vertices = {
+      0.0f,  -0.1f, 0.0f, 1.0f, 0.0f, 0.5f, 0.0f,// 0
+      0.1f,  0.1f,  0.0f, 1.0f, 0.0f, 1.0f, 1.0f,// 1
+      -0.1f, 0.1f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f // 2
+  };
+  std::vector<uint32_t> triangle_indexes = {0, 1, 2};
+  vertex_buffer_collection->Add(MeshType::TRIANGLE, triangle_vertices, triangle_indexes);
 
-  std::vector<float> square_vertices = {{-0.1f, 0.1f,  1.0f, 0.0f, 0.0f, 0.0f, 1.0f, -0.1f, -0.1f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-                                         0.1f,  -0.1f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.1f,  -0.1f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-                                         0.1f,  0.1f,  1.0f, 0.0f, 0.0f, 1.0f, 1.0f, -0.1f, 0.1f,  1.0f, 0.0f, 0.0f, 0.0f, 1.0f}};
-  vertex_buffer_collection->Add(MeshType::SQUARE, square_vertices);
+  // removed duplicate vertexes as we are swapping to indexed rendering
+  // remember we are drawing triangle primatives
+  std::vector<float> square_vertices = {
+      -0.1f, 0.1f,  1.0f, 0.0f, 0.0f, 0.0f, 1.0f,// 0
+      -0.1f, -0.1f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,// 1
+      0.1f,  -0.1f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,// 2
+      0.1f,  0.1f,  1.0f, 0.0f, 0.0f, 1.0f, 1.0f,// 3
+  };
+  std::vector<uint32_t> square_indexes = {
+      0, 1, 2,// 1st triangle
+      2, 3, 0 // 2nd triangle
+  };
+  vertex_buffer_collection->Add(MeshType::SQUARE, square_vertices, square_indexes);
 
   std::vector<float> star_vertices = {
-      {-0.1f,  -0.05f, 0.0f, 0.0f, 1.0f, 0.0f, 0.25f, -0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.3f, 0.25f, -0.06f, 0.0f,   0.0f, 0.0f, 1.0f, 0.2f, 0.5f,
-       -0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.3f, 0.25f, 0.0f,   -0.1f,  0.0f, 0.0f, 1.0f, 0.5f, 0.0f,  0.04f,  -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f,
-       -0.06f, 0.0f,   0.0f, 0.0f, 1.0f, 0.2f, 0.5f,  -0.04f, -0.05f, 0.0f, 0.0f, 1.0f, 0.3f, 0.25f, 0.04f,  -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f,
-       0.04f,  -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f, 0.1f,   -0.05f, 0.0f, 0.0f, 1.0f, 1.0f, 0.25f, 0.06f,  0.0f,   0.0f, 0.0f, 1.0f, 0.8f, 0.5f,
-       -0.06f, 0.0f,   0.0f, 0.0f, 1.0f, 0.2f, 0.5f,  0.04f,  -0.05f, 0.0f, 0.0f, 1.0f, 0.7f, 0.25f, 0.06f,  0.0f,   0.0f, 0.0f, 1.0f, 0.8f, 0.5f,
-       0.06f,  0.0f,   0.0f, 0.0f, 1.0f, 0.8f, 0.5f,  0.08f,  0.1f,   0.0f, 0.0f, 1.0f, 0.9f, 1.0f,  0.0f,   0.02f,  0.0f, 0.0f, 1.0f, 0.5f, 0.6f,
-       -0.06f, 0.0f,   0.0f, 0.0f, 1.0f, 0.2f, 0.5f,  0.06f,  0.0f,   0.0f, 0.0f, 1.0f, 0.8f, 0.5f,  0.0f,   0.02f,  0.0f, 0.0f, 1.0f, 0.5f, 0.6f,
-       -0.06f, 0.0f,   0.0f, 0.0f, 1.0f, 0.2f, 0.5f,  0.0f,   0.02f,  0.0f, 0.0f, 1.0f, 0.5f, 0.6f,  -0.08f, 0.1f,   0.0f, 0.0f, 1.0f, 0.1f, 1.0f}};
-  vertex_buffer_collection->Add(MeshType::STAR, star_vertices);
+      -0.1f,  -0.05f, 1.0f, 1.0f, 1.0f, 0.0f, 0.25f,//0
+      -0.04f, -0.05f, 1.0f, 1.0f, 1.0f, 0.3f, 0.25f,//1
+      -0.06f, 0.0f,   1.0f, 1.0f, 1.0f, 0.2f, 0.5f, //2
+      0.0f,   -0.1f,  1.0f, 1.0f, 1.0f, 0.5f, 0.0f, //3
+      0.04f,  -0.05f, 1.0f, 1.0f, 1.0f, 0.7f, 0.25f,//4
+      0.1f,   -0.05f, 1.0f, 1.0f, 1.0f, 1.0f, 0.25f,//5
+      0.06f,  0.0f,   1.0f, 1.0f, 1.0f, 0.8f, 0.5f, //6
+      0.08f,  0.1f,   1.0f, 1.0f, 1.0f, 0.9f, 1.0f, //7
+      0.0f,   0.02f,  1.0f, 1.0f, 1.0f, 0.5f, 0.6f, //8
+      -0.08f, 0.1f,   1.0f, 1.0f, 1.0f, 0.1f, 1.0f  //9
+  };
+  std::vector<uint32_t> star_indexes = {
+      0, 1, 2,// 1st triangle
+      1, 3, 4,// 2nd
+      2, 1, 4,// 3rd
+      4, 5, 6,// 4th
+      2, 4, 6,// 5th
+      6, 7, 8,// 6th
+      2, 6, 8,// 7th
+      2, 8, 9 // 8th
+
+  };
+  vertex_buffer_collection->Add(MeshType::STAR, star_vertices, star_indexes);
 
   vertex_buffer_collection->Finalize(context.GetVulkanLogicalDevice(), context.GetVulkanPhysicalDevice(),
                                      context.GetVulkanDevice().GetVkGraphicsQueue(), context.GetVulkanCommandPool().GetVkMainCommandBuffer());
