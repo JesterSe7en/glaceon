@@ -3,6 +3,7 @@
 #include "Application.h"
 #include "GLFW/glfw3.h"
 #include "Logger.h"
+#include <vulkan/vulkan_enums.hpp>
 
 namespace glaceon {
 
@@ -80,7 +81,7 @@ void MakeAssets(VulkanContext &context) {
   vertex_buffer_collection->Add(MeshType::TRIANGLE, triangle_vertices, triangle_indexes);
 
   // removed duplicate vertexes as we are swapping to indexed rendering
-  // remember we are drawing triangle primatives
+  // remember we are drawing triangle primitives
   std::vector<float> square_vertices = {
       -0.1f, 0.1f,  1.0f, 0.0f, 0.0f, 0.0f, 1.0f,// 0
       -0.1f, -0.1f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,// 1
@@ -141,6 +142,7 @@ void PrepareScene(vk::CommandBuffer command_buffer) {
   vk::Buffer vertex_buffers[] = {vertex_buffer_collection->vertex_buffer_.buffer};
   vk::DeviceSize offsets[] = {0};
   command_buffer.bindVertexBuffers(0, 1, vertex_buffers, offsets);
+  command_buffer.bindIndexBuffer(vertex_buffer_collection->index_buffer_.buffer, 0, vk::IndexType::eUint32);
 }
 
 void PrepareFrame(uint32_t image_index, VulkanContext &context) {
@@ -192,11 +194,11 @@ void PrepareFrame(uint32_t image_index, VulkanContext &context) {
  */
 void RenderObjects(vk::CommandBuffer &command_buffer, MeshType mesh_type, uint32_t &start_instance, uint32_t instance_count) {
   // ------ Draw triangles ------
-  int first_vertex = vertex_buffer_collection->first_indexes_.find(mesh_type)->second;
-  int vertex_count = vertex_buffer_collection->index_counts_.find(mesh_type)->second;
+  int first_index = vertex_buffer_collection->first_indexes_.find(mesh_type)->second;
+  int index_count = vertex_buffer_collection->index_counts_.find(mesh_type)->second;
   // we are attaching descriptor set for the mesh (which just has one binding, the combined image sampler)
   materials_[mesh_type]->Use(command_buffer);
-  command_buffer.draw(vertex_count, instance_count, first_vertex, start_instance);
+  command_buffer.drawIndexed(index_count, instance_count, first_index, 0, start_instance);
   start_instance += instance_count;
 }
 

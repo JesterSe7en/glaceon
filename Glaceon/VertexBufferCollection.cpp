@@ -1,10 +1,7 @@
 #include "VertexBufferCollection.h"
 #include "Base.h"
+#include "Logger.h"
 #include "VulkanRenderer/VulkanUtils.h"
-#include <cstdint>
-#include <utility>
-#include <vulkan/vulkan_core.h>
-#include <vulkan/vulkan_enums.hpp>
 
 namespace glaceon {
 VertexBufferCollection::VertexBufferCollection() : offset_(0) {}
@@ -15,6 +12,11 @@ VertexBufferCollection::~VertexBufferCollection() {
   vk_device_.freeMemory(vertex_buffer_.buffer_memory);
   vertex_buffer_.buffer = VK_NULL_HANDLE;
   vertex_buffer_.buffer_memory = VK_NULL_HANDLE;
+
+  vk_device_.destroyBuffer(index_buffer_.buffer);
+  vk_device_.freeMemory(index_buffer_.buffer_memory);
+  index_buffer_.buffer = VK_NULL_HANDLE;
+  index_buffer_.buffer_memory = VK_NULL_HANDLE;
 }
 
 void VertexBufferCollection::Add(MeshType type, const std::vector<float> &verticies, const std::vector<uint32_t> &indexes) {
@@ -63,7 +65,7 @@ void VertexBufferCollection::Finalize(vk::Device logical_device, vk::PhysicalDev
 
   staging_buffer = VulkanUtils::CreateBuffer(params);
 
-  void *memroy_loc = logical_device.mapMemory(staging_buffer.buffer_memory, 0, VK_WHOLE_SIZE, {});
+  memory_loc = logical_device.mapMemory(staging_buffer.buffer_memory, 0, VK_WHOLE_SIZE, {});
   memcpy(memory_loc, indexes_.data(), indexes_.size() * sizeof(uint32_t));
   logical_device.unmapMemory(staging_buffer.buffer_memory);
 
