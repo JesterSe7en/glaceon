@@ -192,8 +192,8 @@ void PrepareFrame(uint32_t image_index, VulkanContext &context) {
  */
 void RenderObjects(vk::CommandBuffer &command_buffer, MeshType mesh_type, uint32_t &start_instance, uint32_t instance_count) {
   // ------ Draw triangles ------
-  int first_vertex = vertex_buffer_collection->offsets_.find(mesh_type)->second;
-  int vertex_count = vertex_buffer_collection->sizes_.find(mesh_type)->second;
+  int first_vertex = vertex_buffer_collection->first_indexes_.find(mesh_type)->second;
+  int vertex_count = vertex_buffer_collection->index_counts_.find(mesh_type)->second;
   // we are attaching descriptor set for the mesh (which just has one binding, the combined image sampler)
   materials_[mesh_type]->Use(command_buffer);
   command_buffer.draw(vertex_count, instance_count, first_vertex, start_instance);

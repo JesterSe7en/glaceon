@@ -1,12 +1,9 @@
-//
-// Created by alyxc on 3/25/2024.
-//
-
 #ifndef GLACEON_GLACEON_VERTEXBUFFERCOLLECTION_H_
 #define GLACEON_GLACEON_VERTEXBUFFERCOLLECTION_H_
 
-#include "pch.h"
 #include "VulkanRenderer/VulkanUtils.h"
+#include "pch.h"
+#include <cstdint>
 
 namespace glaceon {
 
@@ -17,19 +14,22 @@ class VertexBufferCollection {
   VertexBufferCollection();
   ~VertexBufferCollection();
 
-  void Add(MeshType type, const std::vector<float>& verticies);
+  void Add(MeshType type, const std::vector<float> &verticies, const std::vector<uint32_t> &indexes);
 
   // Finalizes the collection of vertex buffers, actually allocates the memory
   void Finalize(vk::Device logical_device, vk::PhysicalDevice physical_device, vk::Queue queue, vk::CommandBuffer command_buffer);
-  VulkanUtils::Buffer vertex_buffer_;
 
-  std::unordered_map<MeshType, int>offsets_;
-  std::unordered_map<MeshType, int>sizes_;
+  VulkanUtils::Buffer vertex_buffer_;
+  VulkanUtils::Buffer index_buffer_;
+
+  std::unordered_map<MeshType, int> first_indexes_;
+  std::unordered_map<MeshType, int> index_counts_;
 
  private:
   int offset_;
   vk::Device vk_device_;
   std::vector<float> vertices_;
+  std::vector<uint32_t> indexes_;
 };
 
 }// namespace glaceon
