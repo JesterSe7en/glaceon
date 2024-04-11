@@ -451,7 +451,6 @@ void VulkanSwapChain::CreateDescriptorResources() {
     frame.model_matrices_buffer = VulkanUtils::CreateBuffer(storage_params);
     VK_CHECK(device.mapMemory(frame.model_matrices_buffer.buffer_memory, 0, sizeof(glm::mat4) * 1024, {}, &frame.model_matrices_mapped),
              "Failed to map memory for model matrices data");
-    GINFO("Address of model matrices buffer: {}", frame.model_matrices_mapped);
   }
 }
 
