@@ -302,8 +302,8 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
     swapchain_create_info.imageExtent.width = width;
     swapchain_create_info.imageExtent.height = height;
   } else {
-    swapchain_create_info.imageExtent.width = width = cap.currentExtent.width;
-    swapchain_create_info.imageExtent.height = height = cap.currentExtent.height;
+    swapchain_create_info.imageExtent.width = width = static_cast<int>(cap.currentExtent.width);
+    swapchain_create_info.imageExtent.height = height = static_cast<int>(cap.currentExtent.height);
   }
 
   VK_ASSERT(context_.GetQueueIndexes().graphics_family.has_value() && context_.GetQueueIndexes().present_family.has_value(),
