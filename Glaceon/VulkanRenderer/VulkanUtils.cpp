@@ -1,6 +1,7 @@
 #include "VulkanUtils.h"
 #include "../Base.h"
 #include "../Logger.h"
+#include <vulkan/vulkan_structs.hpp>
 
 namespace glaceon {
 std::vector<char> VulkanUtils::ReadFile(const std::string &filename) {
@@ -208,6 +209,39 @@ void VulkanUtils::EndSingleTimeCommands(vk::CommandBuffer command_buffer, vk::Qu
   submit_info.pCommandBuffers = &command_buffer;
   VK_CHECK(queue.submit(1, &submit_info, VK_NULL_HANDLE), "Failed to submit queue");
   queue.waitIdle();
+}
+
+/**
+ * Finds a supported Vulkan format from a list of candidates based on specified criteria.
+ *
+ * @param physical_device The Vulkan physical device to query format properties from.
+ * @param candidates A vector of Vulkan formats to check for support.
+ * @param tiling The tiling mode (linear or optimal) for the image or buffer view.
+ * @param features The desired format features, specified as a bitmask of VkFormatFeatureFlags.
+ *
+ * @return A supported Vulkan format from the candidates list that meets the specified criteria.
+ */
+vk::Format FindSupportedFormat(vk::PhysicalDevice physical_device, std::vector<vk::Format> candidates, vk::ImageTiling tiling,
+                               vk::FormatFeatureFlags features) {
+
+  for (auto &format : candidates) {
+    vk::FormatProperties properties = physical_device.getFormatProperties(format);
+    /*
+     typedef struct VkFormatProperties {
+      VkFormatFeatureFlags linearTilingFeatures;
+      VkFormatFeatureFlags optimalTilingFeatures;
+      VkFormatFeatureFlags bufferFeatures;
+      } VkFormatProperties;
+    */
+
+    // features paramter is a bitfield
+    // so is the linearTilingFeatures and optimalTilingFeatures
+    // tiling can only be linear or optimal
+    if (tiling == vk::ImageTiling::eLinear && (properties.linearTilingFeatures & features) == features) { return format; }
+    if (tiling == vk::ImageTiling::eOptimal && (properties.optimalTilingFeatures & features) == features) { return format; }
+  }
+  VK_ASSERT(false, "Failed to find supported format");
+  return vk::Format();
 }
 
 }// namespace glaceon

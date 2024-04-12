@@ -2,6 +2,7 @@
 #define GLACEON_GLACEON_VULKANRENDERER_VULKANUTILS_H_
 
 #include "../pch.h"
+#include <vulkan/vulkan_handles.hpp>
 
 namespace glaceon {
 
@@ -35,6 +36,10 @@ class VulkanUtils {
   // Job management
   static void BeginSingleTimeCommands(vk::CommandBuffer command_buffer);
   static void EndSingleTimeCommands(vk::CommandBuffer command_buffer, vk::Queue queue);
+
+  // Image formatting
+  static vk::Format FindSupportedFormat(vk::PhysicalDevice physical_device, std::vector<vk::Format> candidates, vk::ImageTiling tiling,
+                                        vk::FormatFeatureFlags features);
 };
 
 }// namespace glaceon

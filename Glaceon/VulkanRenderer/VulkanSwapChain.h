@@ -3,6 +3,8 @@
 
 #include "../pch.h"
 #include "VulkanUtils.h"
+#include <vulkan/vulkan_enums.hpp>
+#include <vulkan/vulkan_handles.hpp>
 
 namespace glaceon {
 
@@ -25,6 +27,13 @@ struct SwapChainFrame {
   vk::Image image;
   vk::ImageView image_view;
   vk::Framebuffer frame_buffer;
+
+  // Depth Buffer
+  vk::Image depth_image;
+  vk::ImageView depth_image_view;
+  vk::Format depth_format;
+  vk::DeviceMemory depth_image_memory;
+  int depth_width, depth_height;
 
   // drawing resources
   UniformBufferObject camera_data{};
@@ -70,6 +79,7 @@ class VulkanSwapChain {
   void CreateImageViews();
   void CreateFrameBuffers();
   void CreateDescriptorResources();
+  void CreateDepthResources();
   void DestroyFrames();
 };
 

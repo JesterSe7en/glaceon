@@ -14,7 +14,6 @@ struct GLACEON_API ApplicationInfo {
   std::string name;
 };
 
-
 class GLACEON_API Application {
  public:
   explicit Application(ApplicationInfo *info);
