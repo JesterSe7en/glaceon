@@ -127,7 +127,7 @@ void VulkanSwapChain::PopulateSwapChainSupport() {
     }
   }
   if (!found) {
-    GERROR("Requested Present mode not found, defaulting to VK_PRESENT_MODE_FIFO_KHR");
+    GWARN("Requested Present mode not found, defaulting to VK_PRESENT_MODE_FIFO_KHR");
     present_mode_ = vk::PresentModeKHR::eFifo;
     return;
   }
