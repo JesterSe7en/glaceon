@@ -123,6 +123,17 @@ endif()
 #        -DSPDLOG_BUILD_SHARED=OFF
 #)
 
+find_package(Wayland)
+
+if(WAYLAND_FOUND)
+  set(GLFW_BUILD_WAYLAND ON)
+  message(STATUS "Using Wayland for GLFW")
+else()
+  set(GLFW_BUILD_WAYLAND OFF)
+  message(STATUS "Using X11 or another backend for GLFW")
+endif()
+
+
 
 # Sub-projects
 add_subdirectory(Glaceon)

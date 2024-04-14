@@ -59,7 +59,13 @@ void VulkanSwapChain::PopulateSwapChainSupport() {
   GTRACE("Swap chain capabilities:");
   GTRACE("  minImageCount: {}", swap_chain_support_.capabilities.minImageCount);
   GTRACE("  maxImageCount: {}", swap_chain_support_.capabilities.maxImageCount);
-#endif
+  GTRACE("  minExtent: width = {}  height = {}", swap_chain_support_.capabilities.minImageExtent.width,
+         swap_chain_support_.capabilities.minImageExtent.height);
+  GTRACE("  maxExtent: width = {}  height = {}", swap_chain_support_.capabilities.maxImageExtent.width,
+         swap_chain_support_.capabilities.maxImageExtent.height);
+  GTRACE("  currentExtent: width = {}  height = {}", swap_chain_support_.capabilities.currentExtent.width,
+         swap_chain_support_.capabilities.currentExtent.height);
+  #endif
 
   uint32_t format_count = 0;
   (void) physical_device.getSurfaceFormatsKHR(surface, &format_count, nullptr);
