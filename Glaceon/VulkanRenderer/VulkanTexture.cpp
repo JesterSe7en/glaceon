@@ -8,8 +8,8 @@
 
 namespace glaceon {
 
-VulkanTexture::VulkanTexture(VulkanContext &context, vk::DescriptorSet target_descriptor_set, const char *filename)
-    : width_(0), height_(0), channels_(0), filename_(filename), pixels_(nullptr), vk_descriptor_set_(target_descriptor_set), context_(context) {
+VulkanTexture::VulkanTexture(VulkanContext &context, vk::DescriptorSet target_descriptor_set, const char *filename, VulkanTextureInput &input)
+    : width_(0), height_(0), channels_(0), filename_(filename), pixels_(nullptr), input_(input), vk_descriptor_set_(target_descriptor_set), context_(context) {
   LoadImageFromFile();
   CreateVkImage();
   Populate();
@@ -34,7 +34,7 @@ void VulkanTexture::CreateVkImage() {
   image_info.pNext = nullptr;
   image_info.flags = vk::ImageCreateFlags();
   image_info.imageType = vk::ImageType::e2D;
-  image_info.format = vk::Format::eR8G8B8A8Unorm;
+  image_info.format = input_.format;
   image_info.extent.width = width_;
   image_info.extent.height = height_;
   image_info.extent.depth = 1;

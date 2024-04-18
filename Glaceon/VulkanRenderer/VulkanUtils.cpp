@@ -221,7 +221,7 @@ void VulkanUtils::EndSingleTimeCommands(vk::CommandBuffer command_buffer, vk::Qu
  *
  * @return A supported Vulkan format from the candidates list that meets the specified criteria.
  */
-vk::Format FindSupportedFormat(vk::PhysicalDevice physical_device, std::vector<vk::Format> candidates, vk::ImageTiling tiling,
+vk::Format FindSupportedFormat(vk::PhysicalDevice physical_device, const std::vector<vk::Format> &candidates, vk::ImageTiling tiling,
                                vk::FormatFeatureFlags features) {
 
   for (auto &format : candidates) {

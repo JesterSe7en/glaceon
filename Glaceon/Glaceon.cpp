@@ -128,9 +128,10 @@ void MakeAssets(VulkanContext &context) {
                                                           {MeshType::STAR, "../../textures/water.jpg"}};
 
   int idx = 0;
+  VulkanTextureInput input = { .format = vk::Format::eR8G8B8A8Unorm };
   for (auto &kPair : filenames) {
     vk::DescriptorSet set = context.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::MESH)[idx];
-    auto *texture = new VulkanTexture(context, set, kPair.second);
+    auto *texture = new VulkanTexture(context, set, kPair.second, input);
     materials_.insert(std::make_pair(kPair.first, texture));
     idx++;
   }

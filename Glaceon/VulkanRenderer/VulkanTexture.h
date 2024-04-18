@@ -5,9 +5,13 @@ namespace glaceon {
 
 class VulkanContext;
 
+struct VulkanTextureInput {
+  vk::Format format;
+};
+
 class VulkanTexture {
  public:
-  VulkanTexture(VulkanContext &context, vk::DescriptorSet target_descriptor_set, const char *filename);
+  VulkanTexture(VulkanContext &context, vk::DescriptorSet target_descriptor_set, const char *filename, VulkanTextureInput &input);
   void Use(vk::CommandBuffer &command_buffer);
   ~VulkanTexture();
 
@@ -16,6 +20,7 @@ class VulkanTexture {
   int height_;
   int channels_;
   const char *filename_;
+  VulkanTextureInput input_;
   unsigned char *pixels_;
   vk::Device vk_device_;
   vk::PhysicalDevice vk_physical_device_;
