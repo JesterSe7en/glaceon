@@ -431,6 +431,11 @@ void VulkanSwapChain::DestroyFrames() {
       swap_chain_frame.image_view = VK_NULL_HANDLE;
     }
 
+    if (swap_chain_frame.image != VK_NULL_HANDLE) {
+      device.destroyImage(swap_chain_frame.image, nullptr);
+      swap_chain_frame.image = VK_NULL_HANDLE;
+    }
+
     // destroy frame buffer
     if (swap_chain_frame.frame_buffer != VK_NULL_HANDLE) {
       device.destroy(swap_chain_frame.frame_buffer, nullptr);
@@ -453,6 +458,21 @@ void VulkanSwapChain::DestroyFrames() {
       device.destroy(swap_chain_frame.model_matrices_buffer.buffer, nullptr);
       swap_chain_frame.model_matrices_mapped = nullptr;
       swap_chain_frame.model_matrices_buffer.buffer = VK_NULL_HANDLE;
+    }
+
+    // destroy depth buffer
+    if (swap_chain_frame.depth_image != VK_NULL_HANDLE) {
+      device.unmapMemory(swap_chain_frame.depth_image_memory);
+      device.freeMemory(swap_chain_frame.depth_image_memory, nullptr);
+      swap_chain_frame.depth_image_memory = VK_NULL_HANDLE;
+
+      device.destroy(swap_chain_frame.depth_image_view, nullptr);
+      swap_chain_frame.depth_image_view = nullptr;
+
+      device.destroyImage(swap_chain_frame.depth_image, nullptr);
+      swap_chain_frame.depth_image = VK_NULL_HANDLE;
+
+      swap_chain_frame.depth_height = swap_chain_frame.depth_width = -1;
     }
   }
   swap_chain_frames_.clear();
