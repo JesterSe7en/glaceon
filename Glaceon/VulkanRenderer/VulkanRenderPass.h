@@ -7,10 +7,15 @@ namespace glaceon {
 
 class VulkanContext;
 
+struct VulkanRenderPassInput {
+  vk::Format depthFormat;
+  vk::Format swapChainFormat;
+};
+
 class VulkanRenderPass {
  public:
   explicit VulkanRenderPass(VulkanContext &context);
-  void Initialize();
+  void Initialize(const VulkanRenderPassInput &input);
   void Rebuild();
   void Destroy();
 
@@ -18,6 +23,7 @@ class VulkanRenderPass {
 
  private:
   VulkanContext &context_;
+  VulkanRenderPassInput input_{};
   vk::RenderPass vk_render_pass_;
 };
 

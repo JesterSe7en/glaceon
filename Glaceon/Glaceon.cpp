@@ -3,7 +3,7 @@
 #include "Application.h"
 #include "GLFW/glfw3.h"
 #include "Logger.h"
-#include <vulkan/vulkan_enums.hpp>
+#include "VulkanRenderer/VulkanRenderPass.h"
 
 namespace glaceon {
 
@@ -224,8 +224,11 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
   clear_value.color.float32[1] = 0.0f;
   clear_value.color.float32[2] = 0.0f;
   clear_value.color.float32[3] = 1.0f;
-  render_pass_info.clearValueCount = 1;
-  render_pass_info.pClearValues = &clear_value;
+  vk::ClearValue depth_clear = vk::ClearDepthStencilValue(1.0f, 0);
+
+  std::vector<vk::ClearValue> clear_values = {clear_value, depth_clear};
+  render_pass_info.clearValueCount = clear_values.size();
+  render_pass_info.pClearValues = clear_values.data();
 
   command_buffer.beginRenderPass(&render_pass_info, vk::SubpassContents::eInline);
 
@@ -418,7 +421,9 @@ void GLACEON_API RunGame(Application *app) {
   context.SetSurface(surface);
   context.AddDeviceExtension(vk::KHRSwapchainExtensionName);
   context.GetVulkanDevice().Initialize();
-  context.GetVulkanRenderPass().Initialize();
+
+  VulkanRenderPassInput input = {.depthFormat = { vk::Format::eD32Sfloat }, .swapChainFormat = vk::Format::eR8G8B8A8Unorm};
+  context.GetVulkanRenderPass().Initialize(input);
   context.GetVulkanSwapChain().Initialize();
 
   std::vector<DescriptorPoolSetLayoutParams> descriptor_pool_set_layouts;

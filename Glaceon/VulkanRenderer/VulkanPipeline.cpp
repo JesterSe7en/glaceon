@@ -150,6 +150,17 @@ void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   pipeline_create_info.stageCount = static_cast<uint32_t>(shader_stages.size());
   pipeline_create_info.pStages = shader_stages.data();
 
+  // Depth Stencil - telling pipeline how to handle depth testing
+  vk::PipelineDepthStencilStateCreateInfo depth_stencil_info = {};
+  depth_stencil_info.sType = vk::StructureType::ePipelineDepthStencilStateCreateInfo;
+  depth_stencil_info.flags = vk::PipelineDepthStencilStateCreateFlags();
+  depth_stencil_info.depthTestEnable = VK_TRUE;
+  depth_stencil_info.depthWriteEnable = VK_TRUE;
+  depth_stencil_info.depthCompareOp = vk::CompareOp::eLess;
+  depth_stencil_info.depthBoundsTestEnable = VK_FALSE;
+  depth_stencil_info.stencilTestEnable = VK_FALSE;
+  pipeline_create_info.pDepthStencilState = &depth_stencil_info;
+
   // Multisampling
   vk::PipelineMultisampleStateCreateInfo multisampling_info = {};
   multisampling_info.sType = vk::StructureType::ePipelineMultisampleStateCreateInfo;
