@@ -16,6 +16,7 @@ void VulkanRenderPass::Initialize(const VulkanRenderPassInput &input) {
   // TODO: perhaps have a vector of attachments in the input?
 
   vk::AttachmentDescription color_attachment = {};
+  color_attachment.flags = vk::AttachmentDescriptionFlags();
   // color_attachment.format = vk::Format::eB8G8R8A8Unorm;
   color_attachment.format = input.swapChainFormat;
   color_attachment.samples = vk::SampleCountFlagBits::e1;
@@ -34,14 +35,17 @@ void VulkanRenderPass::Initialize(const VulkanRenderPassInput &input) {
   depth_attachment.format = input.depthFormat;
   depth_attachment.samples = vk::SampleCountFlagBits::e1;
   depth_attachment.loadOp = vk::AttachmentLoadOp::eClear;
-  depth_attachment.storeOp = vk::AttachmentStoreOp::eStore;
+  depth_attachment.storeOp = vk::AttachmentStoreOp::eDontCare;
   depth_attachment.stencilLoadOp = vk::AttachmentLoadOp::eDontCare;
   depth_attachment.stencilStoreOp = vk::AttachmentStoreOp::eDontCare;
   depth_attachment.initialLayout = vk::ImageLayout::eUndefined;
   depth_attachment.finalLayout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
   vk::AttachmentReference depth_attachment_ref = {};
-  depth_attachment_ref.attachment = 0;
+  //  attachment is either an integer value identifying an attachment at the corresponding index in
+  // VkRenderPassCreateInfo::pAttachments, or VK_ATTACHMENT_UNUSED to signify that this attachment is
+  // not used.
+  depth_attachment_ref.attachment = 1;
   depth_attachment_ref.layout = vk::ImageLayout::eDepthStencilAttachmentOptimal;
 
   // A render pass always has at LEAST one subpass
@@ -49,7 +53,7 @@ void VulkanRenderPass::Initialize(const VulkanRenderPassInput &input) {
   subpass_description.pipelineBindPoint = vk::PipelineBindPoint::eGraphics;
   subpass_description.colorAttachmentCount = 1;
   subpass_description.pColorAttachments = &color_attachment_ref;
-  subpass_description.pDepthStencilAttachment = &depth_attachment_ref;  // attach depth buffer reference to subpass
+  subpass_description.pDepthStencilAttachment = &depth_attachment_ref;// attach depth buffer reference to subpass
 
   std::vector<vk::AttachmentDescription> attachments;
   attachments.push_back(color_attachment);
