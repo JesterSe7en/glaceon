@@ -311,7 +311,7 @@ void VulkanSwapChain::CreateImageViews() {
 
   for (uint32_t i = 0; i < image_count; i++) {
     // create image
-    VK_CHECK(device.createImage(&image_create_info, nullptr, &depth_image), "Failed to create depth image");
+    VK_CHECK(device.createImage(&depth_image_info, nullptr, &depth_image), "Failed to create depth image");
 
     // Back the VkImage with memory
     vk::MemoryRequirements memory_requirements = {};
@@ -512,10 +512,7 @@ void VulkanSwapChain::CreateFrameBuffers() {
   framebuffer_create_info.layers = 1;
 
   for (auto &swap_chain_frame : swap_chain_frames_) {
-    vk::ImageView attachments[] = {
-      swap_chain_frame.image_view,
-      swap_chain_frame.depth_image_view
-    };
+    vk::ImageView attachments[] = {swap_chain_frame.image_view, swap_chain_frame.depth_image_view};
     framebuffer_create_info.pAttachments = attachments;
     if (device.createFramebuffer(&framebuffer_create_info, nullptr, &swap_chain_frame.frame_buffer) != vk::Result::eSuccess) {
       GERROR("Failed to create frame buffers");
