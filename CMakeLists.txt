@@ -124,7 +124,7 @@ endif()
 #        -DSPDLOG_BUILD_SHARED=OFF
 #)
 
-find_package(Wayland)
+find_package(Wayland QUIET)
 
 if(WAYLAND_FOUND)
   set(GLFW_BUILD_WAYLAND ON)
