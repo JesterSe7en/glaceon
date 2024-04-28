@@ -128,7 +128,7 @@ void MakeAssets(VulkanContext &context) {
                                                           {MeshType::STAR, "../../textures/water.jpg"}};
 
   int idx = 0;
-  VulkanTextureInput input = { .format = vk::Format::eR8G8B8A8Unorm };
+  VulkanTextureInput input = {.format = vk::Format::eR8G8B8A8Unorm};
   for (auto &kPair : filenames) {
     vk::DescriptorSet set = context.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::MESH)[idx];
     auto *texture = new VulkanTexture(context, set, kPair.second, input);
@@ -227,7 +227,7 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
   vk::ClearValue depth_clear = vk::ClearDepthStencilValue(1.0f, 0);
 
   std::vector<vk::ClearValue> clear_values = {clear_value, depth_clear};
-  render_pass_info.clearValueCount = clear_values.size();
+  render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
   render_pass_info.pClearValues = clear_values.data();
 
   command_buffer.beginRenderPass(&render_pass_info, vk::SubpassContents::eInline);
@@ -236,8 +236,8 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
 
   // frame descriptors have two bindings to describe the frame, the camera and the model vertex buffer
   std::vector<vk::DescriptorSet> sets = {context.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::FRAME)};
-  command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, context.GetVulkanPipeline().GetVkPipelineLayout(), 0, sets.size(), sets.data(),
-                                    0, nullptr);
+  command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, context.GetVulkanPipeline().GetVkPipelineLayout(), static_cast<uint32_t>(0),
+                                    static_cast<uint32_t>(sets.size()), sets.data(), 0, nullptr);
   PrepareFrame(image_index, context);
 
   // Gets the vertex buffer data from TriangleMesh and pushes it as uniform data in anticipation for the vertex shader to use.
@@ -422,7 +422,7 @@ void GLACEON_API RunGame(Application *app) {
   context.AddDeviceExtension(vk::KHRSwapchainExtensionName);
   context.GetVulkanDevice().Initialize();
 
-  VulkanRenderPassInput input = {.depthFormat = { vk::Format::eD32Sfloat }, .swapChainFormat = vk::Format::eR8G8B8A8Unorm};
+  VulkanRenderPassInput input = {.depthFormat = vk::Format::eD32Sfloat, .swapChainFormat = vk::Format::eR8G8B8A8Unorm};
   context.GetVulkanRenderPass().Initialize(input);
   context.GetVulkanSwapChain().Initialize();
 

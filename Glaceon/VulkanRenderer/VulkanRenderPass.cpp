@@ -61,7 +61,7 @@ void VulkanRenderPass::Initialize(const VulkanRenderPassInput &input) {
 
   vk::RenderPassCreateInfo render_pass_create_info = {};
   render_pass_create_info.sType = vk::StructureType::eRenderPassCreateInfo;
-  render_pass_create_info.attachmentCount = attachments.size();
+  render_pass_create_info.attachmentCount = static_cast<uint32_t>(attachments.size());
   render_pass_create_info.pAttachments = attachments.data();
   render_pass_create_info.subpassCount = 1;
   render_pass_create_info.pSubpasses = &subpass_description;
