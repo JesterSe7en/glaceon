@@ -280,7 +280,8 @@ void VulkanSwapChain::CreateImageViews() {
   depth_image_info.sharingMode = vk::SharingMode::eExclusive;
   depth_image_info.initialLayout = vk::ImageLayout::eUndefined;
 
-  // depth image view has same config except the aspect mask
+  // depth image view has same config except the aspect mask - borrowing the same struct with minor tweaks
+  image_view_create_info.format = vk::Format::eD16Unorm;
   image_view_create_info.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
 
   std::vector<vk::Image> depth_images;
@@ -303,6 +304,7 @@ void VulkanSwapChain::CreateImageViews() {
 
     VK_CHECK(device.allocateMemory(&memory_allocate_info, nullptr, &depth_image_memory), "Failed to allocate image memory for depth buffer");
     device.bindImageMemory(depth_image, depth_image_memory, 0);
+    // the image_view create info here is tweaked to match with depth buffer
     VK_CHECK(device.createImageView(&image_view_create_info, nullptr, &depth_image_view), "Failed to create depth image view");
     depth_image_views.push_back(depth_image_view);
   }
