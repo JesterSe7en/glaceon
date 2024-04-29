@@ -1,10 +1,11 @@
 #ifndef GLACEON_GLACEON_VULKANRENDERER_VULKANSWAPCHAIN_H_
 #define GLACEON_GLACEON_VULKANRENDERER_VULKANSWAPCHAIN_H_
 
-#include "../pch.h"
-#include "VulkanUtils.h"
 #include <vulkan/vulkan_enums.hpp>
 #include <vulkan/vulkan_handles.hpp>
+
+#include "../pch.h"
+#include "VulkanUtils.h"
 
 namespace glaceon {
 
@@ -53,6 +54,8 @@ struct SwapChainFrame {
 class VulkanSwapChain {
  public:
   explicit VulkanSwapChain(VulkanContext &context);
+  ~VulkanSwapChain();
+
   void Initialize();
   void RebuildSwapChain(int width, int height);
   void UpdateDescriptorResources();
@@ -63,7 +66,6 @@ class VulkanSwapChain {
   vk::Extent2D GetSwapChainExtent() { return swap_chain_extent_; }
 
  private:
-  ~VulkanSwapChain();
   VulkanContext &context_;
 
   vk::SwapchainKHR vk_swapchain_;

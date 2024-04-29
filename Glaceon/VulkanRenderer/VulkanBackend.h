@@ -10,13 +10,14 @@ class VulkanContext;
 class VulkanBackend {
  public:
   explicit VulkanBackend(VulkanContext &context);
+  ~VulkanBackend();
+
   void Initialize();
   void Destroy();
 
   [[nodiscard]] const vk::Instance &GetVkInstance() const { return instance_; }
 
  private:
-  ~VulkanBackend();
   VulkanContext &context_;
   vk::Instance instance_;
 

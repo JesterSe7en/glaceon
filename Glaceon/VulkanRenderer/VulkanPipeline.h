@@ -15,6 +15,8 @@ struct GraphicsPipelineConfig {
 class VulkanPipeline {
  public:
   explicit VulkanPipeline(VulkanContext &context);
+  ~VulkanPipeline();
+
   void Initialize(const GraphicsPipelineConfig &pipeline_config);
   void Rebuild();
   void Destroy();
@@ -33,7 +35,6 @@ class VulkanPipeline {
   vk::PipelineCache vk_pipeline_cache_;
 
  private:
-  ~VulkanPipeline();
   void CreatePipelineLayout();
   static vk::VertexInputBindingDescription GetPosColorTexCoordBindingDescription();
   static std::vector<vk::VertexInputAttributeDescription> GetPosColorTexCoordAttributeDescriptions();

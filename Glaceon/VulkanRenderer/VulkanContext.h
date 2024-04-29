@@ -16,6 +16,7 @@ namespace glaceon {
 class VulkanContext {
  public:
   VulkanContext();
+  ~VulkanContext();
 
   const vk::Instance &GetVulkanInstance() { return backend_.GetVkInstance(); }
 
@@ -48,7 +49,6 @@ class VulkanContext {
   uint32_t semaphore_index_ = 0;
 
  private:
-  ~VulkanContext();
   VulkanBackend backend_;
   VulkanDevice device_;
   VulkanSwapChain swap_chain_;

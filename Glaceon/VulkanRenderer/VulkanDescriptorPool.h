@@ -21,6 +21,8 @@ struct DescriptorPoolSetLayoutParams {
 class VulkanDescriptorPool {
  public:
   explicit VulkanDescriptorPool(VulkanContext &context);
+  ~VulkanDescriptorPool();
+
   void Initialize(const std::vector<DescriptorPoolSetLayoutParams> &params);
   void Destroy();
 
@@ -41,7 +43,6 @@ class VulkanDescriptorPool {
   std::unordered_map<DescriptorPoolType, std::vector<vk::DescriptorSet>> vk_descriptor_sets_;
 
  private:
-  ~VulkanDescriptorPool();
   // Descriptor Set layout just describes how data in a descriptor set should be laid out
   void CreateDescriptorSetLayouts();
   void CreateDescriptorPool();
