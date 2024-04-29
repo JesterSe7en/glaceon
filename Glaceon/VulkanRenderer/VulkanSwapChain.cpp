@@ -13,6 +13,8 @@ VulkanSwapChain::VulkanSwapChain(VulkanContext &context)
       // FIFO present mode is guaranteed to be supported
       surface_format_(vk::Format::eB8G8R8A8Unorm), color_space_(vk::ColorSpaceKHR::eSrgbNonlinear), present_mode_(vk::PresentModeKHR::eMailbox) {}
 
+VulkanSwapChain::~VulkanSwapChain() { Destroy(); }
+
 // create swap chain, get images, create image views, then create the frame buffers
 void VulkanSwapChain::Initialize() {
   PopulateSwapChainSupport();
@@ -211,36 +213,56 @@ void VulkanSwapChain::CreateImageViews() {
   vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
 
+  //  eventually at the end we will populare our list of swap chain frames with these vectors
   std::vector<vk::ImageView> image_views;
   std::vector<std::pair<vk::Image, vk::DeviceMemory>> depth_images;
   std::vector<vk::ImageView> depth_image_views;
 
-  uint32_t image_count;
-  device.getSwapchainImagesKHR(vk_swapchain_, &image_count, nullptr);
-  std::vector<vk::Image> images(image_count);
+  uint32_t image_count = 0;
+  // get the number of images in the swap chain
+  (void) device.getSwapchainImagesKHR(vk_swapchain_, &image_count, nullptr);
+  std::vector<vk::Image> images;
+  images.resize(image_count);
   depth_images.reserve(image_count);
   depth_image_views.reserve(image_count);
-  device.getSwapchainImagesKHR(vk_swapchain_, &image_count, images.data());
+  (void) device.getSwapchainImagesKHR(vk_swapchain_, &image_count, images.data());
 
-  vk::ImageViewCreateInfo view_info = {};
-  view_info.sType = vk::StructureType::eImageViewCreateInfo;
-  view_info.viewType = vk::ImageViewType::e2D;
-  view_info.format = surface_format_;
-  view_info.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
-  view_info.subresourceRange.levelCount = 1;
-  view_info.subresourceRange.layerCount = 1;
+  // For each swapChaimImage, we need to construct an image view
+  // create a std::vector that matches up with the number of images in the swapChainImages
+  vk::ImageViewCreateInfo image_view_create_info = {};
+  image_view_create_info.sType = vk::StructureType::eImageViewCreateInfo;
+  image_view_create_info.format = surface_format_;
+  image_view_create_info.viewType = vk::ImageViewType::e2D;             // VK_IMAGE_VIEW_TYPE_2D;
+  image_view_create_info.components.r = vk::ComponentSwizzle::eIdentity;// VK_COMPONENT_SWIZZLE_IDENTITY;
+  image_view_create_info.components.g = vk::ComponentSwizzle::eIdentity;// VK_COMPONENT_SWIZZLE_IDENTITY;
+  image_view_create_info.components.b = vk::ComponentSwizzle::eIdentity;// VK_COMPONENT_SWIZZLE_IDENTITY;
+  image_view_create_info.components.a = vk::ComponentSwizzle::eIdentity;
+  image_view_create_info.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eColor;
+  image_view_create_info.subresourceRange.baseMipLevel = 0;
+  image_view_create_info.subresourceRange.levelCount = 1;
+  image_view_create_info.subresourceRange.baseArrayLayer = 0;
+  image_view_create_info.subresourceRange.layerCount = 1;
   for (uint32_t i = 0; i < image_count; i++) {
-    view_info.image = images[i];
+    image_view_create_info.image = images[i];
     vk::ImageView image_view;
-    VK_CHECK(device.createImageView(&view_info, nullptr, &image_view), "Failed to create image view");
+    VK_CHECK(device.createImageView(&image_view_create_info, nullptr, &image_view), "Failed to create image view");
     image_views.push_back(image_view);
   }
+  GINFO("Successfully created image views - Count: {}", image_count);
 
+  vk::Image depth_image = VK_NULL_HANDLE;
+  vk::ImageView depth_image_view = VK_NULL_HANDLE;
+  vk::DeviceMemory depth_image_memory = VK_NULL_HANDLE;
+
+  // -- create depth buffer image
   vk::ImageCreateInfo depth_image_info = {};
   depth_image_info.sType = vk::StructureType::eImageCreateInfo;
+  depth_image_info.flags = vk::ImageCreateFlags();
   depth_image_info.imageType = vk::ImageType::e2D;
-  depth_image_info.format = vk::Format::eD32Sfloat;
-  depth_image_info.extent = {swap_chain_extent_.width, swap_chain_extent_.height, 1};
+  depth_image_info.format = vk::Format::eD32Sfloat;// TODO: should be configurable; grab it from the render pass input paramter struct?
+  depth_image_info.extent.width = swap_chain_extent_.width;
+  depth_image_info.extent.height = swap_chain_extent_.height;
+  depth_image_info.extent.depth = 1;
   depth_image_info.mipLevels = 1;
   depth_image_info.arrayLayers = 1;
   depth_image_info.samples = vk::SampleCountFlagBits::e1;
@@ -249,49 +271,50 @@ void VulkanSwapChain::CreateImageViews() {
   depth_image_info.sharingMode = vk::SharingMode::eExclusive;
   depth_image_info.initialLayout = vk::ImageLayout::eUndefined;
 
-  vk::ImageViewCreateInfo depth_view_info = {};
-  depth_view_info.sType = vk::StructureType::eImageViewCreateInfo;
-  depth_view_info.viewType = vk::ImageViewType::e2D;
-  depth_view_info.format = vk::Format::eD32Sfloat;
-  depth_view_info.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
-  depth_view_info.subresourceRange.levelCount = 1;
-  depth_view_info.subresourceRange.layerCount = 1;
+  // depth image view has same config except the aspect mask - borrowing the same struct with minor tweaks
+  image_view_create_info.format = vk::Format::eD32Sfloat;// TODO: should be configurable; grab it from the render pass input paramter struct?
+  image_view_create_info.subresourceRange.aspectMask = vk::ImageAspectFlagBits::eDepth;
+
   for (uint32_t i = 0; i < image_count; i++) {
-    vk::Image depth_image;
     VK_CHECK(device.createImage(&depth_image_info, nullptr, &depth_image), "Failed to create depth image");
 
-    depth_view_info.image = depth_image;
-    vk::ImageView depth_image_view;
-    VK_CHECK(device.createImageView(&depth_view_info, nullptr, &depth_image_view), "Failed to create depth image view");
+    // associate the image view with the new depth image
+    image_view_create_info.image = depth_image;
 
-    vk::MemoryRequirements mem_requirements = {};
-    device.getImageMemoryRequirements(depth_image, &mem_requirements);
-    vk::MemoryAllocateInfo mem_alloc_info = {};
-    mem_alloc_info.sType = vk::StructureType::eMemoryAllocateInfo;
-    mem_alloc_info.allocationSize = mem_requirements.size;
-    mem_alloc_info.memoryTypeIndex = VulkanUtils::FindMemoryTypeIndex(context_.GetVulkanPhysicalDevice(),
-                                                                        mem_requirements.memoryTypeBits,
-                                                                        vk::MemoryPropertyFlagBits::eDeviceLocal);
-    vk::DeviceMemory depth_image_memory;
-    VK_CHECK(device.allocateMemory(&mem_alloc_info, nullptr, &depth_image_memory), "Failed to allocate image memory for depth buffer");
+    // Back the VkImage with memory
+    vk::MemoryRequirements memory_requirements = {};
+    device.getImageMemoryRequirements(depth_image, &memory_requirements);
+
+    vk::MemoryAllocateInfo memory_allocate_info = {};
+    memory_allocate_info.sType = vk::StructureType::eMemoryAllocateInfo;
+    memory_allocate_info.pNext = nullptr;
+    memory_allocate_info.allocationSize = memory_requirements.size;
+    memory_allocate_info.memoryTypeIndex = VulkanUtils::FindMemoryTypeIndex(context_.GetVulkanPhysicalDevice(), memory_requirements.memoryTypeBits,
+                                                                            vk::MemoryPropertyFlagBits::eDeviceLocal);
+
+    VK_CHECK(device.allocateMemory(&memory_allocate_info, nullptr, &depth_image_memory), "Failed to allocate image memory for depth buffer");
     device.bindImageMemory(depth_image, depth_image_memory, 0);
-    depth_images.push_back({depth_image, depth_image_memory});
+    depth_images.push_back(std::make_pair(depth_image, depth_image_memory));
+    // the image_view create info here is tweaked to match with depth buffer
+    VK_CHECK(device.createImageView(&image_view_create_info, nullptr, &depth_image_view), "Failed to create depth image view");
     depth_image_views.push_back(depth_image_view);
   }
 
   swap_chain_frames_.resize(image_count);
+
   for (uint32_t i = 0; i < image_count; i++) {
     swap_chain_frames_[i].image = images[i];
     swap_chain_frames_[i].image_view = image_views[i];
-    swap_chain_frames_[i].depth_image = depth_images[i].first;
-    swap_chain_frames_[i].depth_image_memory = depth_images[i].second;
+
+    auto [dpt_image, dpt_image_memory] = depth_images[i];
+    swap_chain_frames_[i].depth_image = dpt_image;
+    swap_chain_frames_[i].depth_image_memory = dpt_image_memory;
     swap_chain_frames_[i].depth_image_view = depth_image_views[i];
-    swap_chain_frames_[i].depth_format = vk::Format::eD32Sfloat;
+    swap_chain_frames_[i].depth_format = vk::Format::eD32Sfloat;// TODO: should be configurable; grab it from the render pass input paramter struct?
     swap_chain_frames_[i].depth_height = static_cast<int>(swap_chain_support_.capabilities.currentExtent.height);
     swap_chain_frames_[i].depth_width = static_cast<int>(swap_chain_support_.capabilities.currentExtent.width);
   }
 }
-
 
 void VulkanSwapChain::RebuildSwapChain(int width, int height) {
   vk::SurfaceKHR surface = context_.GetSurface();
@@ -448,7 +471,6 @@ void VulkanSwapChain::CreateFrameBuffers() {
   vk::FramebufferCreateInfo framebuffer_create_info = {};
   framebuffer_create_info.sType = vk::StructureType::eFramebufferCreateInfo;
   framebuffer_create_info.renderPass = context_.GetVulkanRenderPass().GetVkRenderPass();
-  framebuffer_create_info.attachmentCount = 1;
   framebuffer_create_info.width = swap_chain_support_.capabilities.currentExtent.width;
   framebuffer_create_info.height = swap_chain_support_.capabilities.currentExtent.height;
   framebuffer_create_info.layers = 1;
@@ -456,10 +478,8 @@ void VulkanSwapChain::CreateFrameBuffers() {
   for (auto &swap_chain_frame : swap_chain_frames_) {
     vk::ImageView attachments[] = {swap_chain_frame.image_view, swap_chain_frame.depth_image_view};
     framebuffer_create_info.pAttachments = attachments;
-    if (device.createFramebuffer(&framebuffer_create_info, nullptr, &swap_chain_frame.frame_buffer) != vk::Result::eSuccess) {
-      GERROR("Failed to create frame buffers");
-      return;
-    }
+    framebuffer_create_info.attachmentCount = sizeof(attachments) / sizeof(vk::ImageView);
+    VK_CHECK(device.createFramebuffer(&framebuffer_create_info, nullptr, &swap_chain_frame.frame_buffer), "Failed to create frame buffers");
   }
   GINFO("Successfully created frame buffers");
 }

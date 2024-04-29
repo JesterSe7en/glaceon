@@ -18,6 +18,14 @@ VulkanTexture::VulkanTexture(VulkanContext &context, vk::DescriptorSet target_de
   UpdateDescriptorSet();
 }
 
+VulkanTexture::~VulkanTexture() { 
+  VK_ASSERT(vk_device_ != VK_NULL_HANDLE, "Logical device not initialized");
+
+  if (vk_image_ != VK_NULL_HANDLE) {
+    
+  }
+ }
+
 void VulkanTexture::LoadImageFromFile() {
   VK_ASSERT(filename_ != nullptr, "Texture filename is null");
   pixels_ = stbi_load(filename_, &width_, &height_, &channels_, STBI_rgb_alpha);

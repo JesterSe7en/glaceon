@@ -63,6 +63,7 @@ class VulkanSwapChain {
   vk::Extent2D GetSwapChainExtent() { return swap_chain_extent_; }
 
  private:
+  ~VulkanSwapChain();
   VulkanContext &context_;
 
   vk::SwapchainKHR vk_swapchain_;

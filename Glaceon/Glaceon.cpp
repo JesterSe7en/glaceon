@@ -422,7 +422,7 @@ void GLACEON_API RunGame(Application *app) {
   context.AddDeviceExtension(vk::KHRSwapchainExtensionName);
   context.GetVulkanDevice().Initialize();
 
-  VulkanRenderPassInput input = {.depthFormat = vk::Format::eD32Sfloat, .swapChainFormat = vk::Format::eR8G8B8A8Unorm};
+  VulkanRenderPassInput input = {.depthFormat = vk::Format::eD32Sfloat, .swapChainFormat = vk::Format::eB8G8R8A8Unorm};
   context.GetVulkanRenderPass().Initialize(input);
   context.GetVulkanSwapChain().Initialize();
 

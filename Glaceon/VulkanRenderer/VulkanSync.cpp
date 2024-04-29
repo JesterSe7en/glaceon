@@ -4,10 +4,11 @@
 #include "../Logger.h"
 #include "VulkanContext.h"
 
-
 namespace glaceon {
 
 VulkanSync::VulkanSync(VulkanContext &context) : context_(context) {}
+
+void VulkanSync::Destroy() { Destroy(); }
 
 void VulkanSync::Initialize() {
   vk::Device device = context_.GetVulkanLogicalDevice();

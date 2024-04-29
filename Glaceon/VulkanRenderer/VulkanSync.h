@@ -26,6 +26,7 @@ class VulkanSync {
   [[nodiscard]] const std::vector<vk::Fence> &GetInFlightFences() const { return in_flight_fences_; }
 
  private:
+ ~VulkanSync();
   VulkanContext &context_;
 
   std::vector<vk::Semaphore> image_available_semaphores_;

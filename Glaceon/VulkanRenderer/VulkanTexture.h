@@ -13,7 +13,6 @@ class VulkanTexture {
  public:
   VulkanTexture(VulkanContext &context, vk::DescriptorSet target_descriptor_set, const char *filename, VulkanTextureInput &input);
   void Use(vk::CommandBuffer &command_buffer);
-  ~VulkanTexture();
 
  private:
   int width_;
@@ -47,6 +46,9 @@ class VulkanTexture {
   void UpdateDescriptorSet();
   void Populate();
   void CopyBufferToImage(vk::Buffer &src_buffer, vk::Image &dst_image);
+
+ private:
+  ~VulkanTexture();
 };
 
 }// namespace glaceon
