@@ -1,4 +1,5 @@
 #include "VulkanDescriptorPool.h"
+
 #include "../Base.h"
 #include "../Logger.h"
 #include "VulkanContext.h"
@@ -10,6 +11,8 @@
 
 namespace glaceon {
 VulkanDescriptorPool::VulkanDescriptorPool(VulkanContext &context) : context_(context) {}
+
+VulkanDescriptorPool::~VulkanDescriptorPool() { Destroy(); }
 
 // Initializes/creates the descriptor set layout, descriptor pool, and descriptor sets
 void VulkanDescriptorPool::Initialize(const std::vector<DescriptorPoolSetLayoutParams> &params) {

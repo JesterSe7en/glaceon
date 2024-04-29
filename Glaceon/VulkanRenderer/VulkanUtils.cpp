@@ -13,7 +13,7 @@ std::vector<char> VulkanUtils::ReadFile(const std::string &filename) {
       return buffer;
     }
 
-    size_t file_size = (size_t) file.tellg();
+    const size_t file_size = file.tellg();
     buffer.resize(file_size);
 
     file.seekg(0);
@@ -211,6 +211,7 @@ void VulkanUtils::EndSingleTimeCommands(vk::CommandBuffer command_buffer, vk::Qu
   queue.waitIdle();
 }
 
+
 /**
  * Finds a supported Vulkan format from a list of candidates based on specified criteria.
  *
@@ -221,10 +222,11 @@ void VulkanUtils::EndSingleTimeCommands(vk::CommandBuffer command_buffer, vk::Qu
  *
  * @return A supported Vulkan format from the candidates list that meets the specified criteria.
  */
-vk::Format FindSupportedFormat(vk::PhysicalDevice physical_device, const std::vector<vk::Format> &candidates, vk::ImageTiling tiling,
-                               vk::FormatFeatureFlags features) {
+vk::Format VulkanUtils::FindSupportedFormat(const vk::PhysicalDevice physical_device, const std::vector<vk::Format> &candidates,
+                                            const vk::ImageTiling tiling,
+                                            const vk::FormatFeatureFlags features) {
 
-  for (auto &format : candidates) {
+  for (const vk::Format &format : candidates) {
     vk::FormatProperties properties = physical_device.getFormatProperties(format);
     /*
      typedef struct VkFormatProperties {

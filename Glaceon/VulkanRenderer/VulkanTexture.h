@@ -11,7 +11,7 @@ struct VulkanTextureInput {
 
 class VulkanTexture {
  public:
-  VulkanTexture(VulkanContext &context, vk::DescriptorSet target_descriptor_set, const char *filename, VulkanTextureInput &input);
+  VulkanTexture(VulkanContext &context, vk::DescriptorSet target_descriptor_set, const char *filename, const VulkanTextureInput &input);
   void Use(vk::CommandBuffer &command_buffer);
 
  private:
@@ -21,20 +21,13 @@ class VulkanTexture {
   const char *filename_;
   VulkanTextureInput input_;
   unsigned char *pixels_;
-  vk::Device vk_device_;
-  vk::PhysicalDevice vk_physical_device_;
 
   vk::Image vk_image_;
   vk::DeviceMemory vk_image_memory_;
   vk::ImageView vk_image_view_;
   vk::Sampler vk_sampler_;
 
-  vk::DescriptorSetLayout vk_descriptor_set_layout_;
   vk::DescriptorSet vk_descriptor_set_;
-  vk::DescriptorPool vk_descriptor_pool_;
-
-  vk::CommandBuffer vk_command_buffer_;
-  vk::Queue vk_queue_;
 
   VulkanContext &context_;
 

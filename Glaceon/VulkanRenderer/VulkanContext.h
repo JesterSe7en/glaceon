@@ -16,7 +16,6 @@ namespace glaceon {
 class VulkanContext {
  public:
   VulkanContext();
-  ~VulkanContext() = default;
 
   const vk::Instance &GetVulkanInstance() { return backend_.GetVkInstance(); }
 
@@ -49,6 +48,7 @@ class VulkanContext {
   uint32_t semaphore_index_ = 0;
 
  private:
+  ~VulkanContext();
   VulkanBackend backend_;
   VulkanDevice device_;
   VulkanSwapChain swap_chain_;
@@ -57,7 +57,6 @@ class VulkanContext {
   VulkanCommandPool command_pool_;
   VulkanDescriptorPool descriptor_pool_;
 
- private:
   VulkanSync sync_;
 
   vk::SurfaceKHR surface_ = VK_NULL_HANDLE;

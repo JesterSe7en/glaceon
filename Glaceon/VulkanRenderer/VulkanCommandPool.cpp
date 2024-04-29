@@ -7,6 +7,8 @@
 namespace glaceon {
 VulkanCommandPool::VulkanCommandPool(VulkanContext &context) : context_(context) {}
 
+VulkanCommandPool::~VulkanCommandPool() { Destroy(); }
+
 void VulkanCommandPool::Initialize() {
   vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");

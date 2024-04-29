@@ -8,6 +8,8 @@ namespace glaceon {
 
 VulkanBackend::VulkanBackend(VulkanContext &context) : context_(context) {}
 
+VulkanBackend::~VulkanBackend() { Destroy(); }
+
 void VulkanBackend::Initialize() {
   std::vector<const char *> requested_extensions;
 

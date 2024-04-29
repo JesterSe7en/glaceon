@@ -8,7 +8,12 @@
 namespace glaceon {
 
 VulkanPipeline::VulkanPipeline(VulkanContext &context)
-    : context_(context), vk_pipeline_(VK_NULL_HANDLE), vk_pipeline_cache_(VK_NULL_HANDLE), vk_pipeline_layout_(VK_NULL_HANDLE) {}
+    : context_(context),
+      vk_pipeline_layout_(VK_NULL_HANDLE),
+      vk_pipeline_(VK_NULL_HANDLE),
+      vk_pipeline_cache_(VK_NULL_HANDLE) {}
+
+VulkanPipeline::~VulkanPipeline() { Destroy(); }
 
 void VulkanPipeline::Initialize(const GraphicsPipelineConfig &pipeline_config) {
   pipeline_config_ = pipeline_config;

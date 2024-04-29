@@ -8,16 +8,16 @@ namespace glaceon {
 
 VulkanSync::VulkanSync(VulkanContext &context) : context_(context) {}
 
-void VulkanSync::Destroy() { Destroy(); }
+VulkanSync::~VulkanSync() { Destroy(); }
 
 void VulkanSync::Initialize() {
-  vk::Device device = context_.GetVulkanLogicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
 
   VK_ASSERT(context_.GetVulkanSwapChain().GetVkSwapchain() != VK_NULL_HANDLE && !context_.GetVulkanSwapChain().GetSwapChainFrames().empty(),
             "Failed to get Vulkan swap chain");
 
-  size_t max_frames_in_flight = context_.GetVulkanSwapChain().GetSwapChainFrames().size();
+  const size_t max_frames_in_flight = context_.GetVulkanSwapChain().GetSwapChainFrames().size();
 
   vk::SemaphoreCreateInfo semaphore_create_info = {};
   semaphore_create_info.sType = vk::StructureType::eSemaphoreCreateInfo;
@@ -66,7 +66,7 @@ void VulkanSync::Rebuild() {
 }
 
 void VulkanSync::Destroy() {
-  vk::Device device = context_.GetVulkanLogicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
 
   for (vk::Semaphore semaphore : image_available_semaphores_) {

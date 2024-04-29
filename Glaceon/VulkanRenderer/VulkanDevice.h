@@ -29,6 +29,7 @@ class VulkanDevice {
   QueueIndexes &GetQueueIndexes() { return queue_indexes_; }
 
  private:
+  ~VulkanDevice();
   vk::PhysicalDevice vk_physical_device_;
   vk::Device vk_device_;
   vk::Queue vk_present_queue_;

@@ -11,6 +11,8 @@ VulkanDevice::VulkanDevice(VulkanContext &context) : context_(context) {
   queue_indexes_.present_family = std::nullopt;
 }
 
+VulkanDevice::~VulkanDevice() { Destroy(); }
+
 void VulkanDevice::Initialize() {
   GINFO("Initializing Vulkan device...");
   if (context_.GetVulkanInstance() == VK_NULL_HANDLE) {

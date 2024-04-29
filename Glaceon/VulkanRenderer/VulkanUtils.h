@@ -38,8 +38,8 @@ class VulkanUtils {
   static void EndSingleTimeCommands(vk::CommandBuffer command_buffer, vk::Queue queue);
 
   // Image formatting
-  static vk::Format FindSupportedFormat(vk::PhysicalDevice physical_device, std::vector<vk::Format> candidates, vk::ImageTiling tiling,
-                                        vk::FormatFeatureFlags features);
+  static vk::Format FindSupportedFormat(vk::PhysicalDevice physical_device, const std::vector<vk::Format> &candidates, vk::ImageTiling tiling,
+                               vk::FormatFeatureFlags features) ;
 };
 
 }// namespace glaceon

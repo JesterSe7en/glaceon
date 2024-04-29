@@ -21,6 +21,7 @@ class VulkanCommandPool {
   [[nodiscard]] const std::vector<vk::CommandBuffer> &GetVkFrameCommandBuffers() const { return vk_frame_command_buffers_; }
 
  private:
+  ~VulkanCommandPool();
   VulkanContext &context_;
 
   vk::CommandPool vk_command_pool_;

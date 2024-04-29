@@ -33,6 +33,7 @@ class VulkanPipeline {
   vk::PipelineCache vk_pipeline_cache_;
 
  private:
+  ~VulkanPipeline();
   void CreatePipelineLayout();
   static vk::VertexInputBindingDescription GetPosColorTexCoordBindingDescription();
   static std::vector<vk::VertexInputAttributeDescription> GetPosColorTexCoordAttributeDescriptions();

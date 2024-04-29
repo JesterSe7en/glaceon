@@ -1,4 +1,5 @@
 #include "VulkanRenderPass.h"
+
 #include "../Base.h"
 #include "../Logger.h"
 #include "VulkanContext.h"
@@ -6,6 +7,8 @@
 namespace glaceon {
 
 VulkanRenderPass::VulkanRenderPass(VulkanContext &context) : context_(context), vk_render_pass_(VK_NULL_HANDLE) {}
+
+VulkanRenderPass::~VulkanRenderPass() { Destroy(); }
 
 void VulkanRenderPass::Initialize(const VulkanRenderPassInput &input) {
   input_ = input;

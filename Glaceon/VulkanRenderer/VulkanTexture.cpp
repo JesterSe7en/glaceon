@@ -1,5 +1,4 @@
 #include "VulkanTexture.h"
-#include <cstring>
 #define STB_IMAGE_IMPLEMENTATION
 #include "../Base.h"
 #include "../Logger.h"
@@ -8,8 +7,10 @@
 
 namespace glaceon {
 
-VulkanTexture::VulkanTexture(VulkanContext &context, vk::DescriptorSet target_descriptor_set, const char *filename, VulkanTextureInput &input)
-    : width_(0), height_(0), channels_(0), filename_(filename), pixels_(nullptr), input_(input), vk_descriptor_set_(target_descriptor_set), context_(context) {
+VulkanTexture::VulkanTexture(VulkanContext &context, const vk::DescriptorSet target_descriptor_set, const char *filename,
+                             const VulkanTextureInput &input)
+  : width_(0), height_(0), channels_(0), filename_(filename), input_(input), pixels_(nullptr), vk_descriptor_set_(target_descriptor_set),
+    context_(context) {
   LoadImageFromFile();
   CreateVkImage();
   Populate();
@@ -18,13 +19,35 @@ VulkanTexture::VulkanTexture(VulkanContext &context, vk::DescriptorSet target_de
   UpdateDescriptorSet();
 }
 
-VulkanTexture::~VulkanTexture() { 
-  VK_ASSERT(vk_device_ != VK_NULL_HANDLE, "Logical device not initialized");
+VulkanTexture::~VulkanTexture() {
+  const vk::Device device = context_.GetVulkanLogicalDevice();
+  VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
+
+  if (vk_image_view_ != VK_NULL_HANDLE) {
+    device.destroyImageView(vk_image_view_);
+    vk_image_view_ = VK_NULL_HANDLE;
+  }
+
+  if (vk_sampler_ != VK_NULL_HANDLE) {
+    device.destroySampler(vk_sampler_);
+    vk_sampler_ = VK_NULL_HANDLE;
+  }
 
   if (vk_image_ != VK_NULL_HANDLE) {
-    
+    device.destroyImage(vk_image_);
+    vk_image_ = VK_NULL_HANDLE;
   }
- }
+
+  if (vk_image_memory_ != VK_NULL_HANDLE) {
+    device.freeMemory(vk_image_memory_);
+    vk_image_memory_ = VK_NULL_HANDLE;
+  }
+
+  if (pixels_ != nullptr) {
+    stbi_image_free(pixels_);
+    pixels_ = nullptr;
+  }
+}
 
 void VulkanTexture::LoadImageFromFile() {
   VK_ASSERT(filename_ != nullptr, "Texture filename is null");
@@ -34,7 +57,7 @@ void VulkanTexture::LoadImageFromFile() {
 
 // Creates the Vulkan image and allocates memory for it
 void VulkanTexture::CreateVkImage() {
-  vk::Device device = context_.GetVulkanLogicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
 
   vk::ImageCreateInfo image_info = {};
@@ -73,7 +96,7 @@ void VulkanTexture::CreateVkImage() {
 }
 
 void VulkanTexture::CreateVkImageView() {
-  vk::Device device = context_.GetVulkanLogicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
 
   vk::ImageViewCreateInfo image_view_info = {};
@@ -97,7 +120,7 @@ void VulkanTexture::CreateVkImageView() {
 }
 
 void VulkanTexture::Populate() {
-  vk::Device device = context_.GetVulkanLogicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
 
   VulkanUtils::BufferInputParams params = {};
@@ -107,7 +130,7 @@ void VulkanTexture::Populate() {
   params.buffer_usage = vk::BufferUsageFlags(vk::BufferUsageFlagBits::eTransferSrc);
   params.size = width_ * height_ * 4;
 
-  VulkanUtils::Buffer staging_buffer = VulkanUtils::CreateBuffer(params);
+  VulkanUtils::Buffer staging_buffer = VulkanUtils::CreateBuffer(params);// TODO: RAII this?
   void *staging_buffer_mapped = device.mapMemory(staging_buffer.buffer_memory, 0, params.size);
 
 #ifdef __linux__
@@ -124,7 +147,7 @@ void VulkanTexture::Populate() {
 }
 
 void VulkanTexture::CopyBufferToImage(vk::Buffer &src_buffer, vk::Image &dst_image) {
-  vk::Device device = context_.GetVulkanLogicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
   vk::CommandBuffer command_buffer = context_.GetVulkanCommandPool().GetVkMainCommandBuffer();
   VK_ASSERT(command_buffer != VK_NULL_HANDLE, "Main command buffer not initialized");
@@ -151,7 +174,7 @@ void VulkanTexture::CopyBufferToImage(vk::Buffer &src_buffer, vk::Image &dst_ima
 }
 
 void VulkanTexture::TransitionImageLayout(vk::ImageLayout old_layout, vk::ImageLayout new_layout) {
-  vk::Device device = context_.GetVulkanLogicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
   vk::CommandBuffer command_buffer = context_.GetVulkanCommandPool().GetVkMainCommandBuffer();
   VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
   VK_ASSERT(command_buffer != VK_NULL_HANDLE, "Main command buffer not initialized");
@@ -192,7 +215,7 @@ void VulkanTexture::TransitionImageLayout(vk::ImageLayout old_layout, vk::ImageL
 }
 
 void VulkanTexture::CreateSampler() {
-  auto device = context_.GetVulkanLogicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
 
   vk::SamplerCreateInfo sampler_info = {};
@@ -218,7 +241,7 @@ void VulkanTexture::CreateSampler() {
 }
 
 void VulkanTexture::UpdateDescriptorSet() {
-  auto device = context_.GetVulkanLogicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
 
   // combined image sampler
@@ -245,35 +268,5 @@ void VulkanTexture::Use(vk::CommandBuffer &command_buffer) {
   VK_ASSERT(pipeline_layout != VK_NULL_HANDLE, "Pipeline layout not initialized");
 
   command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, pipeline_layout, 1, vk_descriptor_set_, nullptr);
-}
-
-VulkanTexture::~VulkanTexture() {
-  auto device = context_.GetVulkanLogicalDevice();
-  VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
-
-  if (vk_image_view_ != VK_NULL_HANDLE) {
-    device.destroyImageView(vk_image_view_);
-    vk_image_view_ = VK_NULL_HANDLE;
-  }
-
-  if (vk_sampler_ != VK_NULL_HANDLE) {
-    device.destroySampler(vk_sampler_);
-    vk_sampler_ = VK_NULL_HANDLE;
-  }
-
-  if (vk_image_ != VK_NULL_HANDLE) {
-    device.destroyImage(vk_image_);
-    vk_image_ = VK_NULL_HANDLE;
-  }
-
-  if (vk_image_memory_ != VK_NULL_HANDLE) {
-    device.freeMemory(vk_image_memory_);
-    vk_image_memory_ = VK_NULL_HANDLE;
-  }
-
-  if (pixels_ != nullptr) {
-    stbi_image_free(pixels_);
-    pixels_ = nullptr;
-  }
 }
 }// namespace glaceon

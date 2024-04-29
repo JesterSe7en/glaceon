@@ -16,6 +16,7 @@ class VulkanBackend {
   [[nodiscard]] const vk::Instance &GetVkInstance() const { return instance_; }
 
  private:
+  ~VulkanBackend();
   VulkanContext &context_;
   vk::Instance instance_;
 
