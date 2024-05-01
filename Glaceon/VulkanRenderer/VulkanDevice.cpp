@@ -25,7 +25,7 @@ void VulkanDevice::Initialize() {
   uint32_t gpu_count = 0;
   std::vector<vk::PhysicalDevice> gpus;
   VK_CHECK(instance.enumeratePhysicalDevices(&gpu_count, nullptr), "Failed to poll number of physical devices");
-  VK_ASSERT(gpu_count == 0, "Failed to poll number of physical devices");
+  VK_ASSERT(gpu_count != 0, "Failed to poll number of physical devices");
   gpus.resize(gpu_count);
   VK_CHECK(instance.enumeratePhysicalDevices(&gpu_count, gpus.data()), "Failed to enumerate physical devices info");
 
