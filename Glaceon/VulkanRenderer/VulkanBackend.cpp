@@ -112,7 +112,7 @@ VkBool32 VulkanBackend::DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT mes
 
 void VulkanBackend::Destroy() {
   if (instance_ != VK_NULL_HANDLE) {
-    vkDestroyInstance(instance_, nullptr);
+    instance_.destroy();
     instance_ = VK_NULL_HANDLE;
   }
 }

@@ -1,7 +1,9 @@
 #include "VulkanUtils.h"
+
+#include <vulkan/vulkan_structs.hpp>
+
 #include "../Base.h"
 #include "../Logger.h"
-#include <vulkan/vulkan_structs.hpp>
 
 namespace glaceon {
 std::vector<char> VulkanUtils::ReadFile(const std::string &filename) {
@@ -179,9 +181,9 @@ uint32_t VulkanUtils::FindMemoryTypeIndex(vk::PhysicalDevice physical_device, ui
   vk::PhysicalDeviceMemoryProperties memory_properties = physical_device.getMemoryProperties();
 
   for (uint32_t i = 0; i < memory_properties.memoryTypeCount; i++) {
-    bool supported{static_cast<bool>(type_filter & (1 << i))};
+    const bool supported{static_cast<bool>(type_filter & (1 << i))};
+    const bool sufficient{(memory_properties.memoryTypes[i].propertyFlags & properties) == properties};
 
-    bool sufficient{(memory_properties.memoryTypes[i].propertyFlags & properties) == properties};
     if (supported && sufficient) { return i; }
   }
   return 0;
@@ -211,7 +213,6 @@ void VulkanUtils::EndSingleTimeCommands(vk::CommandBuffer command_buffer, vk::Qu
   queue.waitIdle();
 }
 
-
 /**
  * Finds a supported Vulkan format from a list of candidates based on specified criteria.
  *
@@ -223,8 +224,7 @@ void VulkanUtils::EndSingleTimeCommands(vk::CommandBuffer command_buffer, vk::Qu
  * @return A supported Vulkan format from the candidates list that meets the specified criteria.
  */
 vk::Format VulkanUtils::FindSupportedFormat(const vk::PhysicalDevice physical_device, const std::vector<vk::Format> &candidates,
-                                            const vk::ImageTiling tiling,
-                                            const vk::FormatFeatureFlags features) {
+                                            const vk::ImageTiling tiling, const vk::FormatFeatureFlags features) {
 
   for (const vk::Format &format : candidates) {
     vk::FormatProperties properties = physical_device.getFormatProperties(format);

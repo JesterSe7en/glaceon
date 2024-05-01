@@ -69,7 +69,7 @@ void VulkanRenderPass::Initialize(const VulkanRenderPassInput &input) {
   render_pass_create_info.subpassCount = 1;
   render_pass_create_info.pSubpasses = &subpass_description;
 
-  vk::Device device = context_.GetVulkanLogicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
 
   if (device.createRenderPass(&render_pass_create_info, nullptr, &vk_render_pass_) != vk::Result::eSuccess) {
@@ -86,7 +86,7 @@ void VulkanRenderPass::Rebuild() {
 
 void VulkanRenderPass::Destroy() {
   if (vk_render_pass_ != nullptr) {
-    vk::Device device = context_.GetVulkanLogicalDevice();
+    const vk::Device device = context_.GetVulkanLogicalDevice();
     VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
 
     device.destroy(vk_render_pass_, nullptr);

@@ -269,7 +269,8 @@ void VulkanSwapChain::CreateImageViews() {
   depth_image_info.arrayLayers = 1;
   depth_image_info.samples = vk::SampleCountFlagBits::e1;
   depth_image_info.tiling = vk::ImageTiling::eOptimal;
-  depth_image_info.usage = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled;
+  depth_image_info.usage = vk::ImageUsageFlagBits::eDepthStencilAttachment;
+  // depth_image_info.usage = vk::ImageUsageFlagBits::eTransferDst | vk::ImageUsageFlagBits::eSampled;
   depth_image_info.sharingMode = vk::SharingMode::eExclusive;
   depth_image_info.initialLayout = vk::ImageLayout::eUndefined;
 
@@ -420,10 +421,7 @@ void VulkanSwapChain::DestroyFrames() {
       swap_chain_frame.depth_image_view = VK_NULL_HANDLE;
     }
 
-    if (swap_chain_frame.image != VK_NULL_HANDLE) {
-      device.destroyImage(swap_chain_frame.image, nullptr);
-      swap_chain_frame.image = VK_NULL_HANDLE;
-    }
+    // do not destroy images associated with swap chain, let destroySwapChain handle that
 
     // destroy frame buffer
     if (swap_chain_frame.frame_buffer != VK_NULL_HANDLE) {
@@ -451,15 +449,15 @@ void VulkanSwapChain::DestroyFrames() {
 
     // destroy depth buffer
     if (swap_chain_frame.depth_image != VK_NULL_HANDLE) {
-      device.unmapMemory(swap_chain_frame.depth_image_memory);
-      device.freeMemory(swap_chain_frame.depth_image_memory, nullptr);
-      swap_chain_frame.depth_image_memory = VK_NULL_HANDLE;
+      device.destroyImage(swap_chain_frame.depth_image, nullptr);
+      swap_chain_frame.depth_image = VK_NULL_HANDLE;
 
       device.destroy(swap_chain_frame.depth_image_view, nullptr);
       swap_chain_frame.depth_image_view = nullptr;
 
-      device.destroyImage(swap_chain_frame.depth_image, nullptr);
-      swap_chain_frame.depth_image = VK_NULL_HANDLE;
+      // when using bindimagememory, we do not need to unmap it; just free it.
+      device.freeMemory(swap_chain_frame.depth_image_memory, nullptr);
+      swap_chain_frame.depth_image_memory = VK_NULL_HANDLE;
 
       swap_chain_frame.depth_height = swap_chain_frame.depth_width = -1;
     }
