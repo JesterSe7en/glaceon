@@ -6,12 +6,15 @@
 
 namespace glaceon {
 VulkanSwapChain::VulkanSwapChain(VulkanContext &context)
-    : context_(context), vk_swapchain_(VK_NULL_HANDLE),
+    : context_(context),
+      vk_swapchain_(VK_NULL_HANDLE),
       // probably want to request from user a specific format, color space, and present mode
       // then use that to create the swap chain
       // for now, hardcode it
       // FIFO present mode is guaranteed to be supported
-      surface_format_(vk::Format::eB8G8R8A8Unorm), color_space_(vk::ColorSpaceKHR::eSrgbNonlinear), present_mode_(vk::PresentModeKHR::eMailbox) {}
+      surface_format_(vk::Format::eB8G8R8A8Unorm),
+      color_space_(vk::ColorSpaceKHR::eSrgbNonlinear),
+      present_mode_(vk::PresentModeKHR::eMailbox) {}
 
 VulkanSwapChain::~VulkanSwapChain() { Destroy(); }
 
@@ -25,8 +28,8 @@ void VulkanSwapChain::Initialize() {
 }
 
 void VulkanSwapChain::PopulateSwapChainSupport() {
-  vk::PhysicalDevice physical_device = context_.GetVulkanPhysicalDevice();
-  vk::SurfaceKHR surface = context_.GetSurface();
+  const vk::PhysicalDevice physical_device = context_.GetVulkanPhysicalDevice();
+  const vk::SurfaceKHR surface = context_.GetSurface();
 
   if (physical_device.getSurfaceCapabilitiesKHR(surface, &swap_chain_support_.capabilities) != vk::Result::eSuccess) {
     GERROR("Failed to get swap chain capabilities");
@@ -82,7 +85,7 @@ void VulkanSwapChain::PopulateSwapChainSupport() {
   }
 
 #if _DEBUG
-  for (auto &format : swap_chain_support_.formats) {
+  for (const vk::SurfaceFormatKHR &format : swap_chain_support_.formats) {
     // print out supported surface formats
     GTRACE("Supported surface format:");
     GTRACE("  format: {}", vk::to_string(format.format));
@@ -92,7 +95,7 @@ void VulkanSwapChain::PopulateSwapChainSupport() {
 
   // check if surfaceFormat and colorSpace is supported
   bool found = false;
-  for (auto &format : swap_chain_support_.formats) {
+  for (const vk::SurfaceFormatKHR &format : swap_chain_support_.formats) {
     if (format.format == surface_format_ && format.colorSpace == color_space_) {
       found = true;
       GTRACE("Device supports targeted surface format & color space");
@@ -118,7 +121,7 @@ void VulkanSwapChain::PopulateSwapChainSupport() {
   }
 
 #if _DEBUG
-  for (auto &mode : swap_chain_support_.present_modes) {
+  for (const vk::PresentModeKHR &mode : swap_chain_support_.present_modes) {
     // print out supported present modes
     GTRACE("Supported present mode:");
     GTRACE("  mode: {}", vk::to_string(mode));
@@ -141,11 +144,11 @@ void VulkanSwapChain::PopulateSwapChainSupport() {
 }
 
 void VulkanSwapChain::CreateSwapChain() {
-  vk::SurfaceKHR surface = context_.GetSurface();
-  vk::Device device = context_.GetVulkanLogicalDevice();
+  const vk::SurfaceKHR surface = context_.GetSurface();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(surface != VK_NULL_HANDLE && device != VK_NULL_HANDLE, "Failed to get Vulkan logical device or surface");
 
-  uint32_t image_count = std::min(swap_chain_support_.capabilities.maxImageCount, swap_chain_support_.capabilities.minImageCount + 1);
+  const uint32_t image_count = std::min(swap_chain_support_.capabilities.maxImageCount, swap_chain_support_.capabilities.minImageCount + 1);
 
   //  typedef struct VkSwapchainCreateInfoKHR {
   //    VkStructureType                  sType;
@@ -293,7 +296,8 @@ void VulkanSwapChain::CreateImageViews() {
 
     VK_CHECK(device.allocateMemory(&memory_allocate_info, nullptr, &depth_image_memory), "Failed to allocate image memory for depth buffer");
     device.bindImageMemory(depth_image, depth_image_memory, 0);
-    depth_images.push_back(std::make_pair(depth_image, depth_image_memory));
+    depth_images.emplace_back(depth_image, depth_image_memory);
+    // depth_images.push_back(std::make_pair(depth_image, depth_image_memory));
     // the image_view create info here is tweaked to match with depth buffer
     VK_CHECK(device.createImageView(&image_view_create_info, nullptr, &depth_image_view), "Failed to create depth image view");
     depth_image_views.push_back(depth_image_view);
@@ -316,15 +320,15 @@ void VulkanSwapChain::CreateImageViews() {
 }
 
 void VulkanSwapChain::RebuildSwapChain(int width, int height) {
-  vk::SurfaceKHR surface = context_.GetSurface();
-  vk::PhysicalDevice physical_device = context_.GetVulkanPhysicalDevice();
-  vk::Device device = context_.GetVulkanLogicalDevice();
+  const vk::SurfaceKHR surface = context_.GetSurface();
+  const vk::PhysicalDevice physical_device = context_.GetVulkanPhysicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
   vk::SwapchainKHR old_swap_chain = vk_swapchain_;
 
   // destroy image views, frame buffers
   DestroyFrames();
 
-  uint32_t image_count = std::min(swap_chain_support_.capabilities.maxImageCount, swap_chain_support_.capabilities.minImageCount + 1);
+  const uint32_t image_count = std::min(swap_chain_support_.capabilities.maxImageCount, swap_chain_support_.capabilities.minImageCount + 1);
   std::vector<VkImageView> image_views;
 
   vk::SwapchainCreateInfoKHR swapchain_create_info = {};
@@ -342,7 +346,7 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
     return;
   }
 
-  VkSurfaceCapabilitiesKHR cap = swap_chain_support_.capabilities;
+  const VkSurfaceCapabilitiesKHR cap = swap_chain_support_.capabilities;
 
   if (swapchain_create_info.minImageCount < cap.minImageCount) {
     swapchain_create_info.minImageCount = cap.minImageCount;
@@ -402,10 +406,10 @@ void VulkanSwapChain::RebuildSwapChain(int width, int height) {
 }
 
 void VulkanSwapChain::DestroyFrames() {
-  vk::Device device = context_.GetVulkanLogicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get logical device");
 
-  for (auto &swap_chain_frame : swap_chain_frames_) {
+  for (SwapChainFrame &swap_chain_frame : swap_chain_frames_) {
     // destroy image views
     if (swap_chain_frame.image_view != VK_NULL_HANDLE) {
       device.destroy(swap_chain_frame.image_view, nullptr);
@@ -464,7 +468,7 @@ void VulkanSwapChain::DestroyFrames() {
 }
 
 void VulkanSwapChain::CreateFrameBuffers() {
-  vk::Device device = context_.GetVulkanLogicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get logical device");
 
   vk::FramebufferCreateInfo framebuffer_create_info = {};
@@ -474,8 +478,8 @@ void VulkanSwapChain::CreateFrameBuffers() {
   framebuffer_create_info.height = swap_chain_support_.capabilities.currentExtent.height;
   framebuffer_create_info.layers = 1;
 
-  for (auto &swap_chain_frame : swap_chain_frames_) {
-    vk::ImageView attachments[] = {swap_chain_frame.image_view, swap_chain_frame.depth_image_view};
+  for (SwapChainFrame &swap_chain_frame : swap_chain_frames_) {
+    const vk::ImageView attachments[] = {swap_chain_frame.image_view, swap_chain_frame.depth_image_view};
     framebuffer_create_info.pAttachments = attachments;
     framebuffer_create_info.attachmentCount = sizeof(attachments) / sizeof(vk::ImageView);
     VK_CHECK(device.createFramebuffer(&framebuffer_create_info, nullptr, &swap_chain_frame.frame_buffer), "Failed to create frame buffers");
@@ -486,7 +490,7 @@ void VulkanSwapChain::CreateFrameBuffers() {
 void VulkanSwapChain::Destroy() {
   DestroyFrames();
 
-  vk::Device device = context_.GetVulkanLogicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get logical device");
 
   if (vk_swapchain_ != VK_NULL_HANDLE) {
@@ -496,7 +500,7 @@ void VulkanSwapChain::Destroy() {
   }
 }
 void VulkanSwapChain::CreateDescriptorResources() {
-  vk::Device device = context_.GetVulkanLogicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
 
   VulkanUtils::BufferInputParams uniform_params = {};
   uniform_params.device = context_.GetVulkanLogicalDevice();
@@ -512,7 +516,7 @@ void VulkanSwapChain::CreateDescriptorResources() {
   storage_params.memory_property_flags = vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent;
   storage_params.size = sizeof(glm::mat4) * 1024;
 
-  for (auto &frame : swap_chain_frames_) {
+  for (SwapChainFrame &frame : swap_chain_frames_) {
     frame.camera_data_buffer = VulkanUtils::CreateBuffer(uniform_params);
     VK_CHECK(device.mapMemory(frame.camera_data_buffer.buffer_memory, 0, sizeof(UniformBufferObject), {}, &frame.camera_data_mapped),
              "Failed to map memory for camera data");
@@ -525,7 +529,7 @@ void VulkanSwapChain::CreateDescriptorResources() {
 }
 
 void VulkanSwapChain::UpdateDescriptorResources() {
-  vk::Device device = context_.GetVulkanLogicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
 
   // Provided by VK_VERSION_1_0
   //  typedef struct VkDescriptorBufferInfo {
@@ -534,7 +538,7 @@ void VulkanSwapChain::UpdateDescriptorResources() {
   //    VkDeviceSize    range;
   //  } VkDescriptorBufferInfo;
 
-  for (auto &frame : swap_chain_frames_) {
+  for (SwapChainFrame &frame : swap_chain_frames_) {
     // Similar to UBO, we need to parse vk::DescriptorSet into its raw form.
     // This is where the uniform buffer descriptor comes in aka vk::DescriptorSetInfo
     frame.uniform_buffer_descriptor.buffer = frame.camera_data_buffer.buffer;
@@ -558,7 +562,7 @@ void VulkanSwapChain::UpdateDescriptorResources() {
     //      const VkDescriptorBufferInfo*    pBufferInfo;
     //      const VkBufferView*              pTexelBufferView;
     //    } VkWriteDescriptorSet;
-    vk::DescriptorSet dst_set = context_.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::FRAME)[0];
+    const vk::DescriptorSet dst_set = context_.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::FRAME)[0];
     // frame descriptor set has two bindings
     // binding 0: camera data
     // binding 1: model matrices
