@@ -236,7 +236,7 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
 
   // frame descriptors have two bindings to describe the frame, the camera and the model vertex buffer
   std::vector<vk::DescriptorSet> sets = {context.GetVulkanDescriptorPool().GetDescriptorSet(DescriptorPoolType::FRAME)};
-  command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, context.GetVulkanPipeline().GetVkPipelineLayout(), static_cast<uint32_t>(0),
+  command_buffer.bindDescriptorSets(vk::PipelineBindPoint::eGraphics, context.GetVulkanPipeline().GetVkPipelineLayout(), 0,
                                     static_cast<uint32_t>(sets.size()), sets.data(), 0, nullptr);
   PrepareFrame(image_index, context);
 
@@ -320,7 +320,6 @@ static void FramePresent(VulkanContext &context) {
 
 void SubmitCommandBuffer(VulkanContext &context) {
   std::vector<vk::Fence> in_flight_fences = context.GetVulkanSync().GetInFlightFences();
-  vk::Device device = context.GetVulkanLogicalDevice();
   vk::Queue graphics_queue = context.GetVulkanDevice().GetVkGraphicsQueue();
   std::vector<vk::Semaphore> image_available_semaphores = context.GetVulkanSync().GetImageAvailableSemaphores();
   std::vector<vk::Semaphore> render_complete_semaphores = context.GetVulkanSync().GetRenderFinishedSemaphores();
@@ -413,7 +412,7 @@ void GLACEON_API RunGame(Application *app) {
   }
 
   VkSurfaceKHR surface;
-  glfwCreateWindowSurface(static_cast<VkInstance>(instance), glfw_window, nullptr, &surface);
+  glfwCreateWindowSurface(instance, glfw_window, nullptr, &surface);
 
   // TODO: set up resize callback instead of using a flag
   // glfwSetFramebufferSizeCallback(glfw_window, framebufferResizeCallback);

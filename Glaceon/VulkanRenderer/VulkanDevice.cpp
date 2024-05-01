@@ -20,20 +20,14 @@ void VulkanDevice::Initialize() {
     return;
   }
 
-  vk::Instance instance = context_.GetVulkanInstance();
+  const vk::Instance instance = context_.GetVulkanInstance();
 
   uint32_t gpu_count = 0;
   std::vector<vk::PhysicalDevice> gpus;
-  if (instance.enumeratePhysicalDevices(&gpu_count, nullptr) != vk::Result::eSuccess) {
-    GERROR("Failed to poll number of physical devices");
-    VK_ASSERT(gpu_count == 0, "Failed to poll number of physical devices");
-    return;
-  }
+  VK_CHECK(instance.enumeratePhysicalDevices(&gpu_count, nullptr), "Failed to poll number of physical devices");
+  VK_ASSERT(gpu_count == 0, "Failed to poll number of physical devices");
   gpus.resize(gpu_count);
-  if (instance.enumeratePhysicalDevices(&gpu_count, gpus.data()) != vk::Result::eSuccess) {
-    GERROR("Failed to enumerate physical devices info");
-    return;
-  }
+  VK_CHECK(instance.enumeratePhysicalDevices(&gpu_count, gpus.data()), "Failed to enumerate physical devices info");
 
   for (vk::PhysicalDevice &gpu : gpus) {
     if (CheckDeviceRequirements(gpu)) {
@@ -45,12 +39,11 @@ void VulkanDevice::Initialize() {
   if (vk_physical_device_ == VK_NULL_HANDLE) {
     GERROR("Failed to find a suitable GPU");
     return;
-  } else {
-    GINFO("Successfully found discrete GPU");
-    PrintPhysicalDevice(vk_physical_device_);
   }
+  GINFO("Successfully found discrete GPU");
+  PrintPhysicalDevice(vk_physical_device_);
 
-  const float kQueuePriority[] = {1.0f};
+  constexpr float kQueuePriority[] = {1.0f};
 
   std::set<uint32_t> set;
   set.insert(queue_indexes_.graphics_family.value());
@@ -73,28 +66,21 @@ void VulkanDevice::Initialize() {
   create_info.enabledExtensionCount = static_cast<uint32_t>(context_.GetDeviceExtensions().size());
   create_info.ppEnabledExtensionNames = context_.GetDeviceExtensions().data();
 
-  if (vk_physical_device_.createDevice(&create_info, nullptr, &vk_device_) != vk::Result::eSuccess) {
-    GERROR("Failed to create Vulkan device");
-    return;
-  } else {
-    GINFO("Successfully created Vulkan device");
-  }
+  VK_CHECK(vk_physical_device_.createDevice(&create_info, nullptr, &vk_device_), "Failed to create Vulkan device");
+  GINFO("Successfully created Vulkan device");
 
   vk_device_.getQueue(queue_indexes_.graphics_family.value(), 0, &vk_graphics_queue_);
   vk_device_.getQueue(queue_indexes_.present_family.value(), 0, &vk_present_queue_);
 }
 
-bool VulkanDevice::CheckDeviceRequirements(vk::PhysicalDevice &vk_physical_device) {
-  vk::PhysicalDeviceProperties properties = vk_physical_device.getProperties();
-
-  if (properties.deviceType != vk::PhysicalDeviceType::eDiscreteGpu) {
+bool VulkanDevice::CheckDeviceRequirements(const vk::PhysicalDevice &vk_physical_device) {
+  if (vk_physical_device.getProperties().deviceType != vk::PhysicalDeviceType::eDiscreteGpu) {
     GTRACE("Device is not a discrete GPU, skipping...");
     return false;
   }
 
-  uint32_t queue_family_count;
   queue_family_ = vk_physical_device.getQueueFamilyProperties();
-  queue_family_count = static_cast<uint32_t>(queue_family_.size());
+  const auto queue_family_count = static_cast<uint32_t>(queue_family_.size());
 
 #if _DEBUG
   for (uint32_t i = 0; i < queue_family_count; i++) {
@@ -107,7 +93,7 @@ bool VulkanDevice::CheckDeviceRequirements(vk::PhysicalDevice &vk_physical_devic
   }
 #endif
 
-  vk::SurfaceKHR surface = context_.GetSurface();
+  const vk::SurfaceKHR surface = context_.GetSurface();
   VK_ASSERT(surface != VK_NULL_HANDLE, "Failed to get Vulkan surface");
 
   // first queue family that supports presentation
@@ -133,9 +119,8 @@ bool VulkanDevice::CheckDeviceRequirements(vk::PhysicalDevice &vk_physical_devic
   if (!queue_indexes_.IsComplete()) {
     GTRACE("Device does not support graphics queue family, skipping...");
     return false;
-  } else {
-    GTRACE("Device supports graphics and presentation queue families");
   }
+  GTRACE("Device supports graphics and presentation queue families");
 
   uint32_t properties_count;
   (void) vk_physical_device.enumerateDeviceExtensionProperties(nullptr, &properties_count, nullptr);
@@ -143,7 +128,7 @@ bool VulkanDevice::CheckDeviceRequirements(vk::PhysicalDevice &vk_physical_devic
   (void) vk_physical_device.enumerateDeviceExtensionProperties(nullptr, &properties_count, device_extensions_.data());
 
   // check device extensions required by the engine (in our case it is VK_KHR_SWAPCHAIN)
-  std::vector<const char *> extensions = context_.GetDeviceExtensions();
+  const std::vector<const char *> extensions = context_.GetDeviceExtensions();
 
   for (const char *ext : extensions) {
     if (!IsExtensionAvailable(ext)) {
@@ -167,7 +152,7 @@ bool VulkanDevice::IsExtensionAvailable(const char *ext) {
   return false;
 }
 
-void VulkanDevice::PrintPhysicalDevice(vk::PhysicalDevice gpu) {
+void VulkanDevice::PrintPhysicalDevice(const vk::PhysicalDevice gpu) {
   if (gpu == VK_NULL_HANDLE) {
     GERROR("Cannot print physical device info: invalid handle");
     return;

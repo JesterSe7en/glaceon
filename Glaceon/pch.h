@@ -9,9 +9,11 @@
 
 // add headers that you want to pre-compile here
 #define IMGUI_DEFINE_MATH_OPERATORS
-#include "imgui.h"
-#include "imgui_impl_glfw.h"
-#include "imgui_impl_vulkan.h"
+#include <spdlog/fmt/fmt.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
+#include <vulkan/vk_enum_string_helper.h>
+#include <vulkan/vulkan_core.h>
 
 #include <algorithm>
 #include <fstream>
@@ -19,18 +21,11 @@
 #include <set>
 #include <string>
 #include <vector>
-
-
-#include "framework.h"
-#include <spdlog/fmt/fmt.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/spdlog.h>
-
-
-#include <vulkan/vk_enum_string_helper.h>
 #include <vulkan/vulkan.hpp>
-#include <vulkan/vulkan_core.h>
 
+#include "imgui.h"
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_vulkan.h"
 
 #define GLFW_INCLUDE_NONE
 #define GLFW_INCLUDE_VULKAN
@@ -40,10 +35,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-enum MeshType {
-  TRIANGLE = 0,
-  SQUARE = 1,
-  STAR = 2
-};
+enum MeshType { TRIANGLE = 0, SQUARE = 1, STAR = 2 };
 
 #endif//PCH_H

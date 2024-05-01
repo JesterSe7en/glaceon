@@ -43,9 +43,9 @@ class VulkanDevice {
 
   QueueIndexes queue_indexes_;
 
-  bool CheckDeviceRequirements(vk::PhysicalDevice &vk_physical_device);
+  bool CheckDeviceRequirements(const vk::PhysicalDevice &vk_physical_device);
   bool IsExtensionAvailable(const char *ext);
-  static void PrintPhysicalDevice(vk::PhysicalDevice gpu);
+  static void PrintPhysicalDevice(const vk::PhysicalDevice gpu);
 };
 
 }// namespace glaceon

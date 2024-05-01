@@ -28,9 +28,8 @@ void VulkanSync::Initialize() {
     if (device.createSemaphore(&semaphore_create_info, nullptr, &semaphore) != vk::Result::eSuccess) {
       GERROR("Failed to create image available semaphore");
       return;
-    } else {
-      image_available_semaphores_.push_back(semaphore);
     }
+    image_available_semaphores_.push_back(semaphore);
   }
   GINFO("Successfully created image available semaphore");
 
@@ -39,9 +38,8 @@ void VulkanSync::Initialize() {
     if (device.createSemaphore(&semaphore_create_info, nullptr, &semaphore) != vk::Result::eSuccess) {
       GERROR("Failed to create image available semaphore");
       return;
-    } else {
-      render_finished_semaphores_.push_back(semaphore);
     }
+    render_finished_semaphores_.push_back(semaphore);
   }
   GINFO("Successfully created render finished semaphore");
 
@@ -54,9 +52,8 @@ void VulkanSync::Initialize() {
     if (device.createFence(&fence_create_info, nullptr, &fence) != vk::Result::eSuccess) {
       GERROR("Failed to create in flight fence");
       return;
-    } else {
-      in_flight_fences_.push_back(fence);
     }
+    in_flight_fences_.push_back(fence);
   }
 }
 

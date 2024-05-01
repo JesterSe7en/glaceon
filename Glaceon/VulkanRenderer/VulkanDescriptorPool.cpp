@@ -17,7 +17,7 @@ VulkanDescriptorPool::~VulkanDescriptorPool() { Destroy(); }
 // Initializes/creates the descriptor set layout, descriptor pool, and descriptor sets
 void VulkanDescriptorPool::Initialize(const std::vector<DescriptorPoolSetLayoutParams> &params) {
   VK_ASSERT(!context_.GetVulkanSwapChain().GetSwapChainFrames().empty(), "Swap chain not initialized");
-  auto device = context_.GetVulkanLogicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
   this->descriptor_pool_set_layout_params_ = params;
 
@@ -28,13 +28,13 @@ void VulkanDescriptorPool::Initialize(const std::vector<DescriptorPoolSetLayoutP
 }
 
 void VulkanDescriptorPool::CreateDescriptorSetLayouts() {
-  auto device = context_.GetVulkanLogicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
 
   // Descriptor Set layout just describes how data in a descriptor set should be laid out
   // i.e. it is kind of like an interface.  Only describes how the data should be shaped.
 
-  for (const auto &kParam : descriptor_pool_set_layout_params_) {
+  for (const DescriptorPoolSetLayoutParams &kParam : descriptor_pool_set_layout_params_) {
     std::vector<vk::DescriptorSetLayoutBinding> bindings;
     bindings.reserve(kParam.binding_count);
     for (int i = 0; i < kParam.binding_count; i++) {
@@ -94,10 +94,10 @@ void VulkanDescriptorPool::CreateDescriptorPool() {
 }
 
 void VulkanDescriptorPool::CreateDescriptorSet() {
-  auto device = context_.GetVulkanLogicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
 
-  for (auto &params : descriptor_pool_set_layout_params_) {
+  for (DescriptorPoolSetLayoutParams &params : descriptor_pool_set_layout_params_) {
     if (params.descriptor_pool_type == DescriptorPoolType::IMGUI) {
       // let imgui allocate the set
       continue;
@@ -119,14 +119,14 @@ void VulkanDescriptorPool::CreateDescriptorSet() {
 }
 
 void VulkanDescriptorPool::Destroy() {
-  vk::Device device = context_.GetVulkanLogicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Vulkan Descriptor Pool not destroyed; cannot find logical device");
 
-  for (auto &kSetLayout : vk_descriptor_set_layouts_) {
+  for (std::pair<const DescriptorPoolType, vk::DescriptorSetLayout> &kSetLayout : vk_descriptor_set_layouts_) {
     if (kSetLayout.second != VK_NULL_HANDLE) { device.destroyDescriptorSetLayout(kSetLayout.second, nullptr); }
   }
 
-  for (auto &kPool : vk_descriptor_pools_) {
+  for (std::pair<const DescriptorPoolType, vk::DescriptorPool> &kPool : vk_descriptor_pools_) {
     if (kPool.second != VK_NULL_HANDLE) { device.destroyDescriptorPool(kPool.second, nullptr); }
   }
 }

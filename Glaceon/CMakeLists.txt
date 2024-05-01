@@ -2,7 +2,7 @@ set(PROJECT_NAME Glaceon)
 
 # Source groups
 set(Header_Files
-        framework.h
+        #        framework.h
         Glaceon.h
         pch.h
         Base.h
@@ -36,7 +36,7 @@ set(Header_Files
 source_group("Header Files" FILES ${Header_Files})
 
 set(Source_Files
-        dllmain.cpp
+        #        dllmain.cpp
         Glaceon.cpp
         pch.cpp
         Logger.cpp

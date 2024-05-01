@@ -22,9 +22,8 @@ void VulkanCommandPool::Initialize() {
   if (device.createCommandPool(&command_pool_create_info, nullptr, &vk_command_pool_) != vk::Result::eSuccess) {
     GERROR("Failed to create command pool");
     return;
-  } else {
-    GINFO("Successfully created command pool");
   }
+  GINFO("Successfully created command pool");
 
   // initialize main command buffer
   vk::CommandBufferAllocateInfo allocate_info = {};
@@ -35,9 +34,8 @@ void VulkanCommandPool::Initialize() {
   if (device.allocateCommandBuffers(&allocate_info, &vk_main_command_buffer_) != vk::Result::eSuccess) {
     GERROR("Failed to allocate main command buffer");
     return;
-  } else {
-    GINFO("Successfully allocated main command buffer");
   }
+  GINFO("Successfully allocated main command buffer");
 
   // create command buffer for each swap chain frame
   std::vector<SwapChainFrame> swap_chain_frames = context_.GetVulkanSwapChain().GetSwapChainFrames();
@@ -54,10 +52,9 @@ void VulkanCommandPool::Initialize() {
 }
 
 void VulkanCommandPool::Destroy() {
+  const vk::Device device = context_.GetVulkanLogicalDevice();
+  VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
   if (vk_command_pool_ != VK_NULL_HANDLE) {
-    vk::Device device = context_.GetVulkanLogicalDevice();
-    VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
-
     device.destroy(vk_command_pool_);
     vk_command_pool_ = VK_NULL_HANDLE;
   }
@@ -71,7 +68,7 @@ void VulkanCommandPool::ResetCommandPool() {
 
 void VulkanCommandPool::RebuildCommandBuffers() {
   ResetCommandPool();
-  vk::Device device = context_.GetVulkanLogicalDevice();
+  const vk::Device device = context_.GetVulkanLogicalDevice();
   VK_ASSERT(device != VK_NULL_HANDLE, "Failed to get Vulkan logical device");
 
   // destroy all old command buffers

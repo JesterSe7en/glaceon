@@ -1,6 +1,5 @@
 #include "VulkanBackend.h"
 
-#include "../Base.h"
 #include "../Logger.h"
 #include "VulkanContext.h"
 
@@ -33,7 +32,7 @@ void VulkanBackend::Initialize() {
   for (const char *layer : validation_layers) {
     if (!IsLayerAvailable(layer_properties, layer)) {
       GERROR("Validation layer {} not available", layer);
-      validation_layers.erase(std::remove(validation_layers.begin(), validation_layers.end(), layer), validation_layers.end());
+      std::erase(validation_layers, layer);
     }
   }
 
@@ -75,7 +74,7 @@ void VulkanBackend::Initialize() {
   for (auto &extension : instance_extensions) {
     if (!IsExtensionAvailable(properties, extension)) {
       GERROR("Extension {} not available", extension);
-      instance_extensions.erase(std::remove(instance_extensions.begin(), instance_extensions.end(), extension), instance_extensions.end());
+      std::erase(instance_extensions, extension);
     }
   }
   instance_create_info.enabledExtensionCount = static_cast<uint32_t>(instance_extensions.size());
