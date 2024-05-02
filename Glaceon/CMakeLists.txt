@@ -70,6 +70,8 @@ source_group("Source Files" FILES ${Source_Files})
 set(ALL_FILES
         ${Header_Files}
         ${Source_Files}
+        Assimp/AssimpImporter.cpp
+        Assimp/AssimpImporter.h
 )
 
 # Target
@@ -168,12 +170,14 @@ endif ()
 
 # Dependencies
 find_package(Vulkan REQUIRED)
-target_link_libraries(${PROJECT_NAME} PUBLIC glfw Vulkan::Vulkan)
+target_link_libraries(${PROJECT_NAME} PUBLIC assimp glfw Vulkan::Vulkan)
 target_include_directories(${PROJECT_NAME} PUBLIC
         ${CMAKE_SOURCE_DIR}/extern/glm
         ${CMAKE_SOURCE_DIR}/extern/spdlog/include
         ${CMAKE_SOURCE_DIR}/extern/stb
         ${CMAKE_SOURCE_DIR}/extern/imgui
-        ${CMAKE_SOURCE_DIR}/extern/imgui/backends)
+        ${CMAKE_SOURCE_DIR}/extern/imgui/backends
+        ${CMAKE_SOURCE_DIR}/extern/assimp/include
+)
 add_dependencies(${PROJECT_NAME} spdlog)
 
