@@ -1,38 +1,48 @@
 #include "AssimpImporter.h"
 
 #include <assimp/postprocess.h>
-#include <assimp/scene.h>
 
 #include <assimp/Importer.hpp>
 
 #include "../Logger.h"
 
 namespace glaceon {
-bool AssimpImporter::ImportObjectModel(const std::string &pFile) {
-  GTRACE("Attempting to import {}", pFile);
 
+void AssimpImporter::ImportObjectModel(const std::string &pFile) {
   Assimp::Importer importer;
   const aiScene *scene =
       importer.ReadFile(pFile, aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
+
   if (scene == nullptr) {
-    GERROR("Error importing object model {} - {}", pFile, importer.GetErrorString());
-    return false;
+    GERROR("Cannot import {} - {}", pFile, importer.GetErrorString());
+    return;
   }
 
-  DoSceneProcessing(scene);
-
-  return true;
+  std::vector<float> vertices = GetVertexData(scene, 0);
 }
 
-bool AssimpImporter::DoSceneProcessing(const aiScene *scene) {
-  if (scene->mNumMeshes <= 0) return false;
+std::vector<float> AssimpImporter::GetVertexData(const aiScene *scene, const int meshIdx) {
+  if (scene == nullptr) {
+    GWARN("No scene provided, cannot extract vertex data");
+    return {};
+  }
 
-  const aiMesh *mesh = scene->mMeshes[0];
+  if (meshIdx > scene->mNumMeshes) {
+    GWARN("Cannot find mesh with given mesh index");
+    return {};
+  }
+
+  const aiMesh *mesh = scene->mMeshes[meshIdx];
+  std::vector<float> verticies;
+  verticies.reserve(3 * mesh->mNumVertices);// multiply by 3 cuz (x,y,z)
 
   for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
     aiVector3d vertex = mesh->mVertices[i];
-    GTRACE("Vertex {}: ({}, {}, {})", i, vertex.x, vertex.y, vertex.z);
+    verticies.emplace_back(vertex.x);
+    verticies.emplace_back(vertex.y);
+    verticies.emplace_back(vertex.z);
   }
-  return true;
+  return verticies;
 }
+std::vector<float> AssimpImporter::GetUVData(const aiScene *scene, int meshIdx) { return {}; }
 }// namespace glaceon

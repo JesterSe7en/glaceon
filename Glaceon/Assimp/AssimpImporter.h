@@ -1,15 +1,18 @@
 #ifndef ASSIMPIMPORTER_H
 #define ASSIMPIMPORTER_H
 
-#include "../Base.h"
+#include <assimp/scene.h>
 
-struct aiScene;
+#include "../Base.h"
 
 namespace glaceon {
 class AssimpImporter {
  public:
-  static bool GLACEON_API ImportObjectModel(const std::string& pFile);
-  static bool DoSceneProcessing(const aiScene* scene);
+  static void GLACEON_API ImportObjectModel(const std::string& pFile);
+
+ private:
+  static std::vector<float> GetVertexData(const aiScene* scene, int meshIdx);
+  static std::vector<float> GetUVData(const aiScene* scene, int meshIdx);
 };
 }// namespace glaceon
 
