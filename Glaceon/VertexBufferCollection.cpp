@@ -1,4 +1,5 @@
 #include "VertexBufferCollection.h"
+
 #include "Base.h"
 #include "Logger.h"
 #include "VulkanRenderer/VulkanUtils.h"
@@ -32,6 +33,8 @@ void VertexBufferCollection::Add(MeshType type, const std::vector<float> &vertic
   for (uint32_t i : indexes) { indexes_.push_back(i + offset_); }
   offset_ += vertex_count;
 }
+
+void VertexBufferCollection::Add(const std::vector<glm::vec3> &verticies, const std::vector<uint32_t> &indexes) { return; }
 
 void VertexBufferCollection::Finalize(vk::Device logical_device, vk::PhysicalDevice physical_device, vk::Queue queue,
                                       vk::CommandBuffer command_buffer) {

@@ -72,6 +72,8 @@ set(ALL_FILES
         ${Source_Files}
         Assimp/AssimpImporter.cpp
         Assimp/AssimpImporter.h
+        Utils.cpp
+        Utils.h
 )
 
 # Target

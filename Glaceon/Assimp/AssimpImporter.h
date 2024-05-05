@@ -8,8 +8,8 @@
 namespace glaceon {
 
 struct Assimp_ModelData {
-  std::vector<float> vert_data;
-  std::vector<float> uv_data;
+  std::vector<glm::vec3> vert_data;
+  std::vector<glm::vec3> uv_data;
 };
 
 class AssimpImporter {
@@ -17,8 +17,8 @@ class AssimpImporter {
   static Assimp_ModelData GLACEON_API ImportObjectModel(const std::string& pFile);
 
  private:
-  static std::vector<float> GetVertexData(const aiScene* scene, size_t meshIdx);
-  static std::vector<float> GetUVData(const aiScene* scene, int meshIdx);
+  static std::vector<glm::vec3> GetVertexData(const aiScene* scene, size_t meshIdx);
+  static std::vector<glm::vec3> GetUVData(const aiScene* scene, int meshIdx);
 };
 }// namespace glaceon
 

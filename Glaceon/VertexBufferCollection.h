@@ -1,9 +1,10 @@
 #ifndef GLACEON_GLACEON_VERTEXBUFFERCOLLECTION_H_
 #define GLACEON_GLACEON_VERTEXBUFFERCOLLECTION_H_
 
+#include <cstdint>
+
 #include "VulkanRenderer/VulkanUtils.h"
 #include "pch.h"
-#include <cstdint>
 
 namespace glaceon {
 
@@ -15,6 +16,7 @@ class VertexBufferCollection {
   ~VertexBufferCollection();
 
   void Add(MeshType type, const std::vector<float> &verticies, const std::vector<uint32_t> &indexes);
+  void Add(const std::vector<glm::vec3> &verticies, const std::vector<uint32_t> &indexes);
 
   // Finalizes the collection of vertex buffers, actually allocates the memory
   void Finalize(vk::Device logical_device, vk::PhysicalDevice physical_device, vk::Queue queue, vk::CommandBuffer command_buffer);

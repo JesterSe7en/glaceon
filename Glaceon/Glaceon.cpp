@@ -3,6 +3,7 @@
 #include "Application.h"
 #include "GLFW/glfw3.h"
 #include "Logger.h"
+#include "Utils.h"
 #include "VulkanRenderer/VulkanRenderPass.h"
 
 namespace glaceon {
@@ -72,7 +73,9 @@ static void ImGuiInitialize(VulkanContext &context, GLFWwindow *glfw_window) {
 
 void MakeAssets(VulkanContext &context) {
 
-  std::vector<float> positions = currentApp->GetScene().vertex_positions;
+  const std::vector<glm::vec3> positions = currentApp->GetScene().vertex_positions;
+  std::vector<glm::vec3> unique_pos;
+  std::vector<size_t> indexes = GetIndexFromVertexData(positions, unique_pos);
 
   vertex_buffer_collection = new VertexBufferCollection();
   std::vector<float> triangle_vertices = {

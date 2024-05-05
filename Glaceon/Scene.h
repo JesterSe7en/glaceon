@@ -14,7 +14,7 @@ class Scene {
   std::vector<glm::vec3> square_positions_;
   std::vector<glm::vec3> star_positions_;
 
-  std::vector<float> vertex_positions;
+  std::vector<glm::vec3> vertex_positions;
 };
 
 }// namespace glaceon

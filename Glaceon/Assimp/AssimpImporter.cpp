@@ -21,7 +21,7 @@ Assimp_ModelData AssimpImporter::ImportObjectModel(const std::string &pFile) {
   return Assimp_ModelData{.vert_data = GetVertexData(scene, 0), .uv_data = GetUVData(scene, 0)};
 }
 
-std::vector<float> AssimpImporter::GetVertexData(const aiScene *scene, const size_t meshIdx) {
+std::vector<glm::vec3> AssimpImporter::GetVertexData(const aiScene *scene, const size_t meshIdx) {
   if (scene == nullptr) {
     GWARN("No scene provided, cannot extract vertex data");
     return {};
@@ -32,18 +32,17 @@ std::vector<float> AssimpImporter::GetVertexData(const aiScene *scene, const siz
     return {};
   }
 
-  const aiMesh *mesh = scene->mMeshes[meshIdx];
-  std::vector<float> verticies;
-  verticies.reserve(3 * mesh->mNumVertices);// multiply by 3 cuz (x,y,z)
+  std::vector<glm::vec3> verticies;
+  if (const aiMesh *mesh = scene->mMeshes[meshIdx]; mesh->HasPositions()) {
+    verticies.reserve(mesh->mNumVertices);
 
-  for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
-    aiVector3d vertex = mesh->mVertices[i];
-    verticies.emplace_back(vertex.x);
-    verticies.emplace_back(vertex.y);
-    verticies.emplace_back(vertex.z);
+    for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
+      aiVector3d vertex = mesh->mVertices[i];
+      verticies.emplace_back(vertex.x, vertex.y, vertex.z);
+    }
   }
   return verticies;
 }
 
-std::vector<float> AssimpImporter::GetUVData(const aiScene *scene, int meshIdx) { return {}; }
+std::vector<glm::vec3> AssimpImporter::GetUVData(const aiScene *scene, int meshIdx) { return {}; }
 }// namespace glaceon
