@@ -15,4 +15,4 @@ class SandBoxApplication : public glaceon::Application {
   glaceon::ApplicationInfo app_info = {.name = "Sandbox"};
 };
 
-#endif  // GLACEON_SANDBOXAPP_GAME_H_
+#endif// GLACEON_SANDBOXAPP_GAME_H_

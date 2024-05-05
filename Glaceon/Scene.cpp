@@ -19,4 +19,5 @@ Scene::Scene() {
     for (float y = -1.0f; y < 1.0f; y += 0.2f) { star_positions_.emplace_back(x, y, z); }
   }
 }
+Scene::Scene(const Assimp_ModelData& model_data) { vertex_positions = model_data.vert_data; }
 }// namespace glaceon

@@ -16,8 +16,8 @@ SandBoxApplication::SandBoxApplication() : glaceon::Application(&app_info) {
 void SandBoxApplication::OnStart() {
   // load in object models?
   const std::string fPath = R"(..\..\models\basic_brickCube.obj)";
-
-  glaceon::AssimpImporter::ImportObjectModel(fPath);
+  const glaceon::Assimp_ModelData content = glaceon::AssimpImporter::ImportObjectModel(fPath);
+  PushContent(content);
 }
 void SandBoxApplication::OnUpdate() {}
 void SandBoxApplication::OnShutdown() {}

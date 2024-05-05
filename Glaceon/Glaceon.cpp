@@ -71,6 +71,9 @@ static void ImGuiInitialize(VulkanContext &context, GLFWwindow *glfw_window) {
 }
 
 void MakeAssets(VulkanContext &context) {
+
+  std::vector<float> positions = currentApp->GetScene().vertex_positions;
+
   vertex_buffer_collection = new VertexBufferCollection();
   std::vector<float> triangle_vertices = {
       0.0f,  -0.1f, 0.0f, 1.0f, 0.0f, 0.5f, 0.0f,// 0
@@ -497,10 +500,10 @@ void GLACEON_API RunGame(Application *app) {
   int width, height;
   ImGuiIO &io = ImGui::GetIO();
 
+  app->OnStart();
   // create our giant vertex buffer from "assets"
   MakeAssets(context);
 
-  app->OnStart();
   // ----------------------------- MAIN LOOP ----------------------------- //
   while (!glfwWindowShouldClose(glfw_window)) {
     glfwPollEvents();
