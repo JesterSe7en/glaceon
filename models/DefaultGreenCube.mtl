@@ -1,10 +1,10 @@
-# Blender 4.1.1 MTL File: 'None'
+# Blender 4.1.1 MTL File: 'DefaultGreenCube.blend'
 # www.blender.org
 
-newmtl Material
+newmtl CubeMaterial
 Ns 250.000000
 Ka 1.000000 1.000000 1.000000
-Kd 0.496341 0.154366 0.081640
+Kd 0.033027 0.799544 0.035563
 Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.450000
