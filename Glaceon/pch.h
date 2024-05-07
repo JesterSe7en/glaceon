@@ -36,6 +36,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-enum MeshType { TRIANGLE = 0, SQUARE = 1, STAR = 2 };
+enum MeshType { TRIANGLE = 0, SQUARE = 1, STAR = 2, kVertex };
 
 #endif//PCH_H

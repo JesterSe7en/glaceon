@@ -73,66 +73,65 @@ static void ImGuiInitialize(VulkanContext &context, GLFWwindow *glfw_window) {
 
 void MakeAssets(VulkanContext &context) {
 
+  vertex_buffer_collection = new VertexBufferCollection();
   const std::vector<glm::vec3> positions = currentApp->GetScene().vertex_positions;
   std::vector<glm::vec3> unique_pos;
-  std::vector<size_t> indexes = GetIndexFromVertexData(positions, unique_pos);
+  const std::vector<uint32_t> indexes = GetIndexFromVertexData(positions, unique_pos);
+  vertex_buffer_collection->Add(unique_pos, indexes);
 
-  vertex_buffer_collection = new VertexBufferCollection();
-  std::vector<float> triangle_vertices = {
-      0.0f,  -0.1f, 0.0f, 1.0f, 0.0f, 0.5f, 0.0f,// 0
-      0.1f,  0.1f,  0.0f, 1.0f, 0.0f, 1.0f, 1.0f,// 1
-      -0.1f, 0.1f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f // 2
-  };
-  std::vector<uint32_t> triangle_indexes = {0, 1, 2};
-  vertex_buffer_collection->Add(MeshType::TRIANGLE, triangle_vertices, triangle_indexes);
-
-  // removed duplicate vertexes as we are swapping to indexed rendering
-  // remember we are drawing triangle primitives
-  std::vector<float> square_vertices = {
-      -0.1f, 0.1f,  1.0f, 0.0f, 0.0f, 0.0f, 1.0f,// 0
-      -0.1f, -0.1f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,// 1
-      0.1f,  -0.1f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,// 2
-      0.1f,  0.1f,  1.0f, 0.0f, 0.0f, 1.0f, 1.0f,// 3
-  };
-  std::vector<uint32_t> square_indexes = {
-      0, 1, 2,// 1st triangle
-      2, 3, 0 // 2nd triangle
-  };
-  vertex_buffer_collection->Add(MeshType::SQUARE, square_vertices, square_indexes);
-
-  std::vector<float> star_vertices = {
-      -0.1f,  -0.05f, 1.0f, 1.0f, 1.0f, 0.0f, 0.25f,//0
-      -0.04f, -0.05f, 1.0f, 1.0f, 1.0f, 0.3f, 0.25f,//1
-      -0.06f, 0.0f,   1.0f, 1.0f, 1.0f, 0.2f, 0.5f, //2
-      0.0f,   -0.1f,  1.0f, 1.0f, 1.0f, 0.5f, 0.0f, //3
-      0.04f,  -0.05f, 1.0f, 1.0f, 1.0f, 0.7f, 0.25f,//4
-      0.1f,   -0.05f, 1.0f, 1.0f, 1.0f, 1.0f, 0.25f,//5
-      0.06f,  0.0f,   1.0f, 1.0f, 1.0f, 0.8f, 0.5f, //6
-      0.08f,  0.1f,   1.0f, 1.0f, 1.0f, 0.9f, 1.0f, //7
-      0.0f,   0.02f,  1.0f, 1.0f, 1.0f, 0.5f, 0.6f, //8
-      -0.08f, 0.1f,   1.0f, 1.0f, 1.0f, 0.1f, 1.0f  //9
-  };
-  std::vector<uint32_t> star_indexes = {
-      0, 1, 2,// 1st triangle
-      1, 3, 4,// 2nd
-      2, 1, 4,// 3rd
-      4, 5, 6,// 4th
-      2, 4, 6,// 5th
-      6, 7, 8,// 6th
-      2, 6, 8,// 7th
-      2, 8, 9 // 8th
-
-  };
-  vertex_buffer_collection->Add(MeshType::STAR, star_vertices, star_indexes);
+  // std::vector<float> triangle_vertices = {
+  //     0.0f,  -0.1f, 0.0f, 1.0f, 0.0f, 0.5f, 0.0f,// 0
+  //     0.1f,  0.1f,  0.0f, 1.0f, 0.0f, 1.0f, 1.0f,// 1
+  //     -0.1f, 0.1f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f // 2
+  // };
+  // std::vector<uint32_t> triangle_indexes = {0, 1, 2};
+  // vertex_buffer_collection->Add(MeshType::TRIANGLE, triangle_vertices, triangle_indexes);
+  //
+  // // removed duplicate vertexes as we are swapping to indexed rendering
+  // // remember we are drawing triangle primitives
+  // std::vector<float> square_vertices = {
+  //     -0.1f, 0.1f,  1.0f, 0.0f, 0.0f, 0.0f, 1.0f,// 0
+  //     -0.1f, -0.1f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,// 1
+  //     0.1f,  -0.1f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,// 2
+  //     0.1f,  0.1f,  1.0f, 0.0f, 0.0f, 1.0f, 1.0f,// 3
+  // };
+  // std::vector<uint32_t> square_indexes = {
+  //     0, 1, 2,// 1st triangle
+  //     2, 3, 0 // 2nd triangle
+  // };
+  // vertex_buffer_collection->Add(MeshType::SQUARE, square_vertices, square_indexes);
+  //
+  // std::vector<float> star_vertices = {
+  //     -0.1f,  -0.05f, 1.0f, 1.0f, 1.0f, 0.0f, 0.25f,//0
+  //     -0.04f, -0.05f, 1.0f, 1.0f, 1.0f, 0.3f, 0.25f,//1
+  //     -0.06f, 0.0f,   1.0f, 1.0f, 1.0f, 0.2f, 0.5f, //2
+  //     0.0f,   -0.1f,  1.0f, 1.0f, 1.0f, 0.5f, 0.0f, //3
+  //     0.04f,  -0.05f, 1.0f, 1.0f, 1.0f, 0.7f, 0.25f,//4
+  //     0.1f,   -0.05f, 1.0f, 1.0f, 1.0f, 1.0f, 0.25f,//5
+  //     0.06f,  0.0f,   1.0f, 1.0f, 1.0f, 0.8f, 0.5f, //6
+  //     0.08f,  0.1f,   1.0f, 1.0f, 1.0f, 0.9f, 1.0f, //7
+  //     0.0f,   0.02f,  1.0f, 1.0f, 1.0f, 0.5f, 0.6f, //8
+  //     -0.08f, 0.1f,   1.0f, 1.0f, 1.0f, 0.1f, 1.0f  //9
+  // };
+  // std::vector<uint32_t> star_indexes = {
+  //     0, 1, 2,// 1st triangle
+  //     1, 3, 4,// 2nd
+  //     2, 1, 4,// 3rd
+  //     4, 5, 6,// 4th
+  //     2, 4, 6,// 5th
+  //     6, 7, 8,// 6th
+  //     2, 6, 8,// 7th
+  //     2, 8, 9 // 8th
+  //
+  // };
+  // vertex_buffer_collection->Add(MeshType::STAR, star_vertices, star_indexes);
 
   vertex_buffer_collection->Finalize(context.GetVulkanLogicalDevice(), context.GetVulkanPhysicalDevice(),
                                      context.GetVulkanDevice().GetVkGraphicsQueue(), context.GetVulkanCommandPool().GetVkMainCommandBuffer());
 
   // Materials
-  std::unordered_map<MeshType, const char *> filenames = {{MeshType::TRIANGLE, "../../textures/folds.jpg"},
-                                                          {MeshType::SQUARE, "../../textures/paper_crinkle.jpg"},
-                                                          {MeshType::STAR, "../../textures/water.jpg"}};
-
+  // TODO: Fix this to get the file path directly from assimp importer
+  std::unordered_map<MeshType, const char *> filenames = {{MeshType::kVertex, "../../models/swiggle_texture.png"}};
   int idx = 0;
   VulkanTextureInput input = {.format = vk::Format::eR8G8B8A8Unorm};
   for (auto &kPair : filenames) {
@@ -141,8 +140,6 @@ void MakeAssets(VulkanContext &context) {
     materials_.insert(std::make_pair(kPair.first, texture));
     idx++;
   }
-
-  // Create descriptor pool for textures
 }
 
 void PrepareScene(vk::CommandBuffer command_buffer) {
@@ -226,9 +223,9 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
   render_pass_info.renderArea.offset = vk::Offset2D{0, 0};
   render_pass_info.renderArea.extent = context.GetVulkanSwapChain().GetSwapChainExtent();
   vk::ClearValue clear_value = {};
-  clear_value.color.float32[0] = 0.0f;
-  clear_value.color.float32[1] = 0.0f;
-  clear_value.color.float32[2] = 0.0f;
+  clear_value.color.float32[0] = 0.9375f;
+  clear_value.color.float32[1] = 0.8398f;
+  clear_value.color.float32[2] = 0.7813f;
   clear_value.color.float32[3] = 1.0f;
   vk::ClearValue depth_clear = vk::ClearDepthStencilValue(1.0f, 0);
 
@@ -256,9 +253,13 @@ static void RecordDrawCommands(vk::CommandBuffer command_buffer, uint32_t image_
   std::vector<glm::vec3> const &kSquarePositions = currentApp->GetScene().square_positions_;
   std::vector<glm::vec3> const &kStarPositions = currentApp->GetScene().star_positions_;
 
-  RenderObjects(command_buffer, MeshType::TRIANGLE, start_instance, static_cast<uint32_t>(kTrianglePositions.size()));
-  RenderObjects(command_buffer, MeshType::SQUARE, start_instance, static_cast<uint32_t>(kSquarePositions.size()));
-  RenderObjects(command_buffer, MeshType::STAR, start_instance, static_cast<uint32_t>(kStarPositions.size()));
+  std::vector<glm::vec3> const &kVertexPositions = currentApp->GetScene().vertex_positions;
+
+  RenderObjects(command_buffer, MeshType::kVertex, start_instance, static_cast<uint32_t>(kVertexPositions.size()));
+
+  // RenderObjects(command_buffer, MeshType::TRIANGLE, start_instance, static_cast<uint32_t>(kTrianglePositions.size()));
+  // RenderObjects(command_buffer, MeshType::SQUARE, start_instance, static_cast<uint32_t>(kSquarePositions.size()));
+  // RenderObjects(command_buffer, MeshType::STAR, start_instance, static_cast<uint32_t>(kStarPositions.size()));
 }
 
 /**
@@ -371,8 +372,7 @@ void GLACEON_API RunGame(Application *app) {
     return;
   }
 
-  bool vulkan_supported = glfwVulkanSupported();
-  if (vulkan_supported) {
+  if (glfwVulkanSupported()) {
     GTRACE("Vulkan supported");
   } else {
     GTRACE("Vulkan not supported");

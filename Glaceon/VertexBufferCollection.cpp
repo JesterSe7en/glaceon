@@ -34,16 +34,34 @@ void VertexBufferCollection::Add(MeshType type, const std::vector<float> &vertic
   offset_ += vertex_count;
 }
 
-void VertexBufferCollection::Add(const std::vector<glm::vec3> &verticies, const std::vector<uint32_t> &indexes) { return; }
+void VertexBufferCollection::Add(const std::vector<glm::vec3> &verticies, const std::vector<uint32_t> &indexes) {
+  int vertex_count = static_cast<int>(verticies.size());
+  int index_count = static_cast<int>(indexes.size());
+  int last_index = static_cast<int>(indexes_.size());
+
+  first_indexes_.insert(std::make_pair(MeshType::kVertex, last_index));
+  index_counts_.insert(std::make_pair(MeshType::kVertex, index_count));
+  for (glm::vec3 v : verticies) {
+    vertices_.push_back(v.x);
+    vertices_.push_back(v.y);
+    vertices_.push_back(v.z);
+  }
+  for (uint32_t i : indexes) { indexes_.push_back(i + offset_); }
+  offset_ += vertex_count;
+}
 
 void VertexBufferCollection::Finalize(vk::Device logical_device, vk::PhysicalDevice physical_device, vk::Queue queue,
                                       vk::CommandBuffer command_buffer) {
   vk_device_ = logical_device;
 
+  if (vertices_.empty()) {
+    GERROR("Cannot finialize vertex buffer collection as no verticies were given.");
+    return;
+  }
+
   // ----------- Vertex Buffer Transfer ------------
-  VulkanUtils::BufferInputParams params;
-  params = {logical_device, physical_device, vertices_.size() * sizeof(float), vk::BufferUsageFlagBits::eTransferSrc,
-            vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent};
+  VulkanUtils::BufferInputParams params = {logical_device, physical_device, vertices_.size() * sizeof(float), vk::BufferUsageFlagBits::eTransferSrc,
+                                           vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent};
 
   VulkanUtils::Buffer staging_buffer = VulkanUtils::CreateBuffer(params);
 

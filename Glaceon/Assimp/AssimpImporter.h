@@ -9,12 +9,13 @@ namespace glaceon {
 
 struct Assimp_ModelData {
   std::vector<glm::vec3> vert_data;
+  glm::vec3 diffuse_color;
   std::vector<glm::vec3> uv_data;
 };
 
 class AssimpImporter {
  public:
-  static Assimp_ModelData GLACEON_API ImportObjectModel(const std::string& pFile);
+  static Assimp_ModelData GLACEON_API ImportObjectModel(const std::string& pObjFile);
 
  private:
   static std::vector<glm::vec3> GetVertexData(const aiScene* scene, size_t meshIdx);
