@@ -1,8 +1,8 @@
 #include "Glaceon.h"
 
 #include "Application.h"
+#include "Core/Logger.h"
 #include "GLFW/glfw3.h"
-#include "Logger.h"
 #include "Utils.h"
 #include "VulkanRenderer/VulkanRenderPass.h"
 

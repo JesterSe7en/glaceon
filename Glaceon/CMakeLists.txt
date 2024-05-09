@@ -5,8 +5,8 @@ set(Header_Files
         #        framework.h
         Glaceon.h
         pch.h
-        Base.h
-        Logger.h
+        Core/Base.h
+        Core/Logger.h
         Application.h
         ${CMAKE_SOURCE_DIR}/extern/imgui/imconfig.h
         ${CMAKE_SOURCE_DIR}/extern/imgui/imgui.h
@@ -39,7 +39,7 @@ set(Source_Files
         #        dllmain.cpp
         Glaceon.cpp
         pch.cpp
-        Logger.cpp
+        Core/Logger.cpp
         Application.cpp
         ${CMAKE_SOURCE_DIR}/extern/imgui/imgui.cpp
         ${CMAKE_SOURCE_DIR}/extern/imgui/imgui_demo.cpp
@@ -74,6 +74,8 @@ set(ALL_FILES
         Assimp/AssimpImporter.h
         Utils.cpp
         Utils.h
+        Core/Memory.cpp
+        Core/Memory.h
 )
 
 # Target

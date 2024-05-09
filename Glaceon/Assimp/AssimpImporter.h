@@ -3,7 +3,7 @@
 
 #include <assimp/scene.h>
 
-#include "../Base.h"
+#include "../Core/Base.h"
 
 namespace glaceon {
 

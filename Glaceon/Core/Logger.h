@@ -1,7 +1,7 @@
 #ifndef GLACEON_GLACEON_LOGGER_H_
 #define GLACEON_GLACEON_LOGGER_H_
 
-#include "pch.h"
+#include "../pch.h"
 
 #ifdef _DEBUG
 #define DEBUG_LOG_ENABLED 1

@@ -1,6 +1,6 @@
 #include "VulkanBackend.h"
 
-#include "../Logger.h"
+#include "../Core/Logger.h"
 #include "VulkanContext.h"
 
 namespace glaceon {

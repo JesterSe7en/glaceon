@@ -2,8 +2,9 @@
 #define GLACEON_GLACEON_APPLICATION_H_
 
 #include "Assimp/AssimpImporter.h"
-#include "Base.h"
-#include "Logger.h"
+#include "Core/Base.h"
+#include "Core/Logger.h"
+#include "Core/Memory.h"
 #include "Scene.h"
 #include "VulkanRenderer/VulkanContext.h"
 #include "pch.h"
@@ -29,6 +30,7 @@ class GLACEON_API Application {
  private:
   VulkanContext context_;
   Scene scene_;
+  MemorySubsystem memory_subsystem_;
 };
 }// namespace glaceon
 

@@ -1,7 +1,7 @@
 #include "VulkanSwapChain.h"
 
-#include "../Base.h"
-#include "../Logger.h"
+#include "../Core/Base.h"
+#include "../Core/Logger.h"
 #include "VulkanContext.h"
 
 namespace glaceon {

@@ -4,7 +4,7 @@
 
 #include <assimp/Importer.hpp>
 
-#include "../Logger.h"
+#include "../Core/Logger.h"
 
 namespace glaceon {
 

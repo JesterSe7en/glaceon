@@ -1,16 +1,23 @@
 #include "VulkanTexture.h"
 #define STB_IMAGE_IMPLEMENTATION
-#include "../Base.h"
-#include "../Logger.h"
-#include "VulkanContext.h"
 #include <stb_image.h>
+
+#include "../Core/Base.h"
+#include "../Core/Logger.h"
+#include "VulkanContext.h"
 
 namespace glaceon {
 
 VulkanTexture::VulkanTexture(VulkanContext &context, const vk::DescriptorSet target_descriptor_set, const char *filename,
                              const VulkanTextureInput &input)
-  : width_(0), height_(0), channels_(0), filename_(filename), input_(input), pixels_(nullptr), vk_descriptor_set_(target_descriptor_set),
-    context_(context) {
+    : width_(0),
+      height_(0),
+      channels_(0),
+      filename_(filename),
+      input_(input),
+      pixels_(nullptr),
+      vk_descriptor_set_(target_descriptor_set),
+      context_(context) {
   LoadImageFromFile();
   CreateVkImage();
   Populate();

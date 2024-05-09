@@ -2,8 +2,8 @@
 
 #include <vulkan/vulkan_structs.hpp>
 
-#include "../Base.h"
-#include "../Logger.h"
+#include "../Core/Base.h"
+#include "../Core/Logger.h"
 
 namespace glaceon {
 std::vector<char> VulkanUtils::ReadFile(const std::string &filename) {
