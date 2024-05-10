@@ -25,6 +25,8 @@ class VulkanBackend {
   static bool IsExtensionAvailable(const std::vector<vk::ExtensionProperties> &all_extensions, const char *extension_to_check);
   static VkBool32 DebugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT message_severity, VkDebugUtilsMessageTypeFlagsEXT message_type,
                                 const VkDebugUtilsMessengerCallbackDataEXT *p_callback_data, void *p_user_data);
+
+  void *VulkanAllocate(void *user_data, size_t size, size_t alignment, vk::SystemAllocationScope scope);
 };
 
 }// namespace glaceon

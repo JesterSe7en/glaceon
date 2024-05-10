@@ -27,7 +27,7 @@ class MemorySubsystem {
   static void *GCopyMemory(void *dest, const void *src, uint64_t size);
   static void *GSetMemory(void *dest, int value, uint64_t size);
 
-  static std::string GetStats();
+  static void PrintStats();
 };
 
 }// namespace glaceon

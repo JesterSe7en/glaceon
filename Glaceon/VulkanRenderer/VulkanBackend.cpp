@@ -1,6 +1,7 @@
 #include "VulkanBackend.h"
 
 #include "../Core/Logger.h"
+#include "../Core/Memory.h"
 #include "VulkanContext.h"
 
 namespace glaceon {
@@ -80,7 +81,10 @@ void VulkanBackend::Initialize() {
   instance_create_info.enabledExtensionCount = static_cast<uint32_t>(instance_extensions.size());
   instance_create_info.ppEnabledExtensionNames = instance_extensions.data();
 
-  if (vk::createInstance(&instance_create_info, nullptr, &instance_) != vk::Result::eSuccess) {
+  // TODO: add custom allocators
+  vk::AllocationCallbacks cb = nullptr;
+
+  if (vk::createInstance(&instance_create_info, &cb, &instance_) != vk::Result::eSuccess) {
     GERROR("Failed to create Vulkan instance");
     return;
   }
@@ -127,5 +131,9 @@ bool VulkanBackend::IsExtensionAvailable(const std::vector<vk::ExtensionProperti
     if (strcmp(kExt.extensionName, extension_to_check) == 0) { return true; }
   }
   return false;
+}
+
+void *VulkanAllocate(void *user_data, size_t size, size_t alignment, vk::SystemAllocationScope scope) {
+  return nullptr;
 }
 }// namespace glaceon

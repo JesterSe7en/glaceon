@@ -1,8 +1,9 @@
 #include "Memory.h"
 #include "Logger.h"
+#include <winbase.h>
 
 #define WIN32_LEAN_AND_MEAN
-#include <string.h>
+#include <cstring>
 #include <windows.h>
 
 namespace glaceon {
@@ -41,6 +42,7 @@ void *MemorySubsystem::GAllocate(uint64_t size, MemoryTag tag) {
   GTRACE("Tagged allocations: {}", tag_names[tag]);
 
   // TODO: allow for alignment bool?
+  // Following only works on Windows
   return (void *) HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, size);// also zeroes memory
 }
 
@@ -71,8 +73,9 @@ void *MemorySubsystem::GSetMemory(void *dest, int value, uint64_t size) {
   return memset(dest, value, size);
 }
 
-std::string MemorySubsystem::GetStats() {
-  std::string buffer = "System memory in use:\n";
+// TODO: convert this to return a string
+void MemorySubsystem::PrintStats() {
+  GTRACE("System memory in use:");
 
   // print out memory stats for each memory tag type
   const uint64_t kKib = 1024;
@@ -81,18 +84,15 @@ std::string MemorySubsystem::GetStats() {
 
   for (uint32_t i = 0; i < MEMORY_TAG_MAX_TAGS; i++) {
     if (stats_.tagged_allocations[i] >= kGib) {
-      buffer.append(std::sprintf("%s: %.2f %sd\n", tag_names[i].c_str(), stats_.tagged_allocations[i] / static_cast<float>(kGib), "GiB"));
+      GTRACE("{}: {:03.2f} {}", tag_names[i], stats_.tagged_allocations[i] / static_cast<float>(kGib), "GiB");
     } else if (stats_.tagged_allocations[i] >= kMib) {
-      buffer += std::snprintf("%s: %.2f %sd\n", tag_names[i].c_str(), stats_.tagged_allocations[i] / static_cast<float>(kMib), "MiB");
+      GTRACE("{}: {:03.2f} {}", tag_names[i], stats_.tagged_allocations[i] / static_cast<float>(kMib), "MiB");
     } else if (stats_.tagged_allocations[i] >= kKib) {
-      buffer += std::snprintf("%s: %.2f %sd\n", tag_names[i].c_str(), stats_.tagged_allocations[i] / static_cast<float>(kKib), "KiB");
+      GTRACE("{}: {:03.2f} {}", tag_names[i], stats_.tagged_allocations[i] / static_cast<float>(kKib), "KiB");
     } else {
-      buffer += std::snprintf("%s: %.2f %sd\n", tag_names[i].c_str(), stats_.tagged_allocations[i], "B");
+      GTRACE("{}: {:03.2f} {}", tag_names[i], static_cast<float>(stats_.tagged_allocations[i]), "B");
     }
-    buffer += "\n";// Add a new line for each memory tag type
   }
-
-  return buffer;
 }
 
 }// namespace glaceon
