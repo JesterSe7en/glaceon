@@ -1,8 +1,8 @@
 set(PROJECT_NAME SandboxApp)
 
-################################################################################
+# ###############################################################################
 # Source groups
-################################################################################
+# ###############################################################################
 set(Source_Files
         Game.cpp
 )
@@ -19,9 +19,9 @@ set(ALL_FILES
         ${Header_Files}
 )
 
-################################################################################
+# ###############################################################################
 # Target
-################################################################################
+# ###############################################################################
 add_executable(${PROJECT_NAME} ${ALL_FILES})
 
 use_props(${PROJECT_NAME} "${CMAKE_CONFIGURATION_TYPES}" "${DEFAULT_CXX_PROPS}")
@@ -34,15 +34,15 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
         INTERPROCEDURAL_OPTIMIZATION_RELEASE "TRUE"
         INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO "TRUE"
 )
-################################################################################
+# ###############################################################################
 # Include directories
-################################################################################
+# ###############################################################################
 target_include_directories(${PROJECT_NAME} PUBLIC
         "${CMAKE_CURRENT_SOURCE_DIR}/../Glaceon")
 
-################################################################################
+# ###############################################################################
 # Compile definitions
-################################################################################
+# ###############################################################################
 target_compile_definitions(${PROJECT_NAME} PRIVATE
         "$<$<CONFIG:Debug>:"
         "_DEBUG"
@@ -58,42 +58,43 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
         "_UNICODE"
 )
 
-################################################################################
+# ###############################################################################
 # Compile and link options
-################################################################################
-if (MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE
-            $<$<CONFIG:Release>:
-            /Oi;
-            /Gy
-            >
-            $<$<CONFIG:RelWithDebInfo>:
-            /Oi;
-            /Gy
-            >
-            /permissive-;
-            /sdl;
-            /W3;
-            ${DEFAULT_CXX_DEBUG_INFORMATION_FORMAT};
-            ${DEFAULT_CXX_EXCEPTION_HANDLING}
-    )
-    target_link_options(${PROJECT_NAME} PRIVATE
-            $<$<CONFIG:Debug>:
-            /DEBUG
-            >
-            $<$<CONFIG:Release>:
-            /OPT:REF;
-            /OPT:ICF
-            >
-            $<$<CONFIG:RelWithDebInfo>:
-            /DEBUG;
-            /OPT:REF;
-            /OPT:ICF
-            >
-            /SUBSYSTEM:CONSOLE
-    )
-elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    target_compile_options(${PROJECT_NAME} PRIVATE
+# ###############################################################################
+# if (MSVC)
+#     target_compile_options(${PROJECT_NAME} PRIVATE
+#             $<$<CONFIG:Release>:
+#             /Oi;
+#             /Gy
+#             >
+#             $<$<CONFIG:RelWithDebInfo>:
+#             /Oi;
+#             /Gy
+#             >
+#             /permissive-;
+#             /sdl;
+#             /W3;
+#             ${DEFAULT_CXX_DEBUG_INFORMATION_FORMAT};
+#             ${DEFAULT_CXX_EXCEPTION_HANDLING}
+#     )
+#     target_link_options(${PROJECT_NAME} PRIVATE
+#             $<$<CONFIG:Debug>:
+#             /DEBUG
+#             >
+#             $<$<CONFIG:Release>:
+#             /OPT:REF;
+#             /OPT:ICF
+#             >
+#             $<$<CONFIG:RelWithDebInfo>:
+#             /DEBUG;
+#             /OPT:REF;
+#             /OPT:ICF
+#             >
+#             /SUBSYSTEM:CONSOLE
+#     )
+# else
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  target_compile_options(${PROJECT_NAME} PRIVATE
             $<$<CONFIG:Release>:
             -O3;
             -march=native
@@ -111,7 +112,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "
             -march=native
             >
     )
-    target_link_options(${PROJECT_NAME} PRIVATE
+  target_link_options(${PROJECT_NAME} PRIVATE
             $<$<CONFIG:Release>:
             -Wl,--strip-all
             >
@@ -121,9 +122,9 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "
     )
 endif ()
 
-################################################################################
+# ###############################################################################
 # Dependencies
-################################################################################
+# ###############################################################################
 # Link with other targets.
 target_link_libraries(${PROJECT_NAME} PRIVATE
         Glaceon

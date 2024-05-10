@@ -94,5 +94,5 @@ std::string MemorySubsystem::GetStats() {
 
   return buffer;
 }
-}
+
 }// namespace glaceon

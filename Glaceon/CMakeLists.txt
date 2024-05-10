@@ -115,36 +115,37 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 )
 
 # Compile and link options
-if (MSVC)
-    target_compile_options(${PROJECT_NAME} PRIVATE
-            $<$<CONFIG:Release>:
-            /Oi;
-            /Gy
-            >
-            $<$<CONFIG:RelWithDebInfo>:
-            /Oi;
-            /Gy
-            >
-            /permissive-;
-            /sdl;
-            /W3;
-            ${DEFAULT_CXX_DEBUG_INFORMATION_FORMAT};
-            ${DEFAULT_CXX_EXCEPTION_HANDLING}
-    )
-    target_link_options(${PROJECT_NAME} PRIVATE
-            $<$<CONFIG:Release>:
-            /OPT:REF;
-            /OPT:ICF
-            >
-            $<$<CONFIG:RelWithDebInfo>:
-            /OPT:REF;
-            /OPT:ICF
-            >
-            /DEBUG;
-            /SUBSYSTEM:WINDOWS
-    )
-elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    target_compile_options(${PROJECT_NAME} PRIVATE
+# if (MSVC)
+#     target_compile_options(${PROJECT_NAME} PRIVATE
+#             $<$<CONFIG:Release>:
+#             /Oi;
+#             /Gy
+#             >
+#             $<$<CONFIG:RelWithDebInfo>:
+#             /Oi;
+#             /Gy
+#             >
+#             /permissive-;
+#             /sdl;
+#             /W3;
+#             ${DEFAULT_CXX_DEBUG_INFORMATION_FORMAT};
+#             ${DEFAULT_CXX_EXCEPTION_HANDLING}
+#     )
+#     target_link_options(${PROJECT_NAME} PRIVATE
+#             $<$<CONFIG:Release>:
+#             /OPT:REF;
+#             /OPT:ICF
+#             >
+#             $<$<CONFIG:RelWithDebInfo>:
+#             /OPT:REF;
+#             /OPT:ICF
+#             >
+#             /DEBUG;
+#             /SUBSYSTEM:WINDOWS
+#     )
+# else
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+  target_compile_options(${PROJECT_NAME} PRIVATE
             $<$<CONFIG:Release>:
             -O3;
             -march=native
@@ -161,7 +162,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "
             -march=native
             >
     )
-    target_link_options(${PROJECT_NAME} PRIVATE
+  target_link_options(${PROJECT_NAME} PRIVATE
             $<$<CONFIG:Release>:
             -Wl,--strip-all
             >
