@@ -1,8 +1,11 @@
 #include "Memory.h"
 
 #include <cstddef>
+#include <cstdint>
 #include <cstring>
+#include <memory>
 
+#include "../Utils.h"
 #include "Logger.h"
 
 namespace glaceon {
@@ -103,13 +106,16 @@ LinearAllocator::~LinearAllocator() { current_pos_ = nullptr; }
  * @return void* A pointer to the allocated memory block, or nullptr if the allocation failed.
  */
 void *LinearAllocator::Allocate(size_t size, uint8_t alignment) {
-  assert(size != 0);
-  uintptr_t align_address = AlignAddress(reinterpret_cast<uintptr_t>(current_pos_), alignment);
-  if (used_memory_ + size > size_) return nullptr;
+  if (size == 0) return nullptr;
 
-  current_pos_ = (void *) (align_address + size);
-  used_memory_ += size;
-  return (void *) align_address;
+  uint8_t adjustment = AlignSize(current_pos_, alignment);
+  if (used_memory_ + size + adjustment > size_) return nullptr;// no more memory available with given size and alignment
+
+  uintptr_t aligned_address = reinterpret_cast<uintptr_t>(current_pos_) + adjustment;
+  used_memory_ += size + adjustment;
+  current_pos_ = reinterpret_cast<uintptr_t *>(aligned_address + size);// Move current_pos_ by the allocated size
+
+  return reinterpret_cast<void *>(aligned_address);
 }
 
 /**
@@ -120,11 +126,6 @@ void *LinearAllocator::Allocate(size_t size, uint8_t alignment) {
 void LinearAllocator::Clear() {
   current_pos_ = start_;
   used_memory_ = 0;
-}
-
-uintptr_t LinearAllocator::AlignAddress(uintptr_t address, uint32_t alignment) {
-  const size_t kM = alignment - 1;
-  return (address + kM) & ~kM;
 }
 
 // -------------------------- STACK ALLOCATOR --------------------------
@@ -151,22 +152,24 @@ StackAllocator::~StackAllocator() {
 }
 
 void *StackAllocator::Allocate(size_t size, uint8_t alignment) {
-  assert(size != 0);
-  uintptr_t align_address = AlignAddress(reinterpret_cast<uintptr_t>(current_pos_), alignment);
+  if (size == 0) return nullptr;
 
-  if (used_memory_ + size > size_) return nullptr;
+  uint8_t adjustment = AlignSize(current_pos_, alignment);
+  if (used_memory_ + size + adjustment > size_) return nullptr;
+
+  void *align_address = reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(current_pos_) + adjustment);
 
   // Prepend the AllocationHeader to the current position
   auto *header = (AllocationHeader *) (&align_address - sizeof(AllocationHeader));
-  header->alignment = alignment;
+  header->adjustment = adjustment;
 
 #if _DEBUG
   header->prev_address_ = prev_position_;
   prev_position_ = align_address;
 #endif// _DEBUG
 
-  current_pos_ = align_address;
-  used_memory_ += size;
+  current_pos_ = reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(align_address) + size);// put pointer to next free space
+  used_memory_ += size + adjustment;
 
   return align_address;
 }
@@ -174,13 +177,36 @@ void *StackAllocator::Allocate(size_t size, uint8_t alignment) {
 void StackAllocator::Deallocate(void *ptr) {
   assert(ptr == prev_position_);
 
-  auto *header = (AllocationHeader *) (&ptr - sizeof(AllocationHeader));
-  /
+  auto *header = reinterpret_cast<AllocationHeader *>(reinterpret_cast<uintptr_t>(ptr) - sizeof(AllocationHeader));
+  used_memory_ -= reinterpret_cast<uintptr_t>(current_pos_) - header->adjustment;
+  current_pos_ = reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(ptr) - header->adjustment);// set current position to next free space
+
+#if _DEBUG
+  prev_position_ = header->prev_address_;
+#endif// _DEBUG
 }
 
-uintptr_t StackAllocator::AlignAddress(uintptr_t address, uint32_t alignment) {
-  const size_t kM = alignment - 1;
-  return (address + kM) & ~kM;
+// -------------------------- FREE-LIST ALLOCATOR --------------------------
+FreeListAllocator::FreeListAllocator(size_t size, void *start) {
+  assert(size > 0);
+  free_blocks_->size = size;
+  free_blocks_->next = nullptr;
+}
+
+FreeListAllocator::~FreeListAllocator() { free_blocks_ = nullptr; }
+
+void *FreeListAllocator::Allocate(size_t size, uint8_t alignment) {
+  assert(size != 0 && alignment != 0);
+  FreeBlock *prev_free_block = nullptr;
+  FreeBlock *free_block = free_blocks_;
+
+  while (free_block != nullptr) {
+    if (free_block->size >= size) {
+      prev_free_block = free_block;
+      free_block = free_block->next;
+      continue;
+    }
+  }
 }
 
 }// namespace glaceon

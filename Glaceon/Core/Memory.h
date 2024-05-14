@@ -40,7 +40,6 @@ class LinearAllocator {
   void Clear();
 
  private:
-  uintptr_t AlignAddress(uintptr_t address, uint32_t alignment);
   void *current_pos_;
   void *start_;
   size_t size_;
@@ -57,7 +56,6 @@ class StackAllocator {
   void Clear();
 
  private:
-  uintptr_t AlignAddress(uintptr_t address, uint32_t alignment);
   void *current_pos_;
   void *start_;
   size_t size_;
@@ -72,8 +70,29 @@ class StackAllocator {
     void *prev_address_;
 #endif// _DEBUG
 
-    uint8_t alignment;
+    uint8_t adjustment;// how many bytes to adjust to align the next allocation
   };
+};
+
+class FreeListAllocator {
+ public:
+  FreeListAllocator(size_t size, void *start);
+  ~FreeListAllocator();
+
+  void *Allocate(size_t size, uint8_t alignment);
+  void Deallocate(void *ptr);
+
+ private:
+  struct AllocationHeader {
+    size_t size;
+    uint8_t adjustment;// how many bytes to adjust to align the next allocation
+  };
+  struct FreeBlock {
+    size_t size;
+    FreeBlock *next;
+  };
+
+  FreeBlock *free_blocks_;
 };
 
 }// namespace glaceon
