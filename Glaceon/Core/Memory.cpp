@@ -301,9 +301,7 @@ void *FreeListAllocator::Allocate(size_t size, uint8_t alignment) {
 // Deallocate function to release memory allocated by the FreeListAllocator
 void FreeListAllocator::Deallocate(void *ptr) {
   // Check if the pointer is nullptr, if so, return immediately
-  if (ptr == nullptr) { 
-    return; 
-  }
+  if (ptr == nullptr) { return; }
 
   // Get the AllocationHeader based on the provided pointer
   auto *header = reinterpret_cast<AllocationHeader *>(reinterpret_cast<uintptr_t *>(ptr) - sizeof(AllocationHeader));
@@ -319,9 +317,7 @@ void FreeListAllocator::Deallocate(void *ptr) {
   // Iterate through FreeBlocks to find the appropriate location to deallocate
   while (free_block != nullptr) {
     // Break the loop if the current FreeBlock is beyond the block_end
-    if (reinterpret_cast<uintptr_t>(free_block) > block_end) {
-      break;
-    }
+    if (reinterpret_cast<uintptr_t>(free_block) > block_end) { break; }
     prev_free_block = free_block;
     free_block = free_block->next;
   }
@@ -338,7 +334,7 @@ void FreeListAllocator::Deallocate(void *ptr) {
     prev_free_block->size = header->size;
   } else {
     // Create a new FreeBlock and adjust pointers accordingly
-    FreeBlock* t = (FreeBlock *) block_start;
+    FreeBlock *t = (FreeBlock *) block_start;
     t->size = header->size;
     t->next = prev_free_block->next;
     prev_free_block->next = t;
@@ -353,6 +349,64 @@ void FreeListAllocator::Deallocate(void *ptr) {
 
   // Update the used memory and complete deallocation
   used_memory_ -= header->size;
+}
+
+/**
+ * @brief Constructor for PoolAllocator.
+ * 
+ * @param objSize Size of each object in the pool.
+ * @param alignment Alignment requirement for each object.
+ * @param size Total size of the memory pool.
+ * @param start Starting address of the memory pool.
+ */
+PoolAllocator::PoolAllocator(size_t objSize, uint8_t alignment, size_t size, void *start) : objectAlignment(alignment), objectSize(objSize) {
+  // Calculate adjustment for alignment
+  uint8_t adjustment = AlignSize(start, alignment);
+
+  // Set the free list pointer
+  free_list_ = reinterpret_cast<void **>(reinterpret_cast<uintptr_t>(start) + adjustment);
+
+  // Calculate the number of objects that can fit in the pool
+  size_t numObjects = (size - adjustment) / objSize;
+
+  // Initialize the free list
+  void **p = free_list_;
+  for (size_t i = 0; i < numObjects - 1; i++) {
+    *p = reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(start) + adjustment + i * objSize);
+    p++;
+  }
+
+  // Set the last element of the free list to nullptr
+  *p = nullptr;
+}
+
+PoolAllocator::~PoolAllocator() { free_list_ = nullptr; }
+
+void *PoolAllocator::Allocate(size_t size, uint8_t alignment) {
+  // Check if the size, alignment, or free list is invalid
+  if (size == 0 || alignment == 0 || size != objectSize || alignment != objectAlignment || free_list_ == nullptr) {
+    return nullptr;// Return nullptr as allocation is not possible
+  }
+
+  // Get the pointer to the next free block
+  void *ptr = *free_list_;
+
+  // Update the free list pointer to the next free block
+  free_list_ = (void **) *free_list_;
+
+  // Increase the used memory by the allocated size
+  used_memory_ += size;
+
+  return ptr;// Return the allocated memory block
+}
+
+void PoolAllocator::Deallocate(void *ptr) {
+  // Set the next pointer of the deallocated block to the current free list
+  *((void **) ptr) = free_list_;
+  // Update the free list to point to the deallocated block, making it the new head of the free list
+  free_list_ = (void **) ptr;
+  // Decrease the used memory by the size of the deallocated block
+  used_memory_ -= objectSize;
 }
 
 }// namespace glaceon

@@ -109,19 +109,19 @@ class FreeListAllocator {
 
 class PoolAllocator {
  public:
-  PoolAllocator(size_t size, void *start);
+  PoolAllocator(size_t objSize, uint8_t alignment, size_t size, void *start);
   ~PoolAllocator();
 
   void *Allocate(size_t size, uint8_t alignment);
   void Deallocate(void *ptr);
-  void Clear();
 
  private:
   PoolAllocator(const PoolAllocator &) = delete;
   PoolAllocator &operator=(const PoolAllocator &) = delete;
 
-  void *current_pos_;
-  void *start_;
+  uint8_t objectAlignment;
+  size_t objectSize;
+  void **free_list_;
   size_t size_;
   size_t used_memory_;
 };
