@@ -2,11 +2,11 @@ set(PROJECT_NAME Glaceon)
 
 # Source groups
 set(Header_Files
-        #        framework.h
         Glaceon.h
         pch.h
         Core/Base.h
         Core/Logger.h
+        Core/Interface_Allocator.h
         Application.h
         ${CMAKE_SOURCE_DIR}/extern/imgui/imconfig.h
         ${CMAKE_SOURCE_DIR}/extern/imgui/imgui.h
@@ -36,7 +36,6 @@ set(Header_Files
 source_group("Header Files" FILES ${Header_Files})
 
 set(Source_Files
-        #        dllmain.cpp
         Glaceon.cpp
         pch.cpp
         Core/Logger.cpp
@@ -74,8 +73,13 @@ set(ALL_FILES
         Assimp/AssimpImporter.h
         Utils.cpp
         Utils.h
-        Core/Memory.cpp
-        Core/Memory.h
+        Core/MemorySubsystem.cpp
+        Core/MemorySubsystem.h
+        Core/LinearAllocator.cpp
+        Core/StackAllocator.cpp
+        Core/StackAllocator.h
+        Core/FreeListAllocator.cpp
+        Core/FreeListAllocator.h
 )
 
 # Target
@@ -145,7 +149,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 #     )
 # else
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-  target_compile_options(${PROJECT_NAME} PRIVATE
+    target_compile_options(${PROJECT_NAME} PRIVATE
             $<$<CONFIG:Release>:
             -O3;
             -march=native
@@ -162,7 +166,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU"
             -march=native
             >
     )
-  target_link_options(${PROJECT_NAME} PRIVATE
+    target_link_options(${PROJECT_NAME} PRIVATE
             $<$<CONFIG:Release>:
             -Wl,--strip-all
             >

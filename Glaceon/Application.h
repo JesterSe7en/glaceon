@@ -4,7 +4,7 @@
 #include "Assimp/AssimpImporter.h"
 #include "Core/Base.h"
 #include "Core/Logger.h"
-#include "Core/Memory.h"
+#include "Core/MemorySubsystem.h"
 #include "Scene.h"
 #include "VulkanRenderer/VulkanContext.h"
 #include "pch.h"

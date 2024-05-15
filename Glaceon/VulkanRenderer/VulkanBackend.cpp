@@ -1,7 +1,7 @@
 #include "VulkanBackend.h"
 
 #include "../Core/Logger.h"
-#include "../Core/Memory.h"
+#include "../Core/MemorySubsystem.h"
 #include "VulkanContext.h"
 
 namespace glaceon {
@@ -133,7 +133,5 @@ bool VulkanBackend::IsExtensionAvailable(const std::vector<vk::ExtensionProperti
   return false;
 }
 
-void *VulkanAllocate(void *user_data, size_t size, size_t alignment, vk::SystemAllocationScope scope) {
-  return nullptr;
-}
+void *VulkanAllocate(void *user_data, size_t size, size_t alignment, vk::SystemAllocationScope scope) { return nullptr; }
 }// namespace glaceon
