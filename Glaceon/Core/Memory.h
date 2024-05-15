@@ -26,7 +26,6 @@ class MemorySubsystem {
   static void *GZeroMemory(void *mem_block, uint64_t size);
   static void *GCopyMemory(void *dest, const void *src, uint64_t size);
   static void *GSetMemory(void *dest, int value, uint64_t size);
-  static uintptr_t AlignAddress(uintptr_t address, uint32_t alignment);
 
   static void PrintStats();
 };
@@ -40,6 +39,11 @@ class LinearAllocator {
   void Clear();
 
  private:
+  // Deleting the copy constructor to prevent copying of LinearAllocator objects
+  LinearAllocator(const LinearAllocator &) = delete;
+  // Deleting the copy assignment operator to prevent assigning values to another LinearAllocator object
+  LinearAllocator &operator=(const LinearAllocator &) = delete;
+
   void *current_pos_;
   void *start_;
   size_t size_;
@@ -56,6 +60,9 @@ class StackAllocator {
   void Clear();
 
  private:
+  StackAllocator(const StackAllocator &) = delete;
+  StackAllocator &operator=(const StackAllocator &) = delete;
+
   void *current_pos_;
   void *start_;
   size_t size_;
@@ -83,6 +90,9 @@ class FreeListAllocator {
   void Deallocate(void *ptr);
 
  private:
+  FreeListAllocator(const FreeListAllocator &) = delete;
+  FreeListAllocator &operator=(const FreeListAllocator &) = delete;
+
   struct AllocationHeader {
     size_t size;
     uint8_t adjustment;// how many bytes to adjust to align the next allocation
@@ -93,6 +103,27 @@ class FreeListAllocator {
   };
 
   FreeBlock *free_blocks_;
+  size_t size_;
+  size_t used_memory_;
+};
+
+class PoolAllocator {
+ public:
+  PoolAllocator(size_t size, void *start);
+  ~PoolAllocator();
+
+  void *Allocate(size_t size, uint8_t alignment);
+  void Deallocate(void *ptr);
+  void Clear();
+
+ private:
+  PoolAllocator(const PoolAllocator &) = delete;
+  PoolAllocator &operator=(const PoolAllocator &) = delete;
+
+  void *current_pos_;
+  void *start_;
+  size_t size_;
+  size_t used_memory_;
 };
 
 }// namespace glaceon
