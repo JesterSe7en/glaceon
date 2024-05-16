@@ -1,7 +1,3 @@
-//
-// Created by alyxc on 5/15/2024.
-//
-
 #ifndef GLACEON_GLACEON_CORE_FREELISTALLOCATOR_H_
 #define GLACEON_GLACEON_CORE_FREELISTALLOCATOR_H_
 
@@ -15,10 +11,10 @@ class FreeListAllocator {
   void *Allocate(size_t size, uint8_t alignment);
   void Deallocate(void *ptr);
 
- private:
   FreeListAllocator(const FreeListAllocator &) = delete;
   FreeListAllocator &operator=(const FreeListAllocator &) = delete;
 
+ private:
   struct AllocationHeader {
     size_t size;
     uint8_t adjustment;// how many bytes to adjust to align the next allocation

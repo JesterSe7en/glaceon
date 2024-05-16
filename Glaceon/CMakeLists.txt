@@ -80,6 +80,7 @@ set(ALL_FILES
         Core/StackAllocator.h
         Core/FreeListAllocator.cpp
         Core/FreeListAllocator.h
+        Core/PoolAllocator.cpp
 )
 
 # Target

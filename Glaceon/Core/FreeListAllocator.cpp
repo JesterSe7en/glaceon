@@ -1,8 +1,6 @@
-//
-// Created by alyxc on 5/15/2024.
-//
-
 #include "FreeListAllocator.h"
+
+#include "../Utils.h"
 
 namespace glaceon {
 
@@ -30,33 +28,33 @@ void *FreeListAllocator::Allocate(size_t size, uint8_t alignment) {
    */
 
   // Keep track of the previous free block in the list
-  FreeBlock *pPrev_free_block = nullptr;
+  FreeBlock *prev_free_block = nullptr;
 
   // Start at the beginning of the free list
-  FreeBlock *pFree_block = free_blocks_;
+  FreeBlock *free_block = free_blocks_;
 
   /*
    * Iterate through the free list, until we find a free block
    * that is big enough to hold the requested allocation.
    */
-  while (pFree_block != nullptr) {
+  while (free_block != nullptr) {
 
     // Calculate the adjustment needed for alignment
-    uint8_t adjustment = AlignSize(pFree_block, alignment);
+    uint8_t adjustment = AlignSize(free_block, alignment);
 
     // Calculate the total size needed for the requested allocation
     size_t total_size = size + adjustment;
 
     // Check if the free block is big enough
-    if (pFree_block->size <= total_size) {
+    if (free_block->size <= total_size) {
       // The free block is not big enough, so continue to the next one
-      pPrev_free_block = pFree_block;
-      pFree_block = pFree_block->next;
+      prev_free_block = free_block;
+      free_block = free_block->next;
       continue;
     }
 
     // Now check if there is enough room for the AllocationHeader
-    if (pFree_block->size - total_size >= sizeof(AllocationHeader)) {
+    if (free_block->size - total_size >= sizeof(AllocationHeader)) {
       // There is enough room for the AllocationHeader
 
       /*
@@ -64,18 +62,18 @@ void *FreeListAllocator::Allocate(size_t size, uint8_t alignment) {
        * allocation size to the size of the free block instead of creating
        * a new FreeBlock.
        */
-      total_size = pFree_block->size;
+      total_size = free_block->size;
 
       /*
        * Remove the free block from the free list by updating the next
        * pointer of the previous free block (or the free list if the current
        * block is the first in the list).
        */
-      if (pPrev_free_block != nullptr) {
-        pPrev_free_block->next = pFree_block->next;
+      if (prev_free_block != nullptr) {
+        prev_free_block->next = free_block->next;
       } else {
         // the current block is the first in the list
-        free_blocks_ = pFree_block->next;
+        free_blocks_ = free_block->next;
       }
     } else {
       // There is not enough room for the AllocationHeader, so create a new FreeBlock
@@ -84,23 +82,23 @@ void *FreeListAllocator::Allocate(size_t size, uint8_t alignment) {
        * Create a new FreeBlock after the current one, and point the next
        * pointer of the current FreeBlock to the new FreeBlock.
        */
-      auto *next_block = reinterpret_cast<FreeBlock *>(reinterpret_cast<uintptr_t>(pFree_block) + total_size);
-      next_block->size = pFree_block->size - total_size;
-      next_block->next = pFree_block->next;
+      auto *next_block = reinterpret_cast<FreeBlock *>(reinterpret_cast<uintptr_t>(free_block) + total_size);
+      next_block->size = free_block->size - total_size;
+      next_block->next = free_block->next;
 
       /*
        * Update the next pointer of the previous free block (or the free
        * list if the current block is the first in the list).
        */
-      if (pPrev_free_block != nullptr) {
-        pPrev_free_block->next = next_block;
+      if (prev_free_block != nullptr) {
+        prev_free_block->next = next_block;
       } else {
         free_blocks_ = next_block;
       }
     }
 
     // Calculate the aligned address of the allocated block
-    uintptr_t aligned_address = reinterpret_cast<uintptr_t>(pFree_block) + adjustment;
+    uintptr_t aligned_address = reinterpret_cast<uintptr_t>(free_block) + adjustment;
 
     // Prepend the AllocationHeader to the allocated block
     auto *header = reinterpret_cast<AllocationHeader *>(aligned_address - sizeof(AllocationHeader));
