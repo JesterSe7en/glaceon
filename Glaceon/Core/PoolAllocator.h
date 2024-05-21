@@ -5,7 +5,7 @@
 namespace glaceon {
 class PoolAllocator {
  public:
-  PoolAllocator(unsigned long long int obj_size, unsigned char alignment, unsigned long long int size, void *start);
+  PoolAllocator(size_t obj_size, uint8_t alignment, size_t size, void *start);
   ~PoolAllocator();
 
   void *Allocate(unsigned long long int size, unsigned char alignment);

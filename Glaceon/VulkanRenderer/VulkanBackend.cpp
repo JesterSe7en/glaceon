@@ -2,7 +2,9 @@
 
 #include "../Core/Logger.h"
 #include "../Core/MemorySubsystem.h"
+#include "../Profiler/InstrumentationTimer.h"
 #include "VulkanContext.h"
+
 
 namespace glaceon {
 
@@ -11,6 +13,7 @@ VulkanBackend::VulkanBackend(VulkanContext &context) : context_(context) {}
 VulkanBackend::~VulkanBackend() { Destroy(); }
 
 void VulkanBackend::Initialize() {
+  GLACEON_PROFILE_FUNCTION();
   std::vector<const char *> requested_extensions;
 
   vk::InstanceCreateInfo instance_create_info;

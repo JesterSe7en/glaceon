@@ -1,15 +1,17 @@
 #ifndef GLACEON_GLACEON_CORE_FREELISTALLOCATOR_H_
 #define GLACEON_GLACEON_CORE_FREELISTALLOCATOR_H_
 
+#include "Interface_Allocator.h"
+
 namespace glaceon {
 
-class FreeListAllocator {
+class FreeListAllocator : public IAllocator {
  public:
   FreeListAllocator(size_t size, void *start);
-  ~FreeListAllocator();
+  ~FreeListAllocator() override;
 
-  void *Allocate(size_t size, uint8_t alignment);
-  void Deallocate(void *ptr);
+  void *Allocate(size_t size, uint8_t alignment) override;
+  void Deallocate(void *ptr) override;
 
   FreeListAllocator(const FreeListAllocator &) = delete;
   FreeListAllocator &operator=(const FreeListAllocator &) = delete;

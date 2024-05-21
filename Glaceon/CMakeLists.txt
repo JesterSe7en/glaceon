@@ -32,6 +32,13 @@ set(Header_Files
         StarMesh.h
         VertexBufferCollection.h
         Scene.h
+        Assimp/AssimpImporter.h
+        Utils.h
+        Core/MemorySubsystem.h
+        Core/StackAllocator.h
+        Core/FreeListAllocator.h
+        Core/RingAllocator.h
+        Profiler/InstrumentationTimer.h
 )
 source_group("Header Files" FILES ${Header_Files})
 
@@ -63,24 +70,22 @@ set(Source_Files
         StarMesh.cpp
         VertexBufferCollection.cpp
         Scene.cpp
+        Core/PoolAllocator.cpp
+        Core/RingAllocator.cpp
+        Core/FreeListAllocator.cpp
+        Core/StackAllocator.cpp
+        Core/LinearAllocator.cpp
+        Core/MemorySubsystem.cpp
+        Assimp/AssimpImporter.cpp
+        Utils.cpp
+        Profiler/InstrumentationTimer.cpp
 )
 source_group("Source Files" FILES ${Source_Files})
 
 set(ALL_FILES
         ${Header_Files}
         ${Source_Files}
-        Assimp/AssimpImporter.cpp
-        Assimp/AssimpImporter.h
-        Utils.cpp
-        Utils.h
-        Core/MemorySubsystem.cpp
-        Core/MemorySubsystem.h
-        Core/LinearAllocator.cpp
-        Core/StackAllocator.cpp
-        Core/StackAllocator.h
-        Core/FreeListAllocator.cpp
-        Core/FreeListAllocator.h
-        Core/PoolAllocator.cpp
+
 )
 
 # Target

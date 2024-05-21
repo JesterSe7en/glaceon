@@ -28,7 +28,7 @@ std::vector<uint32_t> GetIndexFromVertexData(const std::vector<glm::vec3>& verte
   return indexes;
 }
 
-void* AlignAddress(void* address, uint8_t alignment) {
+void* AlignAddress(void* address, uint32_t alignment) {
   const size_t kM = alignment - 1;
   // cast to uintptr_t so that the + operation works; doing pointer arithmetic on a void* is undefined behavior
   return (void*) ((reinterpret_cast<uintptr_t>(address) + kM) & ~kM);

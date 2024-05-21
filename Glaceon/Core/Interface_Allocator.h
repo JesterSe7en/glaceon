@@ -6,7 +6,6 @@ namespace glaceon {
 class IAllocator {
  public:
   virtual ~IAllocator() = 0;
-
   virtual void *Allocate(size_t size, uint8_t alignment) = 0;
   virtual void Deallocate(void *ptr) = 0;
 
@@ -21,6 +20,8 @@ class IAllocator {
   size_t used_memory_;
   size_t num_allocations_;
 };
+
+inline IAllocator::~IAllocator() {}
 
 }// namespace glaceon
 
