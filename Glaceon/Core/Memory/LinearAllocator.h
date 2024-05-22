@@ -1,7 +1,7 @@
 #ifndef GLACEON_GLACEON_CORE_LINEARALLOCATOR_H_
 #define GLACEON_GLACEON_CORE_LINEARALLOCATOR_H_
 
-#include "Base.h"
+#include "../Base.h"
 #include "Interface_Allocator.h"
 
 namespace glaceon {

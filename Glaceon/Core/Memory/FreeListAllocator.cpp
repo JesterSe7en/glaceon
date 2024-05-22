@@ -1,6 +1,6 @@
 #include "FreeListAllocator.h"
 
-#include "../Utils.h"
+#include "../../Utils.h"
 
 namespace glaceon {
 
@@ -32,7 +32,7 @@ void *FreeListAllocator::Allocate(size_t size, uint8_t alignment) {
 
   // Start at the beginning of the free list
   FreeBlock *free_block = free_blocks_;
-  
+
   /*
    * Iterate through the free list, until we find a free block
    * that is big enough to hold the requested allocation.

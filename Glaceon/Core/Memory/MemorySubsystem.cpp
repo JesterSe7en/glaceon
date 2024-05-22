@@ -5,9 +5,9 @@
 #include <cstring>
 #include <memory>
 
-#include "../Utils.h"
+#include "../../Utils.h"
+#include "../Logger.h"
 #include "LinearAllocator.h"
-#include "Logger.h"
 #include "PoolAllocator.h"
 
 namespace glaceon {
@@ -78,6 +78,14 @@ void MemorySubsystem::PrintStats() {
       GTRACE("{}: {:03.2f} {}", tag_names[i], static_cast<float>(stats_.tagged_allocations[i]), "B");
     }
   }
+}
+
+void *MemorySubsystem::GAllocate(uint64_t num, uint64_t sizeOfObj, MemoryTag tag) {
+  if (num == 0 || sizeOfObj == 0) { return nullptr; }
+  if (tag == MEMORY_TAG_UNKNOWN) { GWARN("GAllocate called with MEMORY_TAG. ) Specifying a tag is recommended."); }
+
+  // do not need to zero as calloc will do that inherently
+  return calloc(num, sizeOfObj);
 }
 
 }// namespace glaceon
