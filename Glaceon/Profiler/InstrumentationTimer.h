@@ -3,18 +3,22 @@
 
 #include <chrono>
 
-#define PROFILING 1
+// 1 to enable profiling
+#define PROFILING0
 #if PROFILING
+// Just write any of these macros within a function to start measuring time
 // use line number as name to avoid collisions
 #define GLACEON_PROFILE_SCOPE(name) glaceon::InstrumentationTimer timer##__LINE__(name);
 // prints out the function
 #define GLACEON_PROFILE_FUNCTION() GLACEON_PROFILE_SCOPE(__PRETTY_FUNCTION__)
 #else
 #define GLACEON_PROFILE_SCOPE(name)
+#define GLACEON_PROFILE_FUNCTION()
 #endif
 
 namespace glaceon {
 
+// Quick timer to measure code performance
 class InstrumentationTimer {
  public:
   InstrumentationTimer(const char* name);

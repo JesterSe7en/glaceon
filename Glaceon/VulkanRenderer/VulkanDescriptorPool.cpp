@@ -1,7 +1,7 @@
 #include "VulkanDescriptorPool.h"
 
-#include "../Core/Base.h"
 #include "../Core/Logger.h"
+#include "VulkanBase.h"
 #include "VulkanContext.h"
 
 // maybe refactor this as a descritpor manager?

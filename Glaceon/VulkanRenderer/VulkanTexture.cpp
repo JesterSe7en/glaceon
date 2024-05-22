@@ -2,8 +2,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
-#include "../Core/Base.h"
 #include "../Core/Logger.h"
+#include "VulkanBase.h"
 #include "VulkanContext.h"
 
 namespace glaceon {
@@ -27,26 +27,26 @@ VulkanTexture::VulkanTexture(VulkanContext &context, const vk::DescriptorSet tar
 }
 
 VulkanTexture::~VulkanTexture() {
-  const vk::Device device = context_.GetVulkanLogicalDevice();
-  VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
+  const vk::Device kDevice = context_.GetVulkanLogicalDevice();
+  VK_ASSERT(kDevice != VK_NULL_HANDLE, "Logical device not initialized");
 
   if (vk_image_view_ != VK_NULL_HANDLE) {
-    device.destroyImageView(vk_image_view_);
+    kDevice.destroyImageView(vk_image_view_);
     vk_image_view_ = VK_NULL_HANDLE;
   }
 
   if (vk_sampler_ != VK_NULL_HANDLE) {
-    device.destroySampler(vk_sampler_);
+    kDevice.destroySampler(vk_sampler_);
     vk_sampler_ = VK_NULL_HANDLE;
   }
 
   if (vk_image_ != VK_NULL_HANDLE) {
-    device.destroyImage(vk_image_);
+    kDevice.destroyImage(vk_image_);
     vk_image_ = VK_NULL_HANDLE;
   }
 
   if (vk_image_memory_ != VK_NULL_HANDLE) {
-    device.freeMemory(vk_image_memory_);
+    kDevice.freeMemory(vk_image_memory_);
     vk_image_memory_ = VK_NULL_HANDLE;
   }
 
@@ -64,8 +64,8 @@ void VulkanTexture::LoadImageFromFile() {
 
 // Creates the Vulkan image and allocates memory for it
 void VulkanTexture::CreateVkImage() {
-  const vk::Device device = context_.GetVulkanLogicalDevice();
-  VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
+  const vk::Device kDevice = context_.GetVulkanLogicalDevice();
+  VK_ASSERT(kDevice != VK_NULL_HANDLE, "Logical device not initialized");
 
   vk::ImageCreateInfo image_info = {};
   image_info.sType = vk::StructureType::eImageCreateInfo;
@@ -85,11 +85,11 @@ void VulkanTexture::CreateVkImage() {
   image_info.sharingMode = vk::SharingMode::eExclusive;
   image_info.initialLayout = vk::ImageLayout::eUndefined;
 
-  VK_CHECK(device.createImage(&image_info, nullptr, &vk_image_), "Failed to create image");
+  VK_CHECK(kDevice.createImage(&image_info, nullptr, &vk_image_), "Failed to create image");
 
   // Back the VkImage with memory
   vk::MemoryRequirements memory_requirements = {};
-  device.getImageMemoryRequirements(vk_image_, &memory_requirements);
+  kDevice.getImageMemoryRequirements(vk_image_, &memory_requirements);
 
   vk::MemoryAllocateInfo memory_allocate_info = {};
   memory_allocate_info.sType = vk::StructureType::eMemoryAllocateInfo;
@@ -97,14 +97,14 @@ void VulkanTexture::CreateVkImage() {
   memory_allocate_info.allocationSize = memory_requirements.size;
   memory_allocate_info.memoryTypeIndex = VulkanUtils::FindMemoryTypeIndex(context_.GetVulkanPhysicalDevice(), memory_requirements.memoryTypeBits,
                                                                           vk::MemoryPropertyFlagBits::eDeviceLocal);
-  VK_CHECK(device.allocateMemory(&memory_allocate_info, nullptr, &vk_image_memory_), "Failed to allocate image memory");
+  VK_CHECK(kDevice.allocateMemory(&memory_allocate_info, nullptr, &vk_image_memory_), "Failed to allocate image memory");
 
-  device.bindImageMemory(vk_image_, vk_image_memory_, 0);
+  kDevice.bindImageMemory(vk_image_, vk_image_memory_, 0);
 }
 
 void VulkanTexture::CreateVkImageView() {
-  const vk::Device device = context_.GetVulkanLogicalDevice();
-  VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
+  const vk::Device kDevice = context_.GetVulkanLogicalDevice();
+  VK_ASSERT(kDevice != VK_NULL_HANDLE, "Logical device not initialized");
 
   vk::ImageViewCreateInfo image_view_info = {};
   image_view_info.sType = vk::StructureType::eImageViewCreateInfo;
@@ -123,7 +123,7 @@ void VulkanTexture::CreateVkImageView() {
   image_view_info.subresourceRange.baseArrayLayer = 0;
   image_view_info.subresourceRange.layerCount = 1;
 
-  VK_CHECK(device.createImageView(&image_view_info, nullptr, &vk_image_view_), "Failed to create image view");
+  VK_CHECK(kDevice.createImageView(&image_view_info, nullptr, &vk_image_view_), "Failed to create image view");
 }
 
 void VulkanTexture::Populate() {
@@ -154,8 +154,8 @@ void VulkanTexture::Populate() {
 }
 
 void VulkanTexture::CopyBufferToImage(vk::Buffer &src_buffer, vk::Image &dst_image) {
-  const vk::Device device = context_.GetVulkanLogicalDevice();
-  VK_ASSERT(device != VK_NULL_HANDLE, "Logical device not initialized");
+  const vk::Device kDevice = context_.GetVulkanLogicalDevice();
+  VK_ASSERT(kDevice != VK_NULL_HANDLE, "Logical device not initialized");
   vk::CommandBuffer command_buffer = context_.GetVulkanCommandPool().GetVkMainCommandBuffer();
   VK_ASSERT(command_buffer != VK_NULL_HANDLE, "Main command buffer not initialized");
 

@@ -1,7 +1,7 @@
 #include "VulkanPipeline.h"
 
-#include "../Core/Base.h"
 #include "../Core/Logger.h"
+#include "VulkanBase.h"
 #include "VulkanContext.h"
 #include "VulkanUtils.h"
 

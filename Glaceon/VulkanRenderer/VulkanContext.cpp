@@ -5,6 +5,7 @@ namespace glaceon {
 VulkanContext::VulkanContext()
     : backend_(*this),
       device_(*this),
+      memory_allocator_(*this),
       swap_chain_(*this),
       render_pass_(*this),
       pipeline_(*this),

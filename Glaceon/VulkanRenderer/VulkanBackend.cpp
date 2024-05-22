@@ -1,10 +1,7 @@
 #include "VulkanBackend.h"
 
 #include "../Core/Logger.h"
-#include "../Core/MemorySubsystem.h"
-#include "../Profiler/InstrumentationTimer.h"
 #include "VulkanContext.h"
-
 
 namespace glaceon {
 
@@ -13,7 +10,6 @@ VulkanBackend::VulkanBackend(VulkanContext &context) : context_(context) {}
 VulkanBackend::~VulkanBackend() { Destroy(); }
 
 void VulkanBackend::Initialize() {
-  GLACEON_PROFILE_FUNCTION();
   std::vector<const char *> requested_extensions;
 
   vk::InstanceCreateInfo instance_create_info;
@@ -84,10 +80,7 @@ void VulkanBackend::Initialize() {
   instance_create_info.enabledExtensionCount = static_cast<uint32_t>(instance_extensions.size());
   instance_create_info.ppEnabledExtensionNames = instance_extensions.data();
 
-  // TODO: add custom allocators
-  vk::AllocationCallbacks cb = nullptr;
-
-  if (vk::createInstance(&instance_create_info, &cb, &instance_) != vk::Result::eSuccess) {
+  if (vk::createInstance(&instance_create_info, nullptr, &instance_) != vk::Result::eSuccess) {
     GERROR("Failed to create Vulkan instance");
     return;
   }

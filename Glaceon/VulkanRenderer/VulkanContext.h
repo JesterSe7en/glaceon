@@ -6,6 +6,7 @@
 #include "VulkanCommandPool.h"
 #include "VulkanDescriptorPool.h"
 #include "VulkanDevice.h"
+#include "VulkanMemoryAllocator.h"
 #include "VulkanPipeline.h"
 #include "VulkanRenderPass.h"
 #include "VulkanSwapChain.h"
@@ -36,6 +37,7 @@ class VulkanContext {
 
   VulkanBackend &GetVulkanBackend() { return backend_; }
   VulkanDevice &GetVulkanDevice() { return device_; }
+  VulkanMemoryAllocator &GetVulkanMemoryAllocator() { return memory_allocator_; }
   VulkanSwapChain &GetVulkanSwapChain() { return swap_chain_; }
   VulkanRenderPass &GetVulkanRenderPass() { return render_pass_; }
   VulkanPipeline &GetVulkanPipeline() { return pipeline_; }
@@ -51,6 +53,7 @@ class VulkanContext {
  private:
   VulkanBackend backend_;
   VulkanDevice device_;
+  VulkanMemoryAllocator memory_allocator_;
   VulkanSwapChain swap_chain_;
   VulkanRenderPass render_pass_;
   VulkanPipeline pipeline_;

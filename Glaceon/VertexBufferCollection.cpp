@@ -1,7 +1,7 @@
 #include "VertexBufferCollection.h"
 
-#include "Core/Base.h"
 #include "Core/Logger.h"
+#include "VulkanRenderer/VulkanBase.h"
 #include "VulkanRenderer/VulkanUtils.h"
 
 namespace glaceon {

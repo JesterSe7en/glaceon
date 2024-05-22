@@ -4,6 +4,7 @@
 #include "Core/Logger.h"
 #include "GLFW/glfw3.h"
 #include "Utils.h"
+#include "VulkanRenderer/VulkanBase.h"
 #include "VulkanRenderer/VulkanRenderPass.h"
 
 namespace glaceon {
@@ -426,6 +427,9 @@ void GLACEON_API RunGame(Application *app) {
   context.SetSurface(surface);
   context.AddDeviceExtension(vk::KHRSwapchainExtensionName);
   context.GetVulkanDevice().Initialize();
+
+  // vma create allocator
+  context.GetVulkanMemoryAllocator().Initialize();
 
   VulkanRenderPassInput input = {.depthFormat = vk::Format::eD32Sfloat, .swapChainFormat = vk::Format::eB8G8R8A8Unorm};
   context.GetVulkanRenderPass().Initialize(input);

@@ -6,7 +6,7 @@ set(Header_Files
         pch.h
         Core/Base.h
         Core/Logger.h
-        Core/Interface_Allocator.h
+        Core/Memory/Interface_Allocator.h
         Application.h
         ${CMAKE_SOURCE_DIR}/extern/imgui/imconfig.h
         ${CMAKE_SOURCE_DIR}/extern/imgui/imgui.h
@@ -34,10 +34,10 @@ set(Header_Files
         Scene.h
         Assimp/AssimpImporter.h
         Utils.h
-        Core/MemorySubsystem.h
-        Core/StackAllocator.h
-        Core/FreeListAllocator.h
-        Core/RingAllocator.h
+        Core/Memory/MemorySubsystem.h
+        Core/Memory/StackAllocator.h
+        Core/Memory/FreeListAllocator.h
+        Core/Memory/RingAllocator.h
         Profiler/InstrumentationTimer.h
 )
 source_group("Header Files" FILES ${Header_Files})
@@ -70,12 +70,12 @@ set(Source_Files
         StarMesh.cpp
         VertexBufferCollection.cpp
         Scene.cpp
-        Core/PoolAllocator.cpp
-        Core/RingAllocator.cpp
-        Core/FreeListAllocator.cpp
-        Core/StackAllocator.cpp
-        Core/LinearAllocator.cpp
-        Core/MemorySubsystem.cpp
+        Core/Memory/PoolAllocator.cpp
+        Core/Memory/RingAllocator.cpp
+        Core/Memory/FreeListAllocator.cpp
+        Core/Memory/StackAllocator.cpp
+        Core/Memory/LinearAllocator.cpp
+        Core/Memory/MemorySubsystem.cpp
         Assimp/AssimpImporter.cpp
         Utils.cpp
         Profiler/InstrumentationTimer.cpp
@@ -85,6 +85,9 @@ source_group("Source Files" FILES ${Source_Files})
 set(ALL_FILES
         ${Header_Files}
         ${Source_Files}
+        VulkanRenderer/VulkanBase.h
+        VulkanRenderer/VulkanMemoryAllocator.cpp
+        VulkanRenderer/VulkanMemoryAllocator.h
 
 )
 
