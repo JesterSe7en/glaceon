@@ -1,7 +1,6 @@
 #ifndef GLACEON_GLACEON_VULKANRENDERER_VULKANMEMORYALLOCATOR_H_
 #define GLACEON_GLACEON_VULKANRENDERER_VULKANMEMORYALLOCATOR_H_
 
-#define VMA_IMPLEMENTATION
 #include <vma/vk_mem_alloc.h>
 
 namespace glaceon {
@@ -14,7 +13,11 @@ class VulkanMemoryAllocator {
   explicit VulkanMemoryAllocator(VulkanContext &context);
   ~VulkanMemoryAllocator();
 
+  void Initialize();
+
  private:
+  VulkanContext &context_;
+
   VmaAllocator allocator_;
 };
 
