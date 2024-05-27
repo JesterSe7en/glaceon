@@ -7,10 +7,9 @@
 #include "VulkanBase.h"
 #include "VulkanContext.h"
 
-
 namespace glaceon {
-VulkanMemoryAllocator::VulkanMemoryAllocator(VulkanContext &context) : context_(context) {}
-VulkanMemoryAllocator::~VulkanMemoryAllocator() {}
+VulkanMemoryAllocator::VulkanMemoryAllocator(VulkanContext &context) : context_(context), allocator_(nullptr) {}
+VulkanMemoryAllocator::~VulkanMemoryAllocator() = default;
 
 void VulkanMemoryAllocator::Initialize() {
   VmaAllocatorCreateInfo allocator_create_info = {};
