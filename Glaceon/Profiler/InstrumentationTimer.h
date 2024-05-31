@@ -21,7 +21,7 @@ namespace glaceon {
 // Quick timer to measure code performance
 class InstrumentationTimer {
  public:
-  InstrumentationTimer(const char* name);
+  explicit InstrumentationTimer(const char* name);
   ~InstrumentationTimer();
 
  private:

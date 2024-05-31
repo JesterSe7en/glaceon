@@ -26,7 +26,7 @@ MemorySubsystem::MemorySubsystem() {
   GSetMemory(&stats_, 0, sizeof(stats_));
 }
 
-MemorySubsystem::~MemorySubsystem() {}
+MemorySubsystem::~MemorySubsystem() = default;
 
 void *MemorySubsystem::GAllocate(uint64_t size, MemoryTag tag) {
   if (tag == MEMORY_TAG_UNKNOWN) { GWARN("GAllocate called with MEMORY_TAG_UNKNOWN.  Specifying a tag is recommended."); }

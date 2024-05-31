@@ -40,7 +40,7 @@ void *StackAllocator::Allocate(size_t size, uint8_t alignment) {
   header->adjustment = adjustment;
 
 #if _DEBUG
-  header->prev_address_ = prev_position_;
+  header->prev_address = prev_position_;
   prev_position_ = align_address;
 #endif// _DEBUG
 
@@ -58,7 +58,7 @@ void StackAllocator::Deallocate(void *ptr) {
   current_pos_ = reinterpret_cast<void *>(reinterpret_cast<uintptr_t>(ptr) - header->adjustment);// set current position to next free space
 
 #if _DEBUG
-  prev_position_ = header->prev_address_;
+  prev_position_ = header->prev_address;
 #endif// _DEBUG
 }
 

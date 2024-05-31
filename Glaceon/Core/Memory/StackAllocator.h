@@ -27,7 +27,7 @@ class StackAllocator : public IAllocator {
 
   struct AllocationHeader {
 #if _DEBUG
-    void *prev_address_;
+    void *prev_address;
 #endif// _DEBUG
 
     uint8_t adjustment;// how many bytes to adjust to align the next allocation

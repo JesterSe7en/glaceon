@@ -5,17 +5,17 @@
 namespace glaceon {
 
 // -------------------------- FREE-LIST ALLOCATOR --------------------------
-FreeListAllocator::FreeListAllocator(size_t size, void *start) {
+FreeListAllocator::FreeListAllocator(const size_t size, void *start) : size_(size) {
   assert(size > 0);
   used_memory_ = 0;
-  free_blocks_ = (FreeBlock *) start;
+  free_blocks_ = static_cast<FreeBlock *>(start);
   free_blocks_->size = size;
   free_blocks_->next = nullptr;
 }
 
 FreeListAllocator::~FreeListAllocator() { free_blocks_ = nullptr; }
 
-void *FreeListAllocator::Allocate(size_t size, uint8_t alignment) {
+void *FreeListAllocator::Allocate(const size_t size, const uint8_t alignment) {
   assert(size != 0 && alignment != 0);
 
   /*
@@ -40,7 +40,7 @@ void *FreeListAllocator::Allocate(size_t size, uint8_t alignment) {
   while (free_block != nullptr) {
 
     // Calculate the adjustment needed for alignment
-    uint8_t adjustment = AlignSize(free_block, alignment);
+    const uint8_t adjustment = AlignSize(free_block, alignment);
 
     // Calculate the total size needed for the requested allocation
     size_t total_size = size + adjustment;
@@ -98,7 +98,7 @@ void *FreeListAllocator::Allocate(size_t size, uint8_t alignment) {
     }
 
     // Calculate the aligned address of the allocated block
-    uintptr_t aligned_address = reinterpret_cast<uintptr_t>(free_block) + adjustment;
+    const uintptr_t aligned_address = reinterpret_cast<uintptr_t>(free_block) + adjustment;
 
     // Prepend the AllocationHeader to the allocated block
     auto *header = reinterpret_cast<AllocationHeader *>(aligned_address - sizeof(AllocationHeader));
@@ -122,11 +122,11 @@ void FreeListAllocator::Deallocate(void *ptr) {
   if (ptr == nullptr) { return; }
 
   // Get the AllocationHeader based on the provided pointer
-  auto *header = reinterpret_cast<AllocationHeader *>(reinterpret_cast<uintptr_t *>(ptr) - sizeof(AllocationHeader));
+  const auto *header = reinterpret_cast<AllocationHeader *>(static_cast<uintptr_t *>(ptr) - sizeof(AllocationHeader));
 
   // Calculate the start and end addresses of the memory block
-  uintptr_t block_start = reinterpret_cast<uintptr_t>(ptr) - header->adjustment;
-  uintptr_t block_end = block_start + header->size;
+  const uintptr_t block_start = reinterpret_cast<uintptr_t>(ptr) - header->adjustment;
+  const uintptr_t block_end = block_start + header->size;
 
   // Initialize variables to track previous and current FreeBlocks
   FreeBlock *prev_free_block = nullptr;
@@ -143,7 +143,7 @@ void FreeListAllocator::Deallocate(void *ptr) {
   // Handle different scenarios for deallocation
   if (prev_free_block == nullptr) {
     // If there is no previous FreeBlock, create a new one at the block_start
-    prev_free_block = (FreeBlock *) block_start;
+    prev_free_block = reinterpret_cast<FreeBlock *>(block_start);
     prev_free_block->size = block_end - reinterpret_cast<uintptr_t>(prev_free_block);
     prev_free_block->next = free_blocks_;
     free_blocks_ = prev_free_block;
@@ -152,7 +152,7 @@ void FreeListAllocator::Deallocate(void *ptr) {
     prev_free_block->size = header->size;
   } else {
     // Create a new FreeBlock and adjust pointers accordingly
-    FreeBlock *t = (FreeBlock *) block_start;
+    auto *t = reinterpret_cast<FreeBlock *>(block_start);
     t->size = header->size;
     t->next = prev_free_block->next;
     prev_free_block->next = t;
