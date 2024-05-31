@@ -15,7 +15,7 @@ SandBoxApplication::SandBoxApplication() : glaceon::Application(&app_info) {
 
 void SandBoxApplication::OnStart() {
   // load in object models?
-  const std::string fPath = R"(..\..\models\DefaultGreenCube.glb)";
+  const std::string fPath = R"(..\..\models\bloons_level.glb)";
   const glaceon::Assimp_ModelData content = glaceon::AssimpImporter::ImportObjectModel(fPath);
   PushContent(content);
 }
