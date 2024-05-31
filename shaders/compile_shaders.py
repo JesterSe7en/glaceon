@@ -1,5 +1,6 @@
 import os
 import subprocess
+import sys
 
 
 def compile_shader(input_file):
@@ -13,8 +14,15 @@ def compile_shader(input_file):
         print(f"Error compiling {input_file}: {e}")
 
 
-def main():
-    shader_directory = "."
+def main(dir_path=None):
+    if dir_path:
+        shader_directory = dir_path
+    else:
+        shader_directory = "."
+
+    if not os.path.isdir(shader_directory):
+        print(f"Error: {shader_directory} is not a valid directory")
+        return
 
     for filename in os.listdir(shader_directory):
         if filename.endswith(".frag") or filename.endswith(".vert"):
@@ -23,4 +31,8 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) > 1:
+        directory_path = sys.argv[1]
+    else:
+        directory_path = None
+    main(directory_path)
