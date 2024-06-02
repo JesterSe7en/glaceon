@@ -22,14 +22,14 @@ struct Assimp_MeshData {
 
 class AssimpImporter {
  public:
-  static Assimp_ModelData GLACEON_API ImportObjectModel(const std::string& obj_file);
+  static Assimp_ModelData GLACEON_API ImportObjectModel(const std::string &obj_file);
 
  private:
-  static void PrintMaterialProperties(const aiMaterial* material);
-  static std::vector<glm::vec3> GetVertexData(const aiScene* scene, const size_t mesh_idx);
-  static std::vector<glm::vec3> GetUVData(const aiScene* scene, const size_t mesh_idx);
+  static void PrintMaterialProperties(const aiMaterial *material);
+  static std::vector<glm::vec3> GetVertexData(const aiScene *scene, size_t mesh_idx);
+  static std::vector<glm::vec3> GetUVData(const aiScene *scene, size_t mesh_idx);
 
-  static Assimp_MeshData ExtractMeshes(const aiScene* scene_obj);
+  static Assimp_MeshData ExtractMeshes(const aiScene *scene_obj);
 };
 }// namespace glaceon
 
