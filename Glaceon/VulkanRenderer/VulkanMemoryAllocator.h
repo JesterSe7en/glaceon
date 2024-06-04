@@ -1,7 +1,7 @@
 #ifndef GLACEON_GLACEON_VULKANRENDERER_VULKANMEMORYALLOCATOR_H_
 #define GLACEON_GLACEON_VULKANRENDERER_VULKANMEMORYALLOCATOR_H_
 
-#include <vma/vk_mem_alloc.h>
+#include <vk_mem_alloc.h>
 
 namespace glaceon {
 
