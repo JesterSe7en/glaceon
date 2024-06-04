@@ -1,9 +1,6 @@
 [submodule "extern/glfw"]
 	path = extern/glfw
 	url = https://github.com/glfw/glfw.git
-[submodule "extern/spdlog"]
-	path = extern/spdlog
-	url = https://github.com/gabime/spdlog
 [submodule "extern/imgui"]
 	path = extern/imgui
 	url = https://github.com/ocornut/imgui.git
@@ -16,3 +13,6 @@
 [submodule "extern/assimp"]
 	path = extern/assimp
 	url = https://github.com/assimp/assimp.git
+[submodule "extern/vcpkg"]
+	path = extern/vcpkg
+	url = https://github.com/microsoft/vcpkg
