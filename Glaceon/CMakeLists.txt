@@ -188,14 +188,12 @@ endif ()
 
 # Dependencies
 find_package(Vulkan REQUIRED)
-target_link_libraries(${PROJECT_NAME} PUBLIC assimp glfw Vulkan::Vulkan)
-target_include_directories(${PROJECT_NAME} PUBLIC
+find_package(spdlog CONFIG REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE assimp spdlog::spdlog glfw Vulkan::Vulkan)
+target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_SOURCE_DIR}/extern/glm
-        ${CMAKE_SOURCE_DIR}/extern/spdlog/include
         ${CMAKE_SOURCE_DIR}/extern/stb
         ${CMAKE_SOURCE_DIR}/extern/imgui
         ${CMAKE_SOURCE_DIR}/extern/imgui/backends
         ${CMAKE_SOURCE_DIR}/extern/assimp/include
 )
-add_dependencies(${PROJECT_NAME} spdlog)
-

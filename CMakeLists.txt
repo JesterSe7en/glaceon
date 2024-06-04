@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.22.1 FATAL_ERROR)
 
+set(CMAKE_TOOLCHAIN_FILE ${CMAKE_CURRENT_SOURCE_DIR}/extern/vcpkg/scripts/buildsystems/vcpkg.cmake CACHE STRING "Vcpkg toolchain file")
+message(STATUS "Vcpkg toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
+
 set(CMAKE_SYSTEM_VERSION 10.0 CACHE STRING "" FORCE)
 
 include(ExternalProject)
@@ -100,14 +103,6 @@ if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/glfw/CMakeLists.txt")
   message(FATAL_ERROR "The glfw submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 endif ()
 
-if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/spdlog/CMakeLists.txt")
-  message(FATAL_ERROR "The spdlog submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
-endif ()
-
-if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/spdlog/CMakeLists.txt")
-  message(FATAL_ERROR "The spdlog submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
-endif ()
-
 if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/glm/CMakeLists.txt")
   message(FATAL_ERROR "The glm submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 endif ()
@@ -148,9 +143,6 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 add_subdirectory(extern/glfw)
-
-set(SPDLOG_BUILD_SHARED OFF CACHE BOOL "" FORCE)
-add_subdirectory(extern/spdlog)
 
 add_subdirectory(extern/glm)
 
