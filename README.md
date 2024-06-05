@@ -3,6 +3,12 @@
 Glaceon is a 3D rendering project developed with the primary aim of deepening understanding of the fundamental components and inner workings of game engines.
 This project utilizes a range of libraries and tools to provide a robust environment for exploring graphics programming and game development concepts.
 
+## Key Objectives
+
+- **Educational Focus**: Designed to enhance knowledge of game engine architecture and graphics programming.
+- **Practical Application**: Hands-on experience with industry-standard libraries and tools.
+- **Skill Development**: Strengthening C++ programming, graphics API usage, and memory management skills.
+
 ## Features
 
 - **3D Rendering**: Utilizes Vulkan for efficient and high-performance graphics rendering.
