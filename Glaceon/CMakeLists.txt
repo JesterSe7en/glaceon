@@ -8,14 +8,6 @@ set(Header_Files
     Core/Logger.h
     Core/Memory/Interface_Allocator.h
     Application.h
-    ${CMAKE_SOURCE_DIR}/extern/imgui/imconfig.h
-    ${CMAKE_SOURCE_DIR}/extern/imgui/imgui.h
-    ${CMAKE_SOURCE_DIR}/extern/imgui/imgui_internal.h
-    ${CMAKE_SOURCE_DIR}/extern/imgui/imstb_rectpack.h
-    ${CMAKE_SOURCE_DIR}/extern/imgui/imstb_textedit.h
-    ${CMAKE_SOURCE_DIR}/extern/imgui/imstb_truetype.h
-    ${CMAKE_SOURCE_DIR}/extern/imgui/backends/imgui_impl_glfw.h
-    ${CMAKE_SOURCE_DIR}/extern/imgui/backends/imgui_impl_vulkan.h
     VulkanRenderer/VulkanDevice.h
     VulkanRenderer/VulkanContext.h
     VulkanRenderer/VulkanBackend.h
@@ -47,13 +39,6 @@ set(Source_Files
     pch.cpp
     Core/Logger.cpp
     Application.cpp
-    ${CMAKE_SOURCE_DIR}/extern/imgui/imgui.cpp
-    ${CMAKE_SOURCE_DIR}/extern/imgui/imgui_demo.cpp
-    ${CMAKE_SOURCE_DIR}/extern/imgui/imgui_draw.cpp
-    ${CMAKE_SOURCE_DIR}/extern/imgui/imgui_tables.cpp
-    ${CMAKE_SOURCE_DIR}/extern/imgui/imgui_widgets.cpp
-    ${CMAKE_SOURCE_DIR}/extern/imgui/backends/imgui_impl_glfw.cpp
-    ${CMAKE_SOURCE_DIR}/extern/imgui/backends/imgui_impl_vulkan.cpp
     VulkanRenderer/VulkanBackend.cpp
     VulkanRenderer/VulkanContext.cpp
     VulkanRenderer/VulkanDevice.cpp
