@@ -12,7 +12,7 @@ class SandBoxApplication : public glaceon::Application {
   void OnShutdown() override;
 
  private:
-  glaceon::ApplicationInfo app_info = {.name = "Sandbox"};
+  glaceon::ApplicationInfo app_info_ = {.name = "Sandbox"};
 };
 
 #endif// GLACEON_SANDBOXAPP_GAME_H_
