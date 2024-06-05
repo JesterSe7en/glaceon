@@ -53,8 +53,6 @@ endif()
 add_subdirectory(Glaceon)
 add_subdirectory(SandboxApp)
 
-add_subdirectory(extern/assimp)
-
 # Custom target to build all
 #set(all_targets Glaceon SandboxApp)
 #add_custom_target(All DEPENDS ${all_targets})

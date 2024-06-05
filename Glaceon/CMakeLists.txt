@@ -193,21 +193,18 @@ find_package(glm CONFIG REQUIRED)
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(Stb REQUIRED)
+find_package(assimp CONFIG REQUIRED)
 target_link_libraries(${PROJECT_NAME} PRIVATE
                       glm::glm
                       Vulkan::Headers
                       GPUOpen::VulkanMemoryAllocator
-                      assimp
+                      assimp::assimp
                       spdlog::spdlog
                       glfw
                       Vulkan::Vulkan
                       imgui::imgui
-                      assimp::assimp
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE assimp)
-
 target_include_directories(${PROJECT_NAME} PRIVATE
-                           ${CMAKE_SOURCE_DIR}/extern/assimp/include
                            ${Stb_INCLUDE_DIR}
 )
