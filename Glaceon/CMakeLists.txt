@@ -1,4 +1,7 @@
+cmake_minimum_required(VERSION 3.21)
 set(PROJECT_NAME Glaceon)
+
+project(${PROJECT_NAME})
 
 # Source groups
 set(Header_Files
@@ -31,6 +34,8 @@ set(Header_Files
     Core/Memory/FreeListAllocator.h
     Core/Memory/RingAllocator.h
     Profiler/InstrumentationTimer.h
+    VulkanRenderer/VulkanBase.h
+    VulkanRenderer/VulkanMemoryAllocator.h
 )
 source_group("Header Files" FILES ${Header_Files})
 
@@ -64,112 +69,54 @@ set(Source_Files
     Assimp/AssimpImporter.cpp
     Utils.cpp
     Profiler/InstrumentationTimer.cpp
+    VulkanRenderer/VulkanMemoryAllocator.cpp
 )
 source_group("Source Files" FILES ${Source_Files})
 
 set(ALL_FILES
     ${Header_Files}
     ${Source_Files}
-    VulkanRenderer/VulkanBase.h
-    VulkanRenderer/VulkanMemoryAllocator.cpp
-    VulkanRenderer/VulkanMemoryAllocator.h
-
 )
 
 # Target
 add_library(${PROJECT_NAME} SHARED ${ALL_FILES})
 
+# Precompiled headers
 target_precompile_headers(${PROJECT_NAME} PRIVATE
                           "$<$<COMPILE_LANGUAGE:CXX>:${CMAKE_CURRENT_SOURCE_DIR}/pch.h>"
 )
 
-use_props(${PROJECT_NAME} "${CMAKE_CONFIGURATION_TYPES}" "${DEFAULT_CXX_PROPS}")
-set(ROOT_NAMESPACE Glaceon)
-
+# Set properties
 set_target_properties(${PROJECT_NAME} PROPERTIES
                       VS_GLOBAL_KEYWORD "Win32Proj"
-)
-set_target_properties(${PROJECT_NAME} PROPERTIES
                       INTERPROCEDURAL_OPTIMIZATION_RELEASE "TRUE"
                       INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO "TRUE"
 )
 
 # Compile definitions
 target_compile_definitions(${PROJECT_NAME} PRIVATE
-                           "$<$<CONFIG:Debug>:"
-                           "_DEBUG"
-                           ">"
-                           "$<$<CONFIG:Release>:"
-                           "NDEBUG"
-                           ">"
-                           "$<$<CONFIG:RelWithDebInfo>:"
-                           "NDEBUG"
-                           ">"
-                           "GLACEON_EXPORTS;"
-                           "_WINDOWS;"
-                           "_USRDLL;"
-                           "UNICODE;"
+                           "$<$<CONFIG:Debug>:_DEBUG>"
+                           "$<$<CONFIG:Release>:NDEBUG>"
+                           "$<$<CONFIG:RelWithDebInfo>:NDEBUG>"
+                           "GLACEON_EXPORTS"
+                           "_WINDOWS"
+                           "_USRDLL"
+                           "UNICODE"
                            "_UNICODE"
 )
 
 # Compile and link options
-# if (MSVC)
-#     target_compile_options(${PROJECT_NAME} PRIVATE
-#             $<$<CONFIG:Release>:
-#             /Oi;
-#             /Gy
-#             >
-#             $<$<CONFIG:RelWithDebInfo>:
-#             /Oi;
-#             /Gy
-#             >
-#             /permissive-;
-#             /sdl;
-#             /W3;
-#             ${DEFAULT_CXX_DEBUG_INFORMATION_FORMAT};
-#             ${DEFAULT_CXX_EXCEPTION_HANDLING}
-#     )
-#     target_link_options(${PROJECT_NAME} PRIVATE
-#             $<$<CONFIG:Release>:
-#             /OPT:REF;
-#             /OPT:ICF
-#             >
-#             $<$<CONFIG:RelWithDebInfo>:
-#             /OPT:REF;
-#             /OPT:ICF
-#             >
-#             /DEBUG;
-#             /SUBSYSTEM:WINDOWS
-#     )
-# else
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     target_compile_options(${PROJECT_NAME} PRIVATE
-                           $<$<CONFIG:Release>:
-                           -O3;
-                           -march=native
-                           >
-                           $<$<CONFIG:Debug>:
-                           -g;
-                           -Wall;
-                           -Wextra;
-                           -pedantic
-                           >
-                           $<$<CONFIG:RelWithDebInfo>:
-                           -O2;
-                           -g;
-                           -march=native
-                           >
+                           $<$<CONFIG:Release>:-O3;-march=native>
+                           $<$<CONFIG:Debug>:-g;-Wall;-Wextra;-pedantic>
+                           $<$<CONFIG:RelWithDebInfo>:-O2;-g;-march=native>
     )
     target_link_options(${PROJECT_NAME} PRIVATE
-                        $<$<CONFIG:Release>:
-                        -Wl,--strip-all
-                        >
-                        $<$<CONFIG:RelWithDebInfo>:
-                        -Wl,--strip-all
-                        >
+                        $<$<CONFIG:Release>:-Wl,--strip-all>
+                        $<$<CONFIG:RelWithDebInfo>:-Wl,--strip-all>
     )
 endif()
-
 
 # Dependencies
 find_package(Vulkan REQUIRED)
@@ -179,7 +126,9 @@ find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(Stb REQUIRED)
 find_package(assimp CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE
+
+# Link libraries
+target_link_libraries(${PROJECT_NAME} PUBLIC
                       glm::glm
                       Vulkan::Headers
                       GPUOpen::VulkanMemoryAllocator
@@ -189,7 +138,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
                       Vulkan::Vulkan
                       imgui::imgui
 )
-
-target_include_directories(${PROJECT_NAME} PRIVATE
+# Include directories
+target_include_directories(${PROJECT_NAME} PUBLIC
                            ${Stb_INCLUDE_DIR}
 )
