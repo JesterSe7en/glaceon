@@ -84,44 +84,6 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 
 # Check that submodules are initialized
-find_package(Git QUIET)
-if (GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-  # Update submodules as needed
-  option(GIT_SUBMODULE "Check submodules during build" ON)
-  if (GIT_SUBMODULE)
-    message(STATUS "Submodule update")
-    execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                RESULT_VARIABLE GIT_SUBMOD_RESULT)
-    if (NOT GIT_SUBMOD_RESULT EQUAL "0")
-      message(FATAL_ERROR "git submodule update --init --recursive failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
-    endif ()
-  endif ()
-endif ()
-
-if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/glfw/CMakeLists.txt")
-  message(FATAL_ERROR "The glfw submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
-endif ()
-
-if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/glm/CMakeLists.txt")
-  message(FATAL_ERROR "The glm submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
-endif ()
-
-if (NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/assimp/CMakeLists.txt")
-  message(FATAL_ERROR "The assimp submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
-endif ()
-
-# include(ExternalProject) is needed for this
-#ExternalProject_Add(spdlog
-#        PREFIX spdlog
-#        SOURCE_DIR ${PROJECT_SOURCE_DIR}/extern/spdlog
-#        CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
-#        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-#        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-#        -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}
-#        -DCMAKE_INSTALL_PREFIX=${STAGING_DIR}
-#        -DSPDLOG_BUILD_SHARED=OFF
-#)
 
 find_package(Wayland QUIET)
 
@@ -138,15 +100,7 @@ endif ()
 add_subdirectory(Glaceon)
 add_subdirectory(SandboxApp)
 
-set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
-add_subdirectory(extern/glfw)
 
-add_subdirectory(extern/glm)
-
-add_subdirectory(extern/assimp)
-
-set(all_targets Glaceon SandboxApp)
-add_custom_target(All DEPENDS ${all_targets})
+# Custom target to build all
+#set(all_targets Glaceon SandboxApp)
+#add_custom_target(All DEPENDS ${all_targets})

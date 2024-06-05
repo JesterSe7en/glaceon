@@ -189,12 +189,23 @@ endif ()
 # Dependencies
 find_package(Vulkan REQUIRED)
 find_package(spdlog CONFIG REQUIRED)
+find_package(glm CONFIG REQUIRED)
 find_package(VulkanMemoryAllocator CONFIG REQUIRED)
-target_link_libraries(${PROJECT_NAME} PRIVATE Vulkan::Headers GPUOpen::VulkanMemoryAllocator assimp spdlog::spdlog glfw Vulkan::Vulkan)
+find_package(imgui CONFIG REQUIRED)
+find_package(assimp CONFIG REQUIRED)
+find_package(Stb REQUIRED)
+target_link_libraries(${PROJECT_NAME} PRIVATE 
+        glm::glm
+        Vulkan::Headers
+        GPUOpen::VulkanMemoryAllocator
+        assimp
+        spdlog::spdlog
+        glfw
+        Vulkan::Vulkan
+        imgui::imgui
+        assimp::assimp
+)
+
 target_include_directories(${PROJECT_NAME} PRIVATE
-        ${CMAKE_SOURCE_DIR}/extern/glm
-        ${CMAKE_SOURCE_DIR}/extern/stb
-        ${CMAKE_SOURCE_DIR}/extern/imgui
-        ${CMAKE_SOURCE_DIR}/extern/imgui/backends
-        ${CMAKE_SOURCE_DIR}/extern/assimp/include
+        ${Stb_INCLUDE_DIR}
 )

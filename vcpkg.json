@@ -1,7 +1,28 @@
 {
-  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "dependencies": [
-    "spdlog",
-    "vulkan-memory-allocator"
+    {
+      "name": "vulkan-memory-allocator",
+      "version>=": "3.0.1#4"
+    },
+    {
+      "name": "glm",
+      "version>=": "1.0.1#2"
+    },
+    {
+      "name": "spdlog",
+      "version>=": "1.14.1#0"
+    },
+    {
+      "name": "imgui",
+      "version>=": "1.90.2#0"
+    },
+    {
+      "name": "stb",
+      "version>=": "2023-04-11#1"
+    },
+    {
+      "name": "assimp",
+      "version>=": "5.4.0#0"
+    }
   ]
 }

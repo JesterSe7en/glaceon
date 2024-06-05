@@ -12,7 +12,7 @@
 #include <spdlog/fmt/fmt.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/spdlog.h>
-#include <vulkan/vk_enum_string_helper.h>
+// #include <vulkan/vk_enum_string_helper.h>
 #include <vulkan/vulkan_core.h>
 
 #include <algorithm>
