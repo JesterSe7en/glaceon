@@ -29,12 +29,17 @@ This project utilizes a range of libraries and tools to provide a robust environ
     cd glaceon
     ```
 
-2. Install dependencies using vcpkg:
-    ```sh
-    ./vcpkg install
+2. Bootstrap vcpkg:
+   ```sh
+    ./extern/vcpkg/bootstrap-vcpkg.sh
     ```
 
-3. Configure and build the project with CMake:
+3. Install dependencies using vcpkg:
+    ```sh
+    ./extern/vcpkg install
+    ```
+
+4. Configure and build the project with CMake:
     ```sh
     mkdir build
     cd build
