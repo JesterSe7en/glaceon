@@ -5,7 +5,7 @@ This project utilizes a range of libraries and tools to provide a robust environ
 
 ## Key Objectives
 
-- **Educational Focus**: Primary go is to enhance personal knowledge of game engine architecture and graphics programming.
+- **Educational Focus**: Primary goal is to enhance personal knowledge of game engine architecture and graphics programming.
 - **Practical Application**: Hands-on experience with industry-standard libraries and tools.
 - **Skill Development**: Strengthening C++ programming, graphics API usage, and memory management skills.
 
