@@ -142,3 +142,20 @@ target_link_libraries(${PROJECT_NAME} PUBLIC
 target_include_directories(${PROJECT_NAME} PUBLIC
         ${Stb_INCLUDE_DIR}
 )
+
+# TODO: Need to copy over all dependencies from Glaceon to SandboxApp
+
+# Get Glaceon's build directory
+set(GLACEON_BUILD_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../Glaceon/build/Glaceon" CACHE PATH "Path to Glaceon's build directory" FORCE)
+message(STATUS "Glaceon: GLACEON_BUILD_DIR: ${GLACEON_BUILD_DIR}")
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:glm::glm>
+        $<TARGET_FILE:assimp::assimp>
+        $<TARGET_FILE:spdlog::spdlog>
+        $<TARGET_FILE:glfw>
+        $<TARGET_FILE:Vulkan::Vulkan>
+        $<TARGET_FILE:imgui::imgui>
+        $<TARGET_FILE_DIR:${PROJECT_NAME}>
+)
