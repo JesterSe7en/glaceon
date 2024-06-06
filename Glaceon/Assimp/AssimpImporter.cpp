@@ -71,6 +71,7 @@ std::vector<glm::vec3> AssimpImporter::GetUVData(const aiScene* scene, const siz
     GWARN("Cannot find mesh with given mesh index");
     return {};
   }
+  return {};
 }
 
 void AssimpImporter::PrintMaterialProperties(const aiMaterial* material) {
@@ -81,7 +82,7 @@ void AssimpImporter::PrintMaterialProperties(const aiMaterial* material) {
     GTRACE("Semantic: {}", property->mSemantic);
     GTRACE("Index: {}", property->mIndex);
     GTRACE("Data Length: {}", property->mDataLength);
-//    GTRACE("Type: {}", property->mType);
+    //    GTRACE("Type: {}", property->mType);
 
     switch (property->mType) {
       case aiPTI_Float: {
@@ -138,8 +139,6 @@ Assimp_MeshData AssimpImporter::ExtractMeshes(const aiScene* scene_obj) {
   //   std::vector<glm::vec2> uvs;
   //   std::vector<uint32_t> indices;// indexes of material
   // };
-
-  
 
   return {};
 }
