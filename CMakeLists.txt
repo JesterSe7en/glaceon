@@ -23,14 +23,14 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 # Set target architecture if not provided
-if (NOT CMAKE_VS_PLATFORM_NAME)
+if(NOT CMAKE_VS_PLATFORM_NAME)
     set(CMAKE_VS_PLATFORM_NAME "x64")
-endif ()
+endif()
 message(STATUS "Architecture in use: ${CMAKE_VS_PLATFORM_NAME}")
 
-if (NOT "${CMAKE_VS_PLATFORM_NAME}" STREQUAL "x64")
+if(NOT "${CMAKE_VS_PLATFORM_NAME}" STREQUAL "x64")
     message(FATAL_ERROR "Architecture ${CMAKE_VS_PLATFORM_NAME} is not supported!")
-endif ()
+endif()
 
 # Global configuration types
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo" CACHE STRING "" FORCE)
@@ -44,13 +44,13 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 # Find Wayland
 find_package(Wayland QUIET)
 
-if (WAYLAND_FOUND)
+if(WAYLAND_FOUND)
     set(GLFW_BUILD_WAYLAND ON)
     message(STATUS "Using Wayland for GLFW")
-else ()
+else()
     set(GLFW_BUILD_WAYLAND OFF)
     message(STATUS "Using X11 or another backend for GLFW")
-endif ()
+endif()
 
 # Sub-projects
 add_subdirectory(Glaceon)

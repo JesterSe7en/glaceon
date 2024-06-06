@@ -106,7 +106,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 )
 
 # Compile and link options
-if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     target_compile_options(${PROJECT_NAME} PRIVATE
             $<$<CONFIG:Release>:-O3;-march=native>
             $<$<CONFIG:Debug>:-g;-Wall;-Wextra;-pedantic>
@@ -116,7 +116,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU"
             $<$<CONFIG:Release>:-Wl,--strip-all>
             $<$<CONFIG:RelWithDebInfo>:-Wl,--strip-all>
     )
-endif ()
+endif()
 
 # Dependencies
 find_package(Vulkan REQUIRED)
