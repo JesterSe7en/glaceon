@@ -26,21 +26,24 @@ class Logger {
 
 // Built-in formatter of spdlog uses github.com/fmtlib/fmt library
 // https://hackingcpp.com/cpp/libs/fmt.html
+//
+// C++ 20 standard affords us the capability to use variadic macros with the __VA_OPT__ macro
+// https://gcc.gnu.org/onlinedocs/cpp/Variadic-Macros.html
 #if (DEBUG_LOG_ENABLED)
-#define GDEBUG(fmt_str, ...) Glaceon::Logger::GetConsoleLogger()->debug(fmt::format(fmt_str, ##__VA_ARGS__))
+#define GDEBUG(fmt_str, ...) Glaceon::Logger::GetConsoleLogger()->debug(fmt_str __VA_OPT__(,) __VA_ARGS__)
 #else
 #define GDEBUG(fmt_str, ...)
 #endif
 
 #if (TRACE_LOG_ENABLED)
-#define GTRACE(fmt_str, ...) glaceon::Logger::GetConsoleLogger()->trace(fmt::format(fmt_str, ##__VA_ARGS__))
+#define GTRACE(fmt_str, ...) glaceon::Logger::GetConsoleLogger()->trace(fmt_str __VA_OPT__(,) __VA_ARGS__)
 #else
 #define GTRACE(fmt_str, ...)
 #endif
 
-#define GINFO(fmt_str, ...) glaceon::Logger::GetConsoleLogger()->info(fmt::format(fmt_str, ##__VA_ARGS__))
-#define GWARN(fmt_str, ...) glaceon::Logger::GetConsoleLogger()->warn(fmt::format(fmt_str, ##__VA_ARGS__))
-#define GERROR(fmt_str, ...) glaceon::Logger::GetConsoleLogger()->error(fmt::format(fmt_str, ##__VA_ARGS__))
-#define GCRITICAL(fmt_str, ...) Glaceon::Logger::GetConsoleLogger()->critical(fmt::format(fmt_str, ##__VA_ARGS__))
+#define GINFO(fmt_str, ...) glaceon::Logger::GetConsoleLogger()->info(fmt_str __VA_OPT__(,) __VA_ARGS__)
+#define GWARN(fmt_str, ...) glaceon::Logger::GetConsoleLogger()->warn(fmt_str __VA_OPT__(,) __VA_ARGS__)
+#define GERROR(fmt_str, ...) glaceon::Logger::GetConsoleLogger()->error(fmt_str __VA_OPT__(,) __VA_ARGS__)
+#define GCRITICAL(fmt_str, ...) Glaceon::Logger::GetConsoleLogger()->critical(fmt_str __VA_OPT__(,) __VA_ARGS__)
 
 #endif// GLACEON_GLACEON_LOGGER_H_
