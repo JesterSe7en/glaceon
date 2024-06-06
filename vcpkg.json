@@ -22,7 +22,8 @@
       "version>=": "1.90.2#0",
       "features": [
         "glfw-binding",
-        "vulkan-binding"
+        "vulkan-binding",
+        "docking-experimental"
       ]
     },
     {
