@@ -81,7 +81,7 @@ void AssimpImporter::PrintMaterialProperties(const aiMaterial* material) {
     GTRACE("Semantic: {}", property->mSemantic);
     GTRACE("Index: {}", property->mIndex);
     GTRACE("Data Length: {}", property->mDataLength);
-    GTRACE("Type: {}", property->mType);
+//    GTRACE("Type: {}", property->mType);
 
     switch (property->mType) {
       case aiPTI_Float: {

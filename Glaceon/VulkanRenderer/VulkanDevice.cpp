@@ -163,7 +163,9 @@ void VulkanDevice::PrintPhysicalDevice(const vk::PhysicalDevice gpu) {
   const auto kMinor = vk::apiVersionMinor(kProperties.apiVersion);
   const auto kPatch = vk::apiVersionPatch(kProperties.apiVersion);
 
-  GINFO("Physical device name: {}", kProperties.deviceName);
+  std::string device_name(kProperties.deviceName.begin(), kProperties.deviceName.end());
+
+  GINFO("Physical device name: {}", device_name);
   GINFO("API version: {}.{}.{}", kMajor, kMinor, kPatch);
   GINFO("Driver version: {}", kProperties.driverVersion);
   GINFO("Vendor ID: {}", kProperties.vendorID);
