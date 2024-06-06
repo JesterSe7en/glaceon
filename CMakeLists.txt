@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 3.22.1 FATAL_ERROR)
 
 # Set vcpkg toolchain
-set(CMAKE_TOOLCHAIN_FILE "${CMAKE_CURRENT_SOURCE_DIR}/extern/vcpkg/scripts/buildsystems/vcpkg.cmake" CACHE STRING "Vcpkg toolchain file")
+set(CMAKE_TOOLCHAIN_FILE
+    "${CMAKE_CURRENT_SOURCE_DIR}/extern/vcpkg/scripts/buildsystems/vcpkg.cmake"
+    CACHE STRING "Vcpkg toolchain file")
 message(STATUS "Using vcpkg toolchain file: ${CMAKE_TOOLCHAIN_FILE}")
 
 # Set system version
@@ -21,12 +23,12 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 # Set target architecture if not provided
 if(NOT CMAKE_VS_PLATFORM_NAME)
-    set(CMAKE_VS_PLATFORM_NAME "x64")
+  set(CMAKE_VS_PLATFORM_NAME "x64")
 endif()
 message(STATUS "Architecture in use: ${CMAKE_VS_PLATFORM_NAME}")
 
 if(NOT "${CMAKE_VS_PLATFORM_NAME}" STREQUAL "x64")
-    message(FATAL_ERROR "Architecture ${CMAKE_VS_PLATFORM_NAME} is not supported!")
+  message(FATAL_ERROR "Architecture ${CMAKE_VS_PLATFORM_NAME} is not supported!")
 endif()
 
 # Global configuration types
@@ -42,11 +44,11 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 find_package(Wayland QUIET)
 
 if(WAYLAND_FOUND)
-    set(GLFW_BUILD_WAYLAND ON)
-    message(STATUS "Using Wayland for GLFW")
+  set(GLFW_BUILD_WAYLAND ON)
+  message(STATUS "Using Wayland for GLFW")
 else()
-    set(GLFW_BUILD_WAYLAND OFF)
-    message(STATUS "Using X11 or another backend for GLFW")
+  set(GLFW_BUILD_WAYLAND OFF)
+  message(STATUS "Using X11 or another backend for GLFW")
 endif()
 
 # Sub-projects

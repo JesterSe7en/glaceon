@@ -107,15 +107,15 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 
 # Compile and link options
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    target_compile_options(${PROJECT_NAME} PRIVATE
-                           $<$<CONFIG:Release>:-O3;-march=native>
-                           $<$<CONFIG:Debug>:-g;-Wall;-Wextra;-pedantic>
-                           $<$<CONFIG:RelWithDebInfo>:-O2;-g;-march=native>
-    )
-    target_link_options(${PROJECT_NAME} PRIVATE
-                        $<$<CONFIG:Release>:-Wl,--strip-all>
-                        $<$<CONFIG:RelWithDebInfo>:-Wl,--strip-all>
-    )
+  target_compile_options(${PROJECT_NAME} PRIVATE
+                         $<$<CONFIG:Release>:-O3;-march=native>
+                         $<$<CONFIG:Debug>:-g;-Wall;-Wextra;-pedantic>
+                         $<$<CONFIG:RelWithDebInfo>:-O2;-g;-march=native>
+  )
+  target_link_options(${PROJECT_NAME} PRIVATE
+                      $<$<CONFIG:Release>:-Wl,--strip-all>
+                      $<$<CONFIG:RelWithDebInfo>:-Wl,--strip-all>
+  )
 endif()
 
 # Dependencies
