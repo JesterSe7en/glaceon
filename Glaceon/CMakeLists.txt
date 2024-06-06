@@ -109,7 +109,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     target_compile_options(${PROJECT_NAME} PRIVATE
             $<$<CONFIG:Release>:-O3;-march=native>
-            $<$<CONFIG:Debug>:-g;-Wall;-Wextra;-pedantic>
+            $<$<CONFIG:Debug>:-g;-Wall;-Wextra;-pedantic; -Wno-unused-variable; -Wno-unused-parameter>
             $<$<CONFIG:RelWithDebInfo>:-O2;-g;-march=native>
     )
     target_link_options(${PROJECT_NAME} PRIVATE
