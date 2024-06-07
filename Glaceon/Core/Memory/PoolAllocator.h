@@ -17,11 +17,11 @@ class PoolAllocator {
   PoolAllocator &operator=(const PoolAllocator &) = delete;
 
  private:
-  unsigned char object_alignment_;
-  unsigned long long int object_size_;
+  uint8_t object_alignment_;
+  size_t object_size_;
   void **free_list_;
-  unsigned long long int size_{};
-  unsigned long long int used_memory_{};
+  size_t size_;
+  size_t used_memory_;
 };
 }// namespace glaceon
 #endif//GLACEON_GLACEON_CORE_MEMORYSUBSYSTEM_CPP_POOLALLOCATOR_H_
