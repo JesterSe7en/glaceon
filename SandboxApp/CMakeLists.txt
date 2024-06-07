@@ -44,6 +44,16 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
             $<$<CONFIG:Release>:-Wl,--strip-all>
             $<$<CONFIG:RelWithDebInfo>:-Wl,--strip-all>
     )
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    target_compile_options(${PROJECT_NAME} PRIVATE
+            $<$<CONFIG:Release>:/O2 /Zc:preprocessor>
+            $<$<CONFIG:Debug>:/Zi /W4 /D_CRT_SECURE_NO_WARNINGS /Zc:preprocessor>
+            $<$<CONFIG:RelWithDebInfo>:/O2 /Zi /Zc:preprocessor>
+    )
+    target_link_options(${PROJECT_NAME} PRIVATE
+            $<$<CONFIG:Release>:/DEBUG:NONE /OPT:REF>
+            $<$<CONFIG:RelWithDebInfo>:/DEBUG:NONE /OPT:REF>
+    )
 endif()
 
 # Dependencies
