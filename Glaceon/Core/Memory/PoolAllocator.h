@@ -1,6 +1,8 @@
 #ifndef GLACEON_GLACEON_CORE_MEMORYSUBSYSTEM_CPP_POOLALLOCATOR_H_
 #define GLACEON_GLACEON_CORE_MEMORYSUBSYSTEM_CPP_POOLALLOCATOR_H_
 
+#include <cstdint>
+
 #include "../Base.h"
 namespace glaceon {
 class PoolAllocator {
@@ -8,7 +10,7 @@ class PoolAllocator {
   PoolAllocator(size_t obj_size, uint8_t alignment, size_t size, void *start);
   ~PoolAllocator();
 
-  void *Allocate(unsigned long long int size, unsigned char alignment);
+  void *Allocate(size_t size, uint8_t alignment);
   void Deallocate(void *ptr);
 
   PoolAllocator(const PoolAllocator &) = delete;
