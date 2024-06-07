@@ -1,4 +1,4 @@
-High level overview of the Vulkan API initialization and usage.
+# High level overview of the Vulkan API initialization and usage.
 
 1. **Vulkan Instance Initialization:**
    - Create a `VkApplicationInfo` structure with information about your application.
