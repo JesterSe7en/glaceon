@@ -33,24 +33,15 @@ if(NOT "${CMAKE_VS_PLATFORM_NAME}" STREQUAL "x64")
 endif()
 
 # Global configuration types
-set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo" CACHE STRING "" FORCE)
+set(CMAKE_CONFIGURATION_TYPES
+        "Debug;Release;RelWithDebInfo"
+        CACHE STRING "Global configuration types" FORCE)
 
 # Include common utils
 include(CMake/Utils.cmake)
 
 # Enable solution folders
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-
-# Find Wayland
-find_package(Wayland QUIET)
-
-if(WAYLAND_FOUND)
-    set(GLFW_BUILD_WAYLAND ON)
-    message(STATUS "Using Wayland for GLFW")
-else()
-    set(GLFW_BUILD_WAYLAND OFF)
-    message(STATUS "Using X11 or another backend for GLFW")
-endif()
 
 # Sub-projects
 add_subdirectory(Glaceon)

@@ -33,6 +33,18 @@
     {
       "name": "vulkan",
       "version>=": "2023-12-17#0"
+    },
+    {
+      "name": "glfw3",
+      "version>=": "3.4#0",
+      "platform": "windows"
+    },
+    {
+      "name": "glfw3",
+      "features": [
+        "wayland"
+      ],
+      "platform": "linux"
     }
   ]
 }

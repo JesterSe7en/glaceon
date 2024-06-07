@@ -136,6 +136,7 @@ find_package(VulkanMemoryAllocator CONFIG REQUIRED)
 find_package(imgui CONFIG REQUIRED)
 find_package(Stb REQUIRED)
 find_package(assimp CONFIG REQUIRED)
+find_package(glfw3 CONFIG REQUIRED)
 
 # Link libraries
 target_link_libraries(${PROJECT_NAME} PUBLIC
