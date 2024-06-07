@@ -48,5 +48,5 @@ add_subdirectory(Glaceon)
 add_subdirectory(SandboxApp)
 
 # Custom target to build all (optional)
-# set(all_targets Glaceon SandboxApp)
-# add_custom_target(All DEPENDS ${all_targets})
+set(all_targets Glaceon SandboxApp)
+add_custom_target(All DEPENDS ${all_targets})
