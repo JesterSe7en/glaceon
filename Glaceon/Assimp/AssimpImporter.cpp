@@ -132,6 +132,12 @@ Assimp_MeshData AssimpImporter::ExtractMeshes(const aiScene* scene_obj) {
     GWARN("Scene does not contain any meshes");
     return {};
   }
+  GTRACE("number of meshes: {}", scene_obj->mNumMeshes);
+
+  for (size_t i = 0; i < scene_obj->mNumMeshes; i++) {
+    aiMesh* mesh = scene_obj->mMeshes[i];
+    GTRACE("number of vertices: {}", mesh->mNumVertices);
+  }
 
   //   struct Assimp_MeshData {
   //   std::vector<glm::vec3> positions;

@@ -36,6 +36,7 @@ set(Header_Files
         Profiler/InstrumentationTimer.h
         VulkanRenderer/VulkanBase.h
         VulkanRenderer/VulkanMemoryAllocator.h
+        Assimp/AssimpModel.h
 )
 source_group("Header Files" FILES ${Header_Files})
 
@@ -70,6 +71,8 @@ set(Source_Files
         Utils.cpp
         Profiler/InstrumentationTimer.cpp
         VulkanRenderer/VulkanMemoryAllocator.cpp
+        Assimp/AssimpModel.cpp
+
 )
 source_group("Source Files" FILES ${Source_Files})
 
@@ -156,7 +159,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 
 # Get Glaceon's build directory
 set(GLACEON_BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}  CACHE PATH "Path to Glaceon's build directory" FORCE)
-message(STATUS "Glaceon: GLACEON_BUILD_DIR: ${GLACEON_BUILD_DIR}")
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different

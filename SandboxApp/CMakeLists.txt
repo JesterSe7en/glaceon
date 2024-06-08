@@ -61,8 +61,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
         Glaceon
 )
 
-message(STATUS "SandboxApp: GLACEON_BUILD_DIR: ${GLACEON_BUILD_DIR}")
-
 # Need to copy all dll, libs, and pdb files to the build directory
 add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
