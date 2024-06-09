@@ -6,6 +6,13 @@ namespace glaceon {
 
 class AssimpModel {
 
+ public:
+  AssimpModel() = default;
+  void InitializeVertexData(int num_vertices);
+
+ private:
+  glm::vec3* vertices_;
+
 };
 
 } // glaceon

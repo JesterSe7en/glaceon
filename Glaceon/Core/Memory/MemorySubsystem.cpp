@@ -21,6 +21,8 @@ static std::string tag_names[MEMORY_TAG_MAX_TAGS] = {"Unknown", "Array", "DynArr
 
 static memory_stats stats_ = {0, {0, 0, 0, 0, 0, 0}};
 
+static StackAllocator stack_alloc_ = StackAllocator(1024 * 1024, malloc(1024 * 1024));
+
 MemorySubsystem::MemorySubsystem() {
   // zero out memory stats
   GSetMemory(&stats_, 0, sizeof(stats_));
@@ -80,12 +82,18 @@ void MemorySubsystem::PrintStats() {
   }
 }
 
-void *MemorySubsystem::GAllocate(uint64_t num, uint64_t sizeOfObj, MemoryTag tag) {
-  if (num == 0 || sizeOfObj == 0) { return nullptr; }
+void *MemorySubsystem::GAllocate(uint64_t num, uint64_t size_of_obj, size_t align, MemoryTag tag) {
+  if (num == 0 || size_of_obj == 0) { return nullptr; }
   if (tag == MEMORY_TAG_UNKNOWN) { GWARN("GAllocate called with MEMORY_TAG. ) Specifying a tag is recommended."); }
 
-  // do not need to zero as calloc will do that inherently
-  return calloc(num, sizeOfObj);
+  switch (tag) {
+    case MEMORY_TAG_ARRAY:
+      return stack_alloc_.Allocate(num * size_of_obj, align);
+    default:
+      GWARN("GAllocate called with unknown memory tag.  Specifying a tag is recommended.");
+      // do not need to zero as calloc will do that inherently
+      return calloc(num, size_of_obj);
+  }
 }
 
 }// namespace glaceon

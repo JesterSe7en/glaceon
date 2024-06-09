@@ -2,6 +2,8 @@
 #define GLACEON_GLACEON_CORE_MEMORYSUBSYSTEM_H_
 
 #include "../Base.h"
+#include "StackAllocator.h"
+
 
 namespace glaceon {
 
@@ -24,7 +26,7 @@ class MemorySubsystem {
   // uses malloc
   static void *GAllocate(uint64_t size, MemoryTag tag);
   // uses calloc
-  static void *GAllocate(uint64_t num, uint64_t sizeOfObj, MemoryTag tag);
+  static void *GAllocate(uint64_t num, uint64_t size_of_obj, size_t align, MemoryTag tag);
   static void GFree(void *mem_block, uint64_t size, MemoryTag tag);
   static void *GZeroMemory(void *mem_block, uint64_t size);
   static void *GCopyMemory(void *dest, const void *src, uint64_t size);

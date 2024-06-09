@@ -13,9 +13,6 @@ class StackAllocator : public IAllocator {
   void *Allocate(size_t size, uint8_t alignment) override;
   void Deallocate(void *ptr) override;
 
-  StackAllocator(const StackAllocator &) = delete;
-  StackAllocator &operator=(const StackAllocator &) = delete;
-
   void *current_pos_;
   void *start_;
   size_t size_;

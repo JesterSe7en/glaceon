@@ -1,4 +1,5 @@
 #include "AssimpImporter.h"
+#include "AssimpModel.h"
 
 #include <assimp/postprocess.h>
 
@@ -8,9 +9,9 @@
 
 namespace glaceon {
 
-Assimp_ModelData AssimpImporter::ImportObjectModel(const std::string& obj_file) {
+Assimp_ModelData AssimpImporter::ImportObjectModel(const std::string &obj_file) {
   Assimp::Importer importer;
-  const aiScene* scene_obj = importer.ReadFile(
+  const aiScene *scene_obj = importer.ReadFile(
       obj_file,
       aiProcess_ValidateDataStructure | aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
 
@@ -23,7 +24,7 @@ Assimp_ModelData AssimpImporter::ImportObjectModel(const std::string& obj_file) 
 
   aiString name;
   for (size_t i = 0; i < scene_obj->mNumMaterials; i++) {
-    aiMaterial* material = scene_obj->mMaterials[i];
+    aiMaterial *material = scene_obj->mMaterials[i];
     // print out all the material properties in the .obj file
     if (material->Get(AI_MATKEY_NAME, name) == aiReturn_SUCCESS) { GINFO("Material name: {}", name.C_Str()); }
     PrintMaterialProperties(material);
@@ -47,10 +48,10 @@ Assimp_ModelData AssimpImporter::ImportObjectModel(const std::string& obj_file) 
   return Assimp_ModelData{.vert_data = GetVertexData(scene_obj, 0), .diffuse_color = diff};
 }
 
-std::vector<glm::vec3> AssimpImporter::GetVertexData(const aiScene* scene, const size_t mesh_idx) {
+std::vector<glm::vec3> AssimpImporter::GetVertexData(const aiScene *scene, const size_t mesh_idx) {
 
   std::vector<glm::vec3> verticies;
-  if (const aiMesh* mesh = scene->mMeshes[mesh_idx]; mesh->HasPositions()) {
+  if (const aiMesh *mesh = scene->mMeshes[mesh_idx]; mesh->HasPositions()) {
     verticies.reserve(mesh->mNumVertices);
 
     for (unsigned int i = 0; i < mesh->mNumVertices; i++) {
@@ -61,7 +62,7 @@ std::vector<glm::vec3> AssimpImporter::GetVertexData(const aiScene* scene, const
   return verticies;
 }
 
-std::vector<glm::vec3> AssimpImporter::GetUVData(const aiScene* scene, const size_t mesh_idx) {
+std::vector<glm::vec3> AssimpImporter::GetUVData(const aiScene *scene, const size_t mesh_idx) {
   if (scene == nullptr) {
     GWARN("No scene provided, cannot extract uv data");
     return {};
@@ -74,9 +75,9 @@ std::vector<glm::vec3> AssimpImporter::GetUVData(const aiScene* scene, const siz
   return {};
 }
 
-void AssimpImporter::PrintMaterialProperties(const aiMaterial* material) {
+void AssimpImporter::PrintMaterialProperties(const aiMaterial *material) {
   for (unsigned int i = 0; i < material->mNumProperties; ++i) {
-    aiMaterialProperty* property = material->mProperties[i];
+    aiMaterialProperty *property = material->mProperties[i];
 
     GTRACE("Property Name: {}", property->mKey.data);
     GTRACE("Semantic: {}", property->mSemantic);
@@ -86,30 +87,30 @@ void AssimpImporter::PrintMaterialProperties(const aiMaterial* material) {
 
     switch (property->mType) {
       case aiPTI_Float: {
-        auto* data = reinterpret_cast<float*>(property->mData);
+        auto *data = reinterpret_cast<float *>(property->mData);
         GTRACE("Data: ");
         for (unsigned int j = 0; j < property->mDataLength / sizeof(float); ++j) { GTRACE("{}", data[j]); }
         break;
       }
       case aiPTI_Double: {
-        auto* data = reinterpret_cast<double*>(property->mData);
+        auto *data = reinterpret_cast<double *>(property->mData);
         GTRACE("Data: ");
         for (unsigned int j = 0; j < property->mDataLength / sizeof(double); ++j) { GTRACE("{}", data[j]); }
         break;
       }
       case aiPTI_String: {
-        auto* data = reinterpret_cast<aiString*>(property->mData);
+        auto *data = reinterpret_cast<aiString *>(property->mData);
         GTRACE("Data: {}", data->C_Str());
         break;
       }
       case aiPTI_Integer: {
-        int* data = reinterpret_cast<int*>(property->mData);
+        int *data = reinterpret_cast<int *>(property->mData);
         GTRACE("Data: ");
         for (unsigned int j = 0; j < property->mDataLength / sizeof(int); ++j) { GTRACE("{}", data[j]); }
         break;
       }
       case aiPTI_Buffer: {
-        auto* data = reinterpret_cast<unsigned char*>(property->mData);
+        auto *data = reinterpret_cast<unsigned char *>(property->mData);
         GTRACE("Data: ");
         for (unsigned int j = 0; j < property->mDataLength; ++j) { GTRACE("{}", data[j]); }
         break;
@@ -122,7 +123,7 @@ void AssimpImporter::PrintMaterialProperties(const aiMaterial* material) {
     GTRACE("----------------------------------------");
   }
 }
-Assimp_MeshData AssimpImporter::ExtractMeshes(const aiScene* scene_obj) {
+Assimp_MeshData AssimpImporter::ExtractMeshes(const aiScene *scene_obj) {
   if (scene_obj == nullptr) {
     GWARN("No scene provided, cannot extract mesh data");
     return {};
@@ -134,9 +135,20 @@ Assimp_MeshData AssimpImporter::ExtractMeshes(const aiScene* scene_obj) {
   }
   GTRACE("number of meshes: {}", scene_obj->mNumMeshes);
 
+  AssimpModel model;
+
   for (size_t i = 0; i < scene_obj->mNumMeshes; i++) {
-    aiMesh* mesh = scene_obj->mMeshes[i];
+    aiMesh *mesh = scene_obj->mMeshes[i];
     GTRACE("number of vertices: {}", mesh->mNumVertices);
+    aiVector3D *test = mesh->mVertices;
+    model.InitializeVertexData(mesh->mNumVertices);
+    for (size_t j = 0; j < mesh->mNumVertices; j++) {
+      // put this in glm::vec3 format
+      const glm::vec3 kGlmVert = reinterpret_cast<glm::vec3 *>(mesh->mVertices)[j];
+      size_t align = alignof(glm::vec3);
+      GTRACE("x: {}, y: {}, z: {}", kGlmVert.x, kGlmVert.y, kGlmVert.z);
+      //// push this to AssimpModel.
+    }
   }
 
   //   struct Assimp_MeshData {
