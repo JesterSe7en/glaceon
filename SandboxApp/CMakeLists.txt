@@ -68,11 +68,3 @@ add_custom_command(TARGET ${PROJECT_NAME} PRE_BUILD
         $<TARGET_FILE_DIR:${PROJECT_NAME}>
         COMMENT "Copying Glaceon DLLs, LIBs, and PDBs to build directory..."
 )
-
-# Post-build steps (copies over the glaceon dll to the build directory)
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:Glaceon>
-        $<TARGET_FILE_DIR:${PROJECT_NAME}>
-        COMMENT "Copying Glaceon DLL to build directory..."
-)
