@@ -1,4 +1,3 @@
-
 #ifndef GLACEON_GLACEON_ASSIMP_ASSIMPMODEL_H_
 #define GLACEON_GLACEON_ASSIMP_ASSIMPMODEL_H_
 
@@ -13,13 +12,11 @@ class AssimpModel {
 
   glm::vec3* GetVertices() { return vertices_; }
 
-
  private:
   glm::vec3* vertices_;
   uint64_t vertices_offset_;
-
 };
 
-} // glaceon
+}// namespace glaceon
 
-#endif //GLACEON_GLACEON_ASSIMP_ASSIMPMODEL_H_
+#endif//GLACEON_GLACEON_ASSIMP_ASSIMPMODEL_H_
