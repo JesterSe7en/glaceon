@@ -13,7 +13,8 @@ Assimp_ModelData AssimpImporter::ImportObjectModel(const std::string &obj_file) 
   Assimp::Importer importer;
   const aiScene *scene_obj = importer.ReadFile(
       obj_file,
-      aiProcess_ValidateDataStructure | aiProcess_CalcTangentSpace | aiProcess_Triangulate | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
+      aiProcess_ValidateDataStructure | aiProcess_CalcTangentSpace | aiProcess_Triangulate
+          | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
 
   if (scene_obj == nullptr) {
     GERROR("Cannot import {} - {}", obj_file, importer.GetErrorString());
@@ -115,8 +116,7 @@ void AssimpImporter::PrintMaterialProperties(const aiMaterial *material) {
         for (unsigned int j = 0; j < property->mDataLength; ++j) { GTRACE("{}", data[j]); }
         break;
       }
-      default:
-        GTRACE("Unknown property type.");
+      default:GTRACE("Unknown property type.");
         break;
     }
 
@@ -143,11 +143,8 @@ Assimp_MeshData AssimpImporter::ExtractMeshes(const aiScene *scene_obj) {
     aiVector3D *test = mesh->mVertices;
     model.InitializeVertexData(mesh->mNumVertices);
     for (size_t j = 0; j < mesh->mNumVertices; j++) {
-      // put this in glm::vec3 format
       const glm::vec3 kGlmVert = reinterpret_cast<glm::vec3 *>(mesh->mVertices)[j];
-      size_t align = alignof(glm::vec3);
-      GTRACE("x: {}, y: {}, z: {}", kGlmVert.x, kGlmVert.y, kGlmVert.z);
-      //// push this to AssimpModel.
+      model.AddVertex(kGlmVert);
     }
   }
 

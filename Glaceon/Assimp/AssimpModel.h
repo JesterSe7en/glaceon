@@ -8,10 +8,15 @@ class AssimpModel {
 
  public:
   AssimpModel() = default;
-  void InitializeVertexData(int num_vertices);
+  void InitializeVertexData(size_t num_vertices);
+  void AddVertex(glm::vec3 vertex);
+
+  glm::vec3* GetVertices() { return vertices_; }
+
 
  private:
   glm::vec3* vertices_;
+  uint64_t vertices_offset_;
 
 };
 
