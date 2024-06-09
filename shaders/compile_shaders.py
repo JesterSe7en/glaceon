@@ -50,7 +50,7 @@ def compile_shaders_in_directory(directory_path: str) -> None:
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:
-        directory_path = sys.argv[1]
-        compile_shaders_in_directory(directory_path)
+        dir_path = sys.argv[1]
+        compile_shaders_in_directory(dir_path)
     else:
         print("Usage: python compile_shaders.py <directory_path>")
