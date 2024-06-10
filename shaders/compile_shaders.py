@@ -49,6 +49,13 @@ def compile_shaders_in_directory(directory_path: str) -> None:
 
 
 if __name__ == "__main__":
+    # Check if glslc is installed
+    try:
+        subprocess.run(["glslc", "--version"], check=True, capture_output=True)
+    except subprocess.CalledProcessError:
+        print("Error: glslc not found. Please install it.")
+        sys.exit(1)
+
     if len(sys.argv) > 1:
         dir_path = sys.argv[1]
         compile_shaders_in_directory(dir_path)
