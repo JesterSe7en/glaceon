@@ -164,7 +164,9 @@ void VulkanDevice::PrintPhysicalDevice(const vk::PhysicalDevice gpu) {
   const auto kMinor = vk::apiVersionMinor(kProperties.apiVersion);
   const auto kPatch = vk::apiVersionPatch(kProperties.apiVersion);
 
-  std::string device_name(kProperties.deviceName.begin(), kProperties.deviceName.end());
+  // ArrayWrapper<const char> from deviceName just has \0 at the end; remove it before printing
+  std::string device_name(gpu.getProperties().deviceName.data());
+  device_name.erase(std::remove(device_name.begin(), device_name.end(), '\0'), device_name.end());
 
   GINFO("Physical device name: {}", device_name);
   GINFO("API version: {}.{}.{}", kMajor, kMinor, kPatch);
