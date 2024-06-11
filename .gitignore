@@ -367,3 +367,4 @@ cmake-build*
 compile_commands.json
 *.spv
 vcpkg_installed
+venv
