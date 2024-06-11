@@ -13,7 +13,7 @@ def compile_shader(input_file_path: str) -> None:
     Returns:
     None
     """
-    output_file_path = f"{input_file_path.rsplit('.', 1)[0]}.spv"
+    output_file_path = f"{input_file_path.rsplit('.', 1)[1]}.spv"
 
     try:
         subprocess.run(
