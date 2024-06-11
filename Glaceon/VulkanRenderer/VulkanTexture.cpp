@@ -1,4 +1,5 @@
 #include "VulkanTexture.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -8,8 +9,8 @@
 
 namespace glaceon {
 
-VulkanTexture::VulkanTexture(VulkanContext &context, const vk::DescriptorSet target_descriptor_set, const char *filename,
-                             const VulkanTextureInput &input)
+VulkanTexture::VulkanTexture(VulkanContext &context, const vk::DescriptorSet target_descriptor_set,
+                             const char *filename, const VulkanTextureInput &input)
     : width_(0),
       height_(0),
       channels_(0),
@@ -95,9 +96,10 @@ void VulkanTexture::CreateVkImage() {
   memory_allocate_info.sType = vk::StructureType::eMemoryAllocateInfo;
   memory_allocate_info.pNext = nullptr;
   memory_allocate_info.allocationSize = memory_requirements.size;
-  memory_allocate_info.memoryTypeIndex = VulkanUtils::FindMemoryTypeIndex(context_.GetVulkanPhysicalDevice(), memory_requirements.memoryTypeBits,
-                                                                          vk::MemoryPropertyFlagBits::eDeviceLocal);
-  VK_CHECK(kDevice.allocateMemory(&memory_allocate_info, nullptr, &vk_image_memory_), "Failed to allocate image memory");
+  memory_allocate_info.memoryTypeIndex = VulkanUtils::FindMemoryTypeIndex(
+      context_.GetVulkanPhysicalDevice(), memory_requirements.memoryTypeBits, vk::MemoryPropertyFlagBits::eDeviceLocal);
+  VK_CHECK(kDevice.allocateMemory(&memory_allocate_info, nullptr, &vk_image_memory_),
+           "Failed to allocate image memory");
 
   kDevice.bindImageMemory(vk_image_, vk_image_memory_, 0);
 }
@@ -217,7 +219,8 @@ void VulkanTexture::TransitionImageLayout(vk::ImageLayout old_layout, vk::ImageL
     src_stage_mask = vk::PipelineStageFlagBits::eTransfer;
     dst_stage_mask = vk::PipelineStageFlagBits::eFragmentShader;
   }
-  command_buffer.pipelineBarrier(src_stage_mask, dst_stage_mask, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1, &image_memory_barrier);
+  command_buffer.pipelineBarrier(src_stage_mask, dst_stage_mask, vk::DependencyFlags(), 0, nullptr, 0, nullptr, 1,
+                                 &image_memory_barrier);
   VulkanUtils::EndSingleTimeCommands(command_buffer, context_.GetVulkanDevice().GetVkGraphicsQueue());
 }
 
@@ -232,7 +235,8 @@ void VulkanTexture::CreateSampler() {
   sampler_info.magFilter = vk::Filter::eLinear;
   sampler_info.minFilter = vk::Filter::eNearest;
   sampler_info.mipmapMode = vk::SamplerMipmapMode::eLinear;
-  sampler_info.addressModeU = vk::SamplerAddressMode::eRepeat;// these tell the sampler how to sample when out of bounds in the u, v, w axes
+  sampler_info.addressModeU =
+      vk::SamplerAddressMode::eRepeat;// these tell the sampler how to sample when out of bounds in the u, v, w axes
   sampler_info.addressModeV = vk::SamplerAddressMode::eRepeat;
   sampler_info.addressModeW = vk::SamplerAddressMode::eRepeat;
   sampler_info.mipLodBias = 0.0f;

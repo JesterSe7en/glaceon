@@ -89,7 +89,8 @@ bool VulkanDevice::CheckDeviceRequirements(const vk::PhysicalDevice &vk_physical
     GTRACE("  Supports graphics: {}", queue_family_[i].queueFlags & vk::QueueFlagBits::eGraphics ? "true" : "false");
     GTRACE("  Supports compute: {}", queue_family_[i].queueFlags & vk::QueueFlagBits::eCompute ? "true" : "false");
     GTRACE("  Supports transfer: {}", queue_family_[i].queueFlags & vk::QueueFlagBits::eTransfer ? "true" : "false");
-    GTRACE("  Supports sparse binding: {}", queue_family_[i].queueFlags & vk::QueueFlagBits::eSparseBinding ? "true" : "false");
+    GTRACE("  Supports sparse binding: {}",
+           queue_family_[i].queueFlags & vk::QueueFlagBits::eSparseBinding ? "true" : "false");
   }
 #endif
 
