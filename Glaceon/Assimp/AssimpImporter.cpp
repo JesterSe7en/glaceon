@@ -1,20 +1,21 @@
 #include "AssimpImporter.h"
-#include "AssimpModel.h"
 
 #include <assimp/postprocess.h>
 
 #include <assimp/Importer.hpp>
 
 #include "../Core/Logger.h"
+#include "AssimpModel.h"
+
 
 namespace glaceon {
 
 Assimp_ModelData AssimpImporter::ImportObjectModel(const std::string &obj_file) {
   Assimp::Importer importer;
-  const aiScene *scene_obj = importer.ReadFile(
-      obj_file,
-      aiProcess_ValidateDataStructure | aiProcess_CalcTangentSpace | aiProcess_Triangulate
-          | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
+  const aiScene *scene_obj =
+      importer.ReadFile(obj_file,
+                        aiProcess_ValidateDataStructure | aiProcess_CalcTangentSpace | aiProcess_Triangulate
+                            | aiProcess_JoinIdenticalVertices | aiProcess_SortByPType);
 
   if (scene_obj == nullptr) {
     GERROR("Cannot import {} - {}", obj_file, importer.GetErrorString());
@@ -116,7 +117,8 @@ void AssimpImporter::PrintMaterialProperties(const aiMaterial *material) {
         for (unsigned int j = 0; j < property->mDataLength; ++j) { GTRACE("{}", data[j]); }
         break;
       }
-      default:GTRACE("Unknown property type.");
+      default:
+        GTRACE("Unknown property type.");
         break;
     }
 
@@ -137,14 +139,29 @@ Assimp_MeshData AssimpImporter::ExtractMeshes(const aiScene *scene_obj) {
 
   AssimpModel model;
 
+  // Find total vertices across all meshes
+  size_t total_vertices = 0;
+  for (size_t i = 0; i < scene_obj->mNumMeshes; i++) {
+    aiMesh *mesh = scene_obj->mMeshes[i];
+    total_vertices += mesh->mNumVertices;
+  }
+
+  GTRACE("Total vertices: {}", total_vertices);
+  model.InitializeVertexData(total_vertices);
+
+  size_t index = 0;// temporary manage vertex index to maek sure we are adding shit correcly; idiot
   for (size_t i = 0; i < scene_obj->mNumMeshes; i++) {
     aiMesh *mesh = scene_obj->mMeshes[i];
     GTRACE("number of vertices: {}", mesh->mNumVertices);
-    aiVector3D *test = mesh->mVertices;
-    model.InitializeVertexData(mesh->mNumVertices);
     for (size_t j = 0; j < mesh->mNumVertices; j++) {
       const glm::vec3 kGlmVert = reinterpret_cast<glm::vec3 *>(mesh->mVertices)[j];
+      GTRACE("Assimp Importer: {} {} {}", kGlmVert.x, kGlmVert.y, kGlmVert.z);
       model.AddVertex(kGlmVert);
+
+      // Let's check it
+      auto ret = model.GetVertex(index);
+      GTRACE("After Adding To Model: {} {} {}", ret.x, ret.y, ret.z);
+      index++;
     }
   }
 

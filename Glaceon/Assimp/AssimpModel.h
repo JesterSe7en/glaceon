@@ -9,11 +9,12 @@ class AssimpModel {
   AssimpModel() = default;
   void InitializeVertexData(size_t num_vertices);
   void AddVertex(glm::vec3 vertex);
+  glm::vec3 GetVertex(size_t index);
 
-  glm::vec3* GetVertices() { return vertices_; }
+  glm::vec3* GetVertices() { return vertices_.get(); }
 
  private:
-  glm::vec3* vertices_;
+  std::unique_ptr<glm::vec3[]> vertices_;
   uint64_t vertices_offset_;
 };
 
